@@ -13,24 +13,26 @@ namespace VirtualBank.Api.Services
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
+        private readonly JwtOptions _jwtOptions;
 
         public JwtService(IConfiguration configuration)
         {
             _configuration = configuration;
+            _jwtOptions = _configuration.GetSection("JwtOptions").Get<JwtOptions>();
+
         }
 
 
         public string GenerateAccessToken(List<Claim> claims)
         {
-            var jwtOptions = _configuration.GetSection("JwtOptions").Get<JwtOptions>();
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.k));
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
             var jwtSecurityToken = new JwtSecurityToken(
-                issuer: jwtOptions.Issuer,
-                audience: jwtOptions.Audience,
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(jwtOptions.Lifetime),
+                expires: DateTime.Now.AddMinutes(_jwtOptions.Lifetime),
                 signingCredentials: signingCredentials
                 );
 

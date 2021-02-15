@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using VirtualBank.Api.Services;
+using VirtualBank.Api.Factories;
 using VirtualBank.Core.Models;
 using VirtualBank.Data;
 
@@ -43,24 +43,7 @@ namespace VirtualBank.Api
                     .ConfigureIdentityOptions()
                     .ConfigurePassword();
 
-            services.AddAuthentication(opt =>
-            {
-                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-
-                    ValidIssuer = Configuration["JwtOptions:Issuer"],
-                    ValidAudience = Configuration["JwtOptions:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("JwtOptions:Key"))
-                };
-            });
+            services.AddJwtAuthentication(Configuration);
 
             //Allow all origins
             services.AddCors(options =>

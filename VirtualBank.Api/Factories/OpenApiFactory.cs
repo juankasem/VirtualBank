@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-namespace VirtualBank.Api.Services
+namespace VirtualBank.Api.Factories
 {
     public static class OpenApiFactory
     {

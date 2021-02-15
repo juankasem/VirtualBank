@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using VirtualBank.Api.Services;
+using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Models;
 
-namespace VirtualBank.Api.Services
+namespace VirtualBank.Api.Factories
 {
     public static class JwtFactory
     {
@@ -19,7 +21,8 @@ namespace VirtualBank.Api.Services
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+            })
+                .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
@@ -33,6 +36,8 @@ namespace VirtualBank.Api.Services
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
                 };
             });
+
+            services.AddSingleton<IJwtService, JwtService>();
 
             return services;
         }
