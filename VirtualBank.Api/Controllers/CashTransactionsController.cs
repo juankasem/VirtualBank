@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace VirtualBank.Api.Controllers
 {
     [Route("api/[controller]")]
-    public class CashTransactionsController : Controller
+    [ApiController]
+    public class CashTransactionsController : ControllerBase
     {
         // GET: api/values
         [HttpGet]
@@ -26,7 +27,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // POST api/values
-        [HttpPost]
+        [HttpPost, Route("postTransaction")]
         public void Post([FromBody] string value)
         {
         }

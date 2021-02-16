@@ -10,6 +10,7 @@ namespace VirtualBank.Data
     {
         public VirtualBankDbContext(DbContextOptions<VirtualBankDbContext> options) : base(options)
         {
+
         }
     }
 }
