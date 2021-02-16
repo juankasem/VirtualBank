@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace VirtualBank.Core.Models
 {
     public class Branch
@@ -11,5 +13,6 @@ namespace VirtualBank.Core.Models
 
         public Address Address { get; set; }
 
+        public ICollection<Account> Accounts { get; set; }
     }
 }

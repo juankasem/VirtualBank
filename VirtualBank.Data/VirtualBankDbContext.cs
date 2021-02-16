@@ -12,5 +12,15 @@ namespace VirtualBank.Data
         {
 
         }
+
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Branch>  Branches { get; set; }
+        public DbSet<CashTransaction> CashTransactions { get; set; }
+        public DbSet<CreditCard> CreditCards { get; set; }
+        public DbSet<District> Districts { get; set; }
+        public DbSet<City> Cities { get; set; }
+        public DbSet<Country> Countries { get; set; }
+
+
     }
 }

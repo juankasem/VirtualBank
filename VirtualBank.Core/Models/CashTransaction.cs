@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.Models
@@ -18,14 +19,19 @@ namespace VirtualBank.Core.Models
         [Required]
         public BankAsset To { get; set; }
 
+        [Required]
+        [Column(TypeName="decimal(8,2)")]
+        public decimal Amount { get; set; }
+
         public string Description { get; set; }
 
         [Required]
         public DateTime CreatedOn { get; set; }
 
         [Required]
-        public DateTime CreatedBy { get; set; }
+        public AppUser CreatedBy { get; set; }
 
+        [Required]
         public TransactionStatusType Status { get; set; }
     }
 }
