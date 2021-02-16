@@ -28,7 +28,7 @@ namespace VirtualBank.Core.ApiResponseModels
         }
     }
 
-    public class ApiResponse<T>: ApiResponse
+    public class ApiResponse<T> : ApiResponse
     {
         public T Data { get; set; }
     }

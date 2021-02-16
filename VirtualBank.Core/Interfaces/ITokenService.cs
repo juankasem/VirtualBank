@@ -4,8 +4,12 @@ using System.Security.Claims;
 
 namespace VirtualBank.Core.Interfaces
 {
-    public interface IJwtService
+    public interface ITokenService
     {
         string GenerateAccessToken(List<Claim> claims);
+
+        string GenerateRefreshToken();
+
+        ClaimsPrincipal GetClaimsFromExpiredToken(string token);
     }
 }

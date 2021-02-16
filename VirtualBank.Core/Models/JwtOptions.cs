@@ -1,6 +1,9 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace VirtualBank.Core.Models
 {
+    [NotMapped]
     public class JwtOptions
     {
         public string Issuer { get; set; }

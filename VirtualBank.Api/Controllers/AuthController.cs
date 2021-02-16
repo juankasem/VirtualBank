@@ -25,13 +25,13 @@ namespace VirtualBank.Api.Controllers
     {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
-        private readonly IJwtService _jwtService;
+        private readonly ITokenService _tokenService;
 
-        public AuthController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, IJwtService jwtService)
+        public AuthController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, ITokenService tokenService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
-            _jwtService = jwtService;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace VirtualBank.Api.Controllers
 
             var appUser = new AppUser()
             {
-                UserName = request.Email,
+                UserName = request.CustomerNo,
                 Email = request.Email,
                 PhoneNumber = request.PhoneNumber
             };
@@ -117,14 +117,22 @@ namespace VirtualBank.Api.Controllers
 
             if (result.Succeeded)
             {
-                response.Data = new LoginResponse
+                var claims = new List<Claim>()
                 {
-                    Token = _jwtService.GenerateAccessToken(new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, user.UserName),
-                        new Claim(ClaimTypes.Role, "")
-                    })
+                   new Claim(ClaimTypes.Name, user.UserName),
+                   new Claim(ClaimTypes.Role, "")
                 };
+
+                response.Data = new LoginResponse()
+                {
+                    AccessToken = _tokenService.GenerateAccessToken(claims),
+                    RefreshToken = _tokenService.GenerateRefreshToken()
+                };
+
+
+                user.RefreshToken = response.Data.RefreshToken;
+                await _userManager.UpdateAsync(user);
+
             }
             else
             {

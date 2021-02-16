@@ -16,6 +16,11 @@ namespace VirtualBank.Core.ApiRequestModels
         public string IdentificationNo { get; set; }
 
         /// <summary>
+        ///  customer number
+        /// </summary>
+        [Required] public string CustomerNo { get; set; }
+
+        /// <summary>
         /// phone number
         /// </summary>
         [Required]
