@@ -24,7 +24,7 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public string GenerateAccessToken(List<Claim> claims)
+        public string GenerateAccessToken(IEnumerable<Claim> claims)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);

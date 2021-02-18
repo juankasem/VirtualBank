@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.Helpers;
 using VirtualBank.Core.ApiRequestModels;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.Interfaces;
@@ -37,7 +38,7 @@ namespace VirtualBank.Api.Controllers
         public async Task<ActionResult<ApiResponse<TokenResponse>>> Refresh(TokenRequest tokenRequest)
         {
             var principal = _tokenService.GetClaimsFromExpiredToken(tokenRequest.AccessToken);
-            var user = await _userManager.FindByNameAsync(principal.Identity.Name);
+            var user = await _userManager.GetUserAsync(principal);
 
             if(user == null)
             {
@@ -60,7 +61,7 @@ namespace VirtualBank.Api.Controllers
                    new Claim(ClaimTypes.Role, "")
                 };
 
-            response.Data.AccessToken = _tokenService.GenerateAccessToken(claims);
+            response.Data.AccessToken = _tokenService.GenerateAccessToken(await user.GetClaimsAsync(_userManager));
             response.Data.RefreshToken = _tokenService.GenerateRefreshToken();
 
             user.RefreshToken = response.Data.RefreshToken;
@@ -78,7 +79,7 @@ namespace VirtualBank.Api.Controllers
         [Authorize]
         public async Task<ApiResponse> Revoke()
         {
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var user = await _userManager.GetUserAsync(User);
             user.RefreshToken = null;
 
             await _userManager.UpdateAsync(user);

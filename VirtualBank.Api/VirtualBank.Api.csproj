@@ -27,6 +27,7 @@
   <ItemGroup>
     <Folder Include="Services\" />
     <Folder Include="Factories\" />
+    <Folder Include="Helpers\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VirtualBank.Data\VirtualBank.Data.csproj">

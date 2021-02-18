@@ -1,12 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.ApiRequestModels
+namespace VirtualBank.Core.ApiResponseModels
 {
-    public class CashTransactionRequest
+    public class CashTransactionResponse
     {
         [Required]
         public string Id { get; set; }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using VirtualBank.Api.Helpers;
 using VirtualBank.Core.ApiModels;
 using VirtualBank.Core.ApiRequestModels;
 using VirtualBank.Core.ApiResponseModels;
@@ -117,15 +118,9 @@ namespace VirtualBank.Api.Controllers
 
             if (result.Succeeded)
             {
-                var claims = new List<Claim>()
-                {
-                   new Claim(ClaimTypes.Name, user.UserName),
-                   new Claim(ClaimTypes.Role, "")
-                };
-
                 response.Data = new LoginResponse()
                 {
-                    AccessToken = _tokenService.GenerateAccessToken(claims),
+                    AccessToken = _tokenService.GenerateAccessToken(await user.GetClaimsAsync(_userManager)),
                     RefreshToken = _tokenService.GenerateRefreshToken()
                 };
 
