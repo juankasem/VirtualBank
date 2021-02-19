@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace VirtualBank.Api.Controllers
 {
-    public class CreditCardsController : Controller
+    public class CreditCardController : Controller
     {
         // GET: /<controller>/
         public IActionResult Index()

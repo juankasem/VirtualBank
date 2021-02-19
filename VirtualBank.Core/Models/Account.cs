@@ -6,15 +6,14 @@ using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.Models
 {
-    public class Account
+    public class Account : BaseData
     {
-        [Key]
-        public string Id { get; set; }
-
         [Required]
+        [MaxLength(50)]
         public string AccountNo { get; set; }
 
         [Required]
+        [MaxLength(50)]
         public string IBAN { get; set; }
 
         [Required]
@@ -36,16 +35,6 @@ namespace VirtualBank.Core.Models
 
         [Required]
         public Currency Currency { get; set; }
-
-        [Required]
-        public DateTime CreatedAt { get; set; }
-
-        [Required]
-        public AppUser CreatedBy { get; set; }
-
-        public DateTime ModifiedAt { get; set; }
-
-        public bool IsActive { get; set; }
 
         public ICollection<CreditCard> CreditCards { get; set; }
 

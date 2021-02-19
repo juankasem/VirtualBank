@@ -5,11 +5,8 @@ using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.Models
 {
-    public class CashTransaction
+    public class CashTransaction : BaseData
     {
-        [Required]
-        public string Id { get; set; }
-
         [Required]
         public CashTransactionType Type { get; set; }
 
@@ -24,12 +21,6 @@ namespace VirtualBank.Core.Models
         public decimal Amount { get; set; }
 
         public string Description { get; set; }
-
-        [Required]
-        public DateTime CreatedOn { get; set; }
-
-        [Required]
-        public AppUser CreatedBy { get; set; }
 
         [Required]
         public TransactionStatusType Status { get; set; }

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
 {
-    public class Customer : BaseData
+    public class CreateCustomerRequest
     {
         [Required]
         [MinLength(8)]
@@ -42,15 +41,5 @@ namespace VirtualBank.Core.Models
 
         [Required]
         public Address Address { get; set; }
-
-        [ForeignKey(nameof(User))]
-        [MaxLength(50)]
-        public string UserId { get; set; }
-
-        public AppUser User { get; set; }
-
-        public ICollection<Account> Accounts { get; set; }
-
-        public ICollection<CreditCard> CreditCards { get; set; }
     }
 }

@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualBank.Core.Models
 {
-    public class District
+    public class District : BaseData
     {
-        [Required]
-        public int Id { get; set; }
-
         [Required]
         public string Name { get; set; }
 

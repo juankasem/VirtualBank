@@ -1,12 +1,15 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+
 namespace VirtualBank.Core.Models
 {
-    public class Currency
+    public class Currency : BaseData
     {
-        public int Id { get; set; }
-
+        [Required]
+        [MaxLength(3)]
         public string Code { get; set; }
 
+        [Required]
         public string Name { get; set; }
 
         public string Symbol { get; set; }

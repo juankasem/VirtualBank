@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualBank.Core.Models
 {
-    public class CreditCard
+    public class CreditCard : BaseData
     {
-        [Required]
-        public string Id { get; set; }
-
         [Required]
         public string Number { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualBank.Core.Models
@@ -6,7 +7,7 @@ namespace VirtualBank.Core.Models
     [NotMapped]
     public class Address
     {
-
+        [MaxLength(50)]
         public string Street { get; set; }
 
         [ForeignKey("District")]

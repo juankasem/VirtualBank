@@ -6,11 +6,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualBank.Core.Models
 {
-    public class City
+    public class City : BaseData
     {
-        [Required]
-        public int Id { get; set; }
-
         [Required]
         public string Name { get; set; }
 

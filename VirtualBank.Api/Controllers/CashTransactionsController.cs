@@ -10,7 +10,7 @@ namespace VirtualBank.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CashTransactionsController : ControllerBase
+    public class CashTransactionController : ControllerBase
     {
         // GET: api/values
         [HttpGet]
