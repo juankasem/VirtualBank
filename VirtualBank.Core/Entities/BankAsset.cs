@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
     [NotMapped]
     public class BankAsset

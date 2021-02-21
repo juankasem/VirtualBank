@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Api.Helpers
 {

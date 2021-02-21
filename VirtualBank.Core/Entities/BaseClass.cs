@@ -2,10 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
     [NotMapped]
-    public class BaseData
+    public class BaseClass
     {
         [Key]
         public string Id { get; set; }

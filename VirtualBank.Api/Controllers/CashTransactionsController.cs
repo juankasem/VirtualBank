@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
+using VirtualBank.Core.Interfaces;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,26 +14,49 @@ namespace VirtualBank.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CashTransactionController : ControllerBase
+    [Authorize(Roles = "Customer")]
+    public class CashTransactionsController : ControllerBase
     {
-        // GET: api/values
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly ICashTransactionService _cashTransactionService;
+
+        public CashTransactionsController(ICashTransactionService cashTransactionService)
         {
-            return new string[] { "value1", "value2" };
+            _cashTransactionService = cashTransactionService;
         }
 
         // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("get/{id}")]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetCashTransactionsByAccountNo([FromRoute] string accountNo, [FromQuery] int lastDays,
+                                                                        CancellationToken cancellationToken = default)
         {
-            return "value";
+            try
+            {
+               return Ok(await _cashTransactionService.GetCashTransactionsByAccountNo(accountNo, lastDays, cancellationToken));
+                
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // POST api/values
-        [HttpPost, Route("postTransaction")]
-        public void Post([FromBody] string value)
+        [HttpPost]
+        [Route("post")]
+        public async Task<IActionResult> PostCashTransaction([FromBody] CreateCashTransactionRequest request,
+                                                                        CancellationToken cancellationToken = default)
         {
+            try
+            {
+                await _cashTransactionService.CreateCashTransaction(request, cancellationToken);
+
+                return Ok();
+            }
+            catch (Exception exception)
+            {
+                return BadRequest();
+            }
         }
 
         // PUT api/values/5

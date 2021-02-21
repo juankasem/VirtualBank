@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Data
 {

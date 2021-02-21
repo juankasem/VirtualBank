@@ -3,18 +3,18 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
-    public class CashTransaction : BaseData
+    public class CashTransaction : BaseClass
     {
         [Required]
         public CashTransactionType Type { get; set; }
 
         [Required]
-        public BankAsset From { get; set; }
+        public string From { get; set; }
 
         [Required]
-        public BankAsset To { get; set; }
+        public string To { get; set; }
 
         [Required]
         [Column(TypeName="decimal(8,2)")]

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using VirtualBank.Core.Enums;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
 {

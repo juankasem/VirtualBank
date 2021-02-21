@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CustomerApiResponses;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 using VirtualBank.Data;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860

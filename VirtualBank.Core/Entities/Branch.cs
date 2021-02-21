@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
-    public class Branch : BaseData
+    public class Branch : BaseClass
     {
         [Required]
         public string Name { get; set; }

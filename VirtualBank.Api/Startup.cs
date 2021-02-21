@@ -18,7 +18,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using VirtualBank.Api.Factories;
-using VirtualBank.Core.Models;
+using VirtualBank.Api.Services;
+using VirtualBank.Core.Entities;
+using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
 
 namespace VirtualBank.Api
@@ -60,6 +62,9 @@ namespace VirtualBank.Api
             services.AddOpenAPI();
 
             services.AddControllers();
+
+            services.AddScoped<IAccountsService, AccountService>();
+            services.AddScoped<ICashTransactionsService, CashTransactionsSrvice>
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

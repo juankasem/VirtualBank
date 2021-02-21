@@ -1,7 +1,7 @@
 ﻿using System;
 namespace VirtualBank.Core.Interfaces
 {
-    public interface ICashTransactionsService
+    public interface ICreditCardInterface
     {
     }
 }

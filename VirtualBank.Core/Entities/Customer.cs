@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
-    public class Customer : BaseData
+    public class Customer : BaseClass
     {
         [Required]
         [MinLength(8)]
@@ -44,7 +44,7 @@ namespace VirtualBank.Core.Models
         public Address Address { get; set; }
 
         [ForeignKey(nameof(User))]
-        [MaxLength(50)]
+        [MaxLength(450)]
         public string UserId { get; set; }
 
         public AppUser User { get; set; }

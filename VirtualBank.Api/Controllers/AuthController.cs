@@ -7,14 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using VirtualBank.Api.Helpers;
 using VirtualBank.Core.ApiModels;
 using VirtualBank.Core.ApiRequestModels;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 

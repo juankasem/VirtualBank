@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 using VirtualBank.Data;
 
 namespace VirtualBank.Api.Factories

@@ -2,9 +2,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
-    public class CreditCard : BaseData
+    public class CreditCard : BaseClass
     {
         [Required]
         public string Number { get; set; }

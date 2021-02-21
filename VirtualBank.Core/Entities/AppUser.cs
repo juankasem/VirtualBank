@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using VirtualBank.Core.Enums;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
     public class AppUser : IdentityUser
     {

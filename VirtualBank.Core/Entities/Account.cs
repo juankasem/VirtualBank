@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
-    public class Account : BaseData
+    public class Account : BaseClass
     {
         [Required]
         [MaxLength(50)]
@@ -21,8 +21,8 @@ namespace VirtualBank.Core.Models
 
         [ForeignKey("Owner")]
         [Required]
-        public string OwnerId { get; set; }
-        public AppUser Owner { get; set; }
+        public string CustomerId { get; set; }
+        public Customer Owner { get; set; }
 
         [ForeignKey("Branch")]
         [Required]

@@ -10,7 +10,7 @@ using VirtualBank.Api.Helpers;
 using VirtualBank.Core.ApiRequestModels;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 

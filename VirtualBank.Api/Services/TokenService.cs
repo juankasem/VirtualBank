@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Api.Services
 {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using VirtualBank.Api.Services;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Api.Factories
 {

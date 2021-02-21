@@ -1,6 +1,6 @@
 ﻿using System;
 using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Core.ApiRequestModels.BranchApiRequests
 {

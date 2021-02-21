@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace VirtualBank.Core.Models
+namespace VirtualBank.Core.Entities
 {
-    public class Currency : BaseData
+    public class Currency : BaseClass
     {
         [Required]
         [MaxLength(3)]
