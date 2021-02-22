@@ -7,12 +7,14 @@ using VirtualBank.Core.ApiResponseModels.CustomerApiResponses;
 
 namespace VirtualBank.Core.Interfaces
 {
-    public interface ICustomersService
+    public interface ICustomerService
     {
-        Task<ApiResponse<CustomerResponse>> GetCustomerByAccountNo(string accountNo, CancellationToken cancellationToken);
+        Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(string customerId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> CreateCustomer(CreateCustomerRequest request, CancellationToken cancellationToken);
+        Task<ApiResponse<CustomerResponse>> GetCustomerByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> DeactivateCustomer(string customerId);
+        Task<ApiResponse> CreateOrUpdateCustomerAsync(string customerId, CreateCustomerRequest request, CancellationToken cancellationToken = default);
+
+        Task<ApiResponse> DeactivateCustomerAsync(string customerId, CancellationToken cancellationToken = default);
     }
 }

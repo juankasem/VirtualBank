@@ -15,7 +15,7 @@ using VirtualBank.Data;
 
 namespace VirtualBank.Api.Services
 {
-    public class AccountService : IAccountsService
+    public class AccountService : IAccountService
     {
         private readonly VirtualBankDbContext _dbContext;
         private readonly UserManager<AppUser> _userManager;
@@ -26,7 +26,7 @@ namespace VirtualBank.Api.Services
             _userManager = userManager;
         }
 
-        public async Task<ApiResponse<AccountsResponse>> GetAccountsByCustomerId(string customerId, CancellationToken cancellationToken)
+        public async Task<ApiResponse<AccountsResponse>> GetAccountsByCustomerIdAsync(string customerId, CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse<AccountsResponse>();
 
@@ -45,7 +45,7 @@ namespace VirtualBank.Api.Services
  
         }
 
-        public async Task<ApiResponse<AccountResponse>> GetAccountByAccountNo(string accountNo, CancellationToken cancellationToken)
+        public async Task<ApiResponse<AccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse<AccountResponse>();
 
@@ -62,7 +62,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> CreateOrUpdateAccount(string accountNo, CreateAccountRequest request, CancellationToken cancellationToken)
+        public async Task<ApiResponse> CreateOrUpdateAccountAsync(string accountNo, CreateAccountRequest request, CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
 
@@ -72,7 +72,7 @@ namespace VirtualBank.Api.Services
             {
                 account.IBAN = request.Account.IBAN;
                 account.Type = request.Account.Type;
-                account.ModifieddBy = request.Account.Owner.User;
+                account.ModifiedBy = request.Account.Owner.User;
             }
             else
             {
@@ -92,9 +92,21 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public Task<ApiResponse> DeactivateAccount(string accountId, CancellationToken cancellationToken)
+        public async Task<ApiResponse> DeactivateAccountAsync(string accountId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var responseModel = new ApiResponse<AccountResponse>();
+
+            var account = await _dbContext.Accounts.Where(a => a.Id == accountId).FirstOrDefaultAsync();
+
+            if (account == null)
+            {
+                responseModel.AddError($"Account Not found");
+                return responseModel;
+            }
+
+            responseModel.Data = new AccountResponse(account);
+
+            return responseModel;
         }
 
 
@@ -120,6 +132,5 @@ namespace VirtualBank.Api.Services
 
             return null;
         }
-
     }
 }

@@ -30,24 +30,13 @@ namespace VirtualBank.Api.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task<ActionResult<ApiResponse>> CreateCustomer([FromBody] CreateCustomerRequest request)
+        public async Task<ActionResult<ApiResponse>> CreateCustomerAsync([FromBody] CreateCustomerRequest request)
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var customer = new Customer()
-            {
-                IdentificationNo = request.IdentificationNo,
-                IdentificationType = request.IdentificationType,
-                FirstName = request.FirstName,
-                MiddleName = request.MiddleName,
-                LastName = request.LastName,
-                FatherName = request.FatherName,
-                Gender = request.Gender,
-                Nationality = request.Nationality,
-                BirthDate = request.BirthDate,
-                Address = request.Address,
-                User = user
-            };
+
+
+           
 
             await _dbContext.Customers.AddAsync(customer);
             await _dbContext.SaveChangesAsync();

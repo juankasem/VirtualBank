@@ -19,18 +19,18 @@ namespace VirtualBank.Api.Services
     {
         private readonly VirtualBankDbContext _dbContext;
         private readonly UserManager<AppUser> _userManager;
-        private readonly ICustomersService _customersService;
-        private readonly IAccountsService _accountsService;
+        private readonly ICustomerService _customerService;
+        private readonly IAccountService _accountService;
 
         public CashTransactionsService(VirtualBankDbContext dbContext,
                                      UserManager<AppUser> userManager,
-                                     ICustomersService customersService,
-                                     IAccountsService accountsService)
+                                     ICustomerService customersService,
+                                     IAccountService accountsService)
         {
             _dbContext = dbContext;
             _userManager = userManager;
-            _customersService = customersService;
-            _accountsService = accountsService;
+            _customerService = customersService;
+            _accountService = accountsService;
         }
 
         /// <summary>
@@ -39,13 +39,13 @@ namespace VirtualBank.Api.Services
         /// <param name="accountNo"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByAccountNo(string accountNo, int lastDays, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByAccountNoAsync(string accountNo, int lastDays, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionsResponse>();
-            var accountHolder = await _customersService.GetCustomerByAccountNo(accountNo, cancellationToken);
 
             var cashTransactionsList = await _dbContext.CashTransactions.Where(c => (c.From == accountNo || c.To == accountNo)
-                                                                               && DateTime.UtcNow.Subtract(c.CreatedOn).TotalDays <= lastDays).ToListAsync();
+                                                                               && DateTime.UtcNow.Subtract(c.CreatedOn).TotalDays <= lastDays)
+                                                                                 .AsNoTracking().ToListAsync();
 
             if(cashTransactionsList.Count() == 0) {
                 return responseModel;
@@ -57,7 +57,7 @@ namespace VirtualBank.Api.Services
             {
                 if (cashTransaction.From != accountNo && cashTransaction.Type == CashTransactionType.Transfer)
                 {
-                    var senderAccount = await _customersService.GetCustomerByAccountNo(cashTransaction.From, cancellationToken);
+                    var senderAccount = await _customerService.GetCustomerByAccountNoAsync(cashTransaction.From, cancellationToken);
                     var sender = senderAccount?.Data?.Customer.FirstName + " " + senderAccount?.Data?.Customer.LastName;
 
                     cashTransactions.Add(new CashTransactionResponse(cashTransaction, sender, accountNo));
@@ -65,7 +65,7 @@ namespace VirtualBank.Api.Services
 
                 else if(cashTransaction.To != accountNo && cashTransaction.Type == CashTransactionType.Transfer)
                 {
-                    var recipientAccount = await _customersService.GetCustomerByAccountNo(cashTransaction.To, cancellationToken);
+                    var recipientAccount = await _customerService.GetCustomerByAccountNoAsync(cashTransaction.To, cancellationToken);
                     var recipient = recipientAccount?.Data?.Customer.FirstName + " " + recipientAccount?.Data?.Customer.LastName;
 
                     cashTransactions.Add(new CashTransactionResponse(cashTransaction, accountNo, recipient));
@@ -83,7 +83,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByCustomerNo(string customerNo, int lastDays, CancellationToken cancellationToken = default)
+        public Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByCustomerNoAsync(string customerNo, int lastDays, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -94,9 +94,10 @@ namespace VirtualBank.Api.Services
         /// <param name="accountNo"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> CreateCashTransaction(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> AddCashTransactionAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
+
 
             using var dbContextTransaction = _dbContext.Database.BeginTransaction();
 
@@ -105,7 +106,7 @@ namespace VirtualBank.Api.Services
                 case CashTransactionType.Deposit:
                     try
                     {
-                        var toAccountResponse = await _accountsService.GetAccountByAccountNo(request.CashTransaction.To, cancellationToken);
+                        var toAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
 
                         if (toAccountResponse?.Data == null)
                         {
@@ -140,7 +141,7 @@ namespace VirtualBank.Api.Services
                 case CashTransactionType.Withdrawal:
                     try
                     {
-                        var fromAccountResponse = await _accountsService.GetAccountByAccountNo(request.CashTransaction.From, cancellationToken);
+                        var fromAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
 
                         if (fromAccountResponse?.Data == null)
                         {
@@ -181,8 +182,8 @@ namespace VirtualBank.Api.Services
 
                 case CashTransactionType.Transfer:
 
-                    var senderAccountResponse = await _accountsService.GetAccountByAccountNo(request.CashTransaction.From, cancellationToken);
-                    var recipientAccountResponse = await _accountsService.GetAccountByAccountNo(request.CashTransaction.To, cancellationToken);
+                    var senderAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
+                    var recipientAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
 
 
                     if (senderAccountResponse?.Data == null)
@@ -237,7 +238,7 @@ namespace VirtualBank.Api.Services
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        public async Task<ApiResponse> DeleteCashTransaction(string cashTransactionId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> DeleteCashTransactionAsync(string cashTransactionId, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

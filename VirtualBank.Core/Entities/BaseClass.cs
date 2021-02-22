@@ -16,9 +16,9 @@ namespace VirtualBank.Core.Entities
         [Required]
         public AppUser CreatedBy { get; set; }
 
-        public DateTime ModifiedOn { get; set; } 
+        public DateTime? ModifiedOn { get; set; } 
 
-        public AppUser ModifieddBy { get; set; }
+        public AppUser ModifiedBy { get; set; }
 
         public bool Disabled { get; set; } = false;
 

@@ -63,8 +63,9 @@ namespace VirtualBank.Api
 
             services.AddControllers();
 
-            services.AddScoped<IAccountsService, AccountService>();
-            services.AddScoped<ICashTransactionsService, CashTransactionsSrvice>
+            services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICashTransactionsService, CashTransactionsService>();
+            services.AddScoped<IAccountsService>
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
