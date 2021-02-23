@@ -28,7 +28,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
-            var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
 
             if (customer != null)
             {
@@ -46,7 +46,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
-            var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo);
+            var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo && a.Disabled == false);
 
             if(account != null)
             {
@@ -54,7 +54,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-             var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == account.CustomerId);
+             var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == account.CustomerId && c.Disabled == false);
 
             if (customer != null)
             {
@@ -73,7 +73,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse();
 
-            var customer = await _dbContext.Customers.FirstOrDefaultAsync(a => a.Id == customerId);
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
             var existingCustomer = request.Customer;
 
             try
@@ -114,9 +114,46 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+        public async Task<ApiResponse> ActivateCustomerAsync(string customerId, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse();
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync(a => a.Id == customerId);
+
+            try
+            {
+                if (customer != null)
+                {
+                    customer.Disabled = false;
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                responseModel.AddError("customer not found");
+            }
+
+            return responseModel;
+        }
+
         public async Task<ApiResponse> DeactivateCustomerAsync(string customerId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var responseModel = new ApiResponse();
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync(a => a.Id == customerId);
+
+            try
+            {
+                if (customer != null)
+                {
+                    customer.Disabled = true;
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                responseModel.AddError("customer not found");
+            }
+
+            return responseModel;
         }
 
 
@@ -147,6 +184,8 @@ namespace VirtualBank.Api.Services
 
             return null;     
         }
+
+        
 
         #endregion
     }

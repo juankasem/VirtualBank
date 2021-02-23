@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
@@ -20,17 +21,20 @@ namespace VirtualBank.Api.Services
         private readonly VirtualBankDbContext _dbContext;
         private readonly UserManager<AppUser> _userManager;
         private readonly ICustomerService _customerService;
-        private readonly IAccountService _accountService;
+        private readonly IBankAccountService _bankAccountService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CashTransactionsService(VirtualBankDbContext dbContext,
                                      UserManager<AppUser> userManager,
                                      ICustomerService customersService,
-                                     IAccountService accountsService)
+                                     IBankAccountService accountsService,
+                                     IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _customerService = customersService;
-            _accountService = accountsService;
+            _bankAccountService = accountsService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>
@@ -83,11 +87,6 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByCustomerNoAsync(string customerNo, int lastDays, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Create a cash transaction in db
         /// </summary>
@@ -97,16 +96,16 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse> AddCashTransactionAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
+            var user = _httpContextAccessor.HttpContext.User;
 
-
-            using var dbContextTransaction = _dbContext.Database.BeginTransaction();
+            await using var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
             switch (request.CashTransaction.Type)
             {
                 case CashTransactionType.Deposit:
                     try
                     {
-                        var toAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
+                        var toAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
 
                         if (toAccountResponse?.Data == null)
                         {
@@ -120,6 +119,7 @@ namespace VirtualBank.Api.Services
                         await _dbContext.SaveChangesAsync();
 
                         var cashTransaction = InstantiateCashTransaction(request);
+                        cashTransaction.CreatedBy = await _userManager.GetUserAsync(user);
 
                         await _dbContext.CashTransactions.AddAsync(cashTransaction);
                         await _dbContext.SaveChangesAsync();
@@ -141,7 +141,7 @@ namespace VirtualBank.Api.Services
                 case CashTransactionType.Withdrawal:
                     try
                     {
-                        var fromAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
+                        var fromAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
 
                         if (fromAccountResponse?.Data == null)
                         {
@@ -157,11 +157,13 @@ namespace VirtualBank.Api.Services
                             await _dbContext.SaveChangesAsync();
 
                             var cashTransaction = InstantiateCashTransaction(request);
+                            cashTransaction.CreatedBy = await _userManager.GetUserAsync(user);
+                            
 
                             await _dbContext.CashTransactions.AddAsync(cashTransaction);
                             await _dbContext.SaveChangesAsync();
 
-                            dbContextTransaction.Commit();
+                            await dbContextTransaction.CommitAsync();
 
                             return responseModel;
                         }
@@ -174,7 +176,7 @@ namespace VirtualBank.Api.Services
 
                     catch (Exception ex)
                     {
-                        dbContextTransaction.Rollback();
+                       await dbContextTransaction.RollbackAsync();
                         responseModel.AddError(ex.ToString());
 
                         return responseModel;
@@ -182,8 +184,8 @@ namespace VirtualBank.Api.Services
 
                 case CashTransactionType.Transfer:
 
-                    var senderAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
-                    var recipientAccountResponse = await _accountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
+                    var senderAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
+                    var recipientAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
 
 
                     if (senderAccountResponse?.Data == null)
@@ -211,6 +213,7 @@ namespace VirtualBank.Api.Services
                         await _dbContext.SaveChangesAsync();
 
                         var cashTransaction = InstantiateCashTransaction(request);
+                        cashTransaction.CreatedBy = await _userManager.GetUserAsync(user);
 
                         await _dbContext.CashTransactions.AddAsync(cashTransaction);
                         await _dbContext.SaveChangesAsync();

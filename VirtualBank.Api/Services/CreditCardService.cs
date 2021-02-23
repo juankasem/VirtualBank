@@ -3,9 +3,9 @@ using VirtualBank.Core.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
-    public class BranchService : IBranchService
+    public class CreditCardService : ICreditCardService
     {
-        public BranchService()
+        public CreditCardService()
         {
         }
     }

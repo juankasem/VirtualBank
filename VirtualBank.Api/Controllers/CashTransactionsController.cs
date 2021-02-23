@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
+using VirtualBank.Core.ApiResponseModels;
+using VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
@@ -33,16 +36,23 @@ namespace VirtualBank.Api.Controllers
         }
 
         // GET api/values/5
-        [HttpGet("get/{id}")]
-        [Produces("application/json")]
+        [HttpGet("getByAccountNo/{id}")]
+        [ProducesResponseType(typeof(CashTransactionsResponse), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int) HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCashTransactionsByAccountNoAsync([FromRoute] string accountNo, [FromQuery] int lastDays,
                                                                              CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
             var customer = GetCustomerAsync(accountNo);
 
+            if (customer == null)
+            {
+                return NotFound();
+            }
 
-            if ( customer ==  null || user.Id != customer?.Id)
+            if (user.Id != customer?.Id)
             {
                 return Unauthorized();
             }
@@ -59,8 +69,11 @@ namespace VirtualBank.Api.Controllers
         }
 
         // POST api/values
-        [HttpPost]
-        [Route("post")]
+        [HttpPost("post")]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> PostCashTransactionAsync([FromBody] CreateCashTransactionRequest request,
                                                                   CancellationToken cancellationToken = default)
         {
