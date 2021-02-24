@@ -31,7 +31,7 @@ namespace VirtualBank.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ApiResponse<AccountsResponse>> GetAccountsByCustomerIdAsync(string customerId, CancellationToken cancellationToken)
+        public async Task<ApiResponse<AccountsResponse>> GetAccountsByCustomerIdAsync(string customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<AccountsResponse>();
 
@@ -50,7 +50,7 @@ namespace VirtualBank.Api.Services
  
         }
 
-        public async Task<ApiResponse<AccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken)
+        public async Task<ApiResponse<AccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<AccountResponse>();
 
@@ -67,7 +67,8 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> CreateOrUpdateAccountAsync(string accountNo, CreateAccountRequest request, CancellationToken cancellationToken)
+        public async Task<ApiResponse> CreateOrUpdateAccountAsync(string accountNo,
+                                                                  CreateAccountRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;
@@ -102,7 +103,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> ActivateAccountAsync(string accountId, CancellationToken cancellationToken)
+        public async Task<ApiResponse> ActivateAccountAsync(string accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<AccountResponse>();
 
@@ -121,7 +122,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> DeactivateAccountAsync(string accountId, CancellationToken cancellationToken)
+        public async Task<ApiResponse> DeactivateAccountAsync(string accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<AccountResponse>();
 

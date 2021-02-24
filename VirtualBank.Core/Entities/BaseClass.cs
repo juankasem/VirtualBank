@@ -14,17 +14,17 @@ namespace VirtualBank.Core.Entities
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
         [Required]
-        public AppUser CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
 
         public DateTime? ModifiedOn { get; set; } 
 
-        public AppUser ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
 
         public bool Disabled { get; set; } = false;
 
         public DateTime? DisabledOn { get; set; } = null;
 
-        public AppUser DisabledBy { get; set; } = null;
+        public string DisabledBy { get; set; } = null;
 
     }
 }

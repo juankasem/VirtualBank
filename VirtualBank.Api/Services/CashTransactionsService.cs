@@ -64,7 +64,7 @@ namespace VirtualBank.Api.Services
                     var senderAccount = await _customerService.GetCustomerByAccountNoAsync(cashTransaction.From, cancellationToken);
                     var sender = senderAccount?.Data?.Customer.FirstName + " " + senderAccount?.Data?.Customer.LastName;
 
-                    cashTransactions.Add(new CashTransactionResponse(cashTransaction, sender, accountNo));
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, sender, accountNo));
                 }
 
                 else if(cashTransaction.To != accountNo && cashTransaction.Type == CashTransactionType.Transfer)
@@ -72,12 +72,12 @@ namespace VirtualBank.Api.Services
                     var recipientAccount = await _customerService.GetCustomerByAccountNoAsync(cashTransaction.To, cancellationToken);
                     var recipient = recipientAccount?.Data?.Customer.FirstName + " " + recipientAccount?.Data?.Customer.LastName;
 
-                    cashTransactions.Add(new CashTransactionResponse(cashTransaction, accountNo, recipient));
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, accountNo, recipient));
                 }
 
                 else if (cashTransaction.Type == CashTransactionType.Deposit || cashTransaction.Type == CashTransactionType.Withdrawal)
                 {
-                    cashTransactions.Add(new CashTransactionResponse(cashTransaction, cashTransaction.From, cashTransaction.To));
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, cashTransaction.To));
                 }
             }
 
@@ -119,7 +119,7 @@ namespace VirtualBank.Api.Services
                         await _dbContext.SaveChangesAsync();
 
                         var cashTransaction = InstantiateCashTransaction(request);
-                        cashTransaction.CreatedBy = await _userManager.GetUserAsync(user);
+                        cashTransaction.CreatedBy = user.Identity.Name;
 
                         await _dbContext.CashTransactions.AddAsync(cashTransaction);
                         await _dbContext.SaveChangesAsync();
@@ -148,7 +148,7 @@ namespace VirtualBank.Api.Services
                             responseModel.AddError(fromAccountResponse.Errors[0]);
                             return responseModel;
                         }
-
+                   
                         var fromAccount = fromAccountResponse.Data.Account;
 
                         if (request.CashTransaction.Amount <= fromAccount.Balance)
@@ -157,7 +157,7 @@ namespace VirtualBank.Api.Services
                             await _dbContext.SaveChangesAsync();
 
                             var cashTransaction = InstantiateCashTransaction(request);
-                            cashTransaction.CreatedBy = await _userManager.GetUserAsync(user);
+                            cashTransaction.CreatedBy = user.Identity.Name;
                             
 
                             await _dbContext.CashTransactions.AddAsync(cashTransaction);
@@ -184,49 +184,63 @@ namespace VirtualBank.Api.Services
 
                 case CashTransactionType.Transfer:
 
-                    var senderAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
-                    var recipientAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
-
-
-                    if (senderAccountResponse?.Data == null)
+                    try
                     {
-                        responseModel.AddError(senderAccountResponse.Errors[0]);
+                        var senderAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.From, cancellationToken);
+                        var recipientAccountResponse = await _bankAccountService.GetAccountByAccountNoAsync(request.CashTransaction.To, cancellationToken);
+
+
+                        if (senderAccountResponse?.Data == null)
+                        {
+                            responseModel.AddError(senderAccountResponse.Errors[0]);
+                            return responseModel;
+                        }
+
+                        if (recipientAccountResponse?.Data == null)
+                        {
+                            responseModel.AddError(recipientAccountResponse.Errors[0]);
+                            return responseModel;
+                        }
+
+                        var senderAccount = senderAccountResponse.Data.Account;
+                        var recipientAccount = recipientAccountResponse.Data.Account;
+
+
+                        if (request.CashTransaction.Amount <= senderAccount.Balance)
+                        {
+                            const double FeesRate = 0.0015;
+                            var fees = (double)request.CashTransaction.Amount * FeesRate;
+
+                            senderAccount.Balance = (decimal)((double)senderAccount.Balance - ((double)request.CashTransaction.Amount + fees));
+                            await _dbContext.SaveChangesAsync();
+
+                            recipientAccount.Balance += request.CashTransaction.Amount;
+                            await _dbContext.SaveChangesAsync();
+
+                            var cashTransaction = InstantiateCashTransaction(request);
+                            cashTransaction.CreatedBy = user.Identity.Name;
+
+                            await _dbContext.CashTransactions.AddAsync(cashTransaction);
+                            await _dbContext.SaveChangesAsync();
+
+                            dbContextTransaction.Commit();
+
+                            return responseModel;
+                        }
+                        else
+                        {
+                            responseModel.AddError("No enough balance to complete transfer");
+                            return responseModel;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        await dbContextTransaction.RollbackAsync();
+                        responseModel.AddError(ex.ToString());
+
                         return responseModel;
                     }
-
-                    if (recipientAccountResponse?.Data == null)
-                    {
-                        responseModel.AddError(recipientAccountResponse.Errors[0]);
-                        return responseModel;
-                    }
-
-                    var senderAccount = senderAccountResponse.Data.Account;
-                    var recipientAccount = recipientAccountResponse.Data.Account;
-
-
-                    if (request.CashTransaction.Amount <= senderAccount.Balance)
-                    {
-                        senderAccount.Balance -= request.CashTransaction.Amount;
-                        await _dbContext.SaveChangesAsync();
-
-                        recipientAccount.Balance += request.CashTransaction.Amount;
-                        await _dbContext.SaveChangesAsync();
-
-                        var cashTransaction = InstantiateCashTransaction(request);
-                        cashTransaction.CreatedBy = await _userManager.GetUserAsync(user);
-
-                        await _dbContext.CashTransactions.AddAsync(cashTransaction);
-                        await _dbContext.SaveChangesAsync();
-
-                        dbContextTransaction.Commit();
-
-                        return responseModel;
-                    }
-                    else
-                    {
-                        responseModel.AddError("No enough balance to complete transfer");
-                        return responseModel;
-                    }
+               
 
                 default:
                     return responseModel;
@@ -246,6 +260,16 @@ namespace VirtualBank.Api.Services
             throw new NotImplementedException();
         }
 
+        private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string sender, string recipient)
+        {
+            return new CashTransactionResponse(cashTransaction.From,
+                                               cashTransaction.To,
+                                               sender,
+                                               recipient,
+                                               cashTransaction.Amount,
+                                               cashTransaction.CreatedOn,
+                                               cashTransaction.CreatedBy);
+        }
 
         private CashTransaction InstantiateCashTransaction(CreateCashTransactionRequest request)
         {

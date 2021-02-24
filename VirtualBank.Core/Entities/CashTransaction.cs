@@ -20,6 +20,9 @@ namespace VirtualBank.Core.Entities
         [Column(TypeName="decimal(8,2)")]
         public decimal Amount { get; set; }
 
+        [Required]
+        public double Fees { get; set; }
+
         public string Description { get; set; }
 
         [Required]

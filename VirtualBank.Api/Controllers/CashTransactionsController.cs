@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
@@ -59,12 +61,21 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-               return Ok(await _cashTransactionsService.GetCashTransactionsByAccountNoAsync(accountNo, lastDays, cancellationToken));
-                
+                var apiResponse = await _cashTransactionsService.GetCashTransactionsByAccountNoAsync(accountNo, lastDays, cancellationToken);
+
+                if(apiResponse.Success)
+                  return Ok(apiResponse);
+
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                return BadRequest();
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
         }
 
@@ -79,16 +90,27 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                await _cashTransactionsService.AddCashTransactionAsync(request, cancellationToken);
+               var apiResponse =  await _cashTransactionsService.AddCashTransactionAsync(request, cancellationToken);
 
-                return Ok();
+                if (apiResponse.Success)
+                return Ok(apiResponse);
+
+                
+                else if (apiResponse.Errors[0].Contains("not found"))
+                     return BadRequest(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+
             }
             catch (Exception exception)
             {
-                return BadRequest();
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
         }
-
+        
         // PUT api/values/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
