@@ -13,7 +13,7 @@ namespace VirtualBank.Data
 
         }
 
-        public DbSet<Account> Accounts { get; set; }
+        public DbSet<BankAccount> BankAccounts { get; set; }
         public DbSet<Branch>  Branches { get; set; }
         public DbSet<CashTransaction> CashTransactions { get; set; }
         public DbSet<CreditCard> CreditCards { get; set; }

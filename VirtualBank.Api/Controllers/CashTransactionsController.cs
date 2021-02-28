@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses;
+using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
@@ -19,7 +20,6 @@ using VirtualBank.Core.Interfaces;
 
 namespace VirtualBank.Api.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Customer")]
     public class CashTransactionsController : ControllerBase
@@ -38,7 +38,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // GET api/values/5
-        [HttpGet("getByAccountNo/{id}")]
+        [HttpGet(ApiRoutes.getCashTransactionsByAccountNo)]
         [ProducesResponseType(typeof(CashTransactionsResponse), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -80,7 +80,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // POST api/values
-        [HttpPost("post")]
+        [HttpPost(ApiRoutes.postCashTransaction)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -96,7 +96,7 @@ namespace VirtualBank.Api.Controllers
                 return Ok(apiResponse);
 
                 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Contains("not found") || apiResponse.Errors[0].Contains("not enough balance"))
                      return BadRequest(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
@@ -111,17 +111,6 @@ namespace VirtualBank.Api.Controllers
             }
         }
         
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
 
         [NonAction]
         private async Task<Customer> GetCustomerAsync(string accountNo)

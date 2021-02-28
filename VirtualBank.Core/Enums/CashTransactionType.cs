@@ -5,6 +5,7 @@ namespace VirtualBank.Core.Enums
     {
         Deposit =1 ,
         Withdrawal = 2,
-        Transfer = 3
+        Transfer = 3,
+        CommissionFees = 4
     }
 }

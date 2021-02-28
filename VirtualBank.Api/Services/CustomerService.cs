@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
@@ -17,11 +18,15 @@ namespace VirtualBank.Api.Services
     {
         private readonly VirtualBankDbContext _dbContext;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CustomerService(VirtualBankDbContext dbContext, UserManager<AppUser> userManager)
+        public CustomerService(VirtualBankDbContext dbContext,
+                               UserManager<AppUser> userManager,
+                               IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(string customerId, CancellationToken cancellationToken = default)
@@ -46,7 +51,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
-            var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo && a.Disabled == false);
+            var account = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo && a.Disabled == false);
 
             if(account != null)
             {
@@ -72,6 +77,7 @@ namespace VirtualBank.Api.Services
                                                                    CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
+            var user = _httpContextAccessor.HttpContext.User;
 
             var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
             var existingCustomer = request.Customer;
@@ -90,6 +96,7 @@ namespace VirtualBank.Api.Services
                     customer.Address = existingCustomer.Address;
                     customer.BirthDate = existingCustomer.BirthDate;
                     customer.ModifiedOn = DateTime.UtcNow;
+                    customer.ModifiedBy = user.Identity.Name;
                 }
                 else
                 {
@@ -100,6 +107,8 @@ namespace VirtualBank.Api.Services
                         responseModel.AddError("couldn't create new account");
                         return responseModel;
                     }
+
+                    newCustomer.CreatedBy = user.Identity.Name;
 
                     await _dbContext.Customers.AddAsync(newCustomer);
                 }

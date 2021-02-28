@@ -15,7 +15,6 @@ namespace VirtualBank.Core.ApiResponseModels
                 Errors = new List<string>();
 
             Errors.Add(error);
-
         }
 
         public void AddErrors(List<string> errors)

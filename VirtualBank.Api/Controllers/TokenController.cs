@@ -11,12 +11,12 @@ using VirtualBank.Core.ApiRequestModels;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Entities;
+using VirtualBank.Core.ApiRoutes;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace VirtualBank.Api.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class TokenController : ControllerBase
     {
@@ -34,7 +34,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost, Route("refresh")]
+        [HttpPost(ApiRoutes.refresh)]
         public async Task<ActionResult<ApiResponse<TokenResponse>>> Refresh(TokenRequest tokenRequest)
         {
             var principal = _tokenService.GetClaimsFromExpiredToken(tokenRequest.AccessToken);
@@ -75,7 +75,7 @@ namespace VirtualBank.Api.Controllers
         /// delete the current refresh token of current user
         /// </summary>
         /// <returns></returns>
-        [HttpPost, Route("revoke")]
+        [HttpPost(ApiRoutes.revoke)]
         [Authorize]
         public async Task<ApiResponse> Revoke()
         {

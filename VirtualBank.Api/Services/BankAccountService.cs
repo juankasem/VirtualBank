@@ -19,83 +19,139 @@ namespace VirtualBank.Api.Services
     public class BankAccountService : IBankAccountService
     {
         private readonly VirtualBankDbContext _dbContext;
+        private readonly ICashTransactionsService _cashTransactionsService;
         private readonly UserManager<AppUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public BankAccountService(VirtualBankDbContext dbContext,
+                                  ICashTransactionsService cashTransactionsService,
                                   UserManager<AppUser> userManager,
                                   IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
+            _cashTransactionsService = cashTransactionsService;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ApiResponse<AccountsResponse>> GetAccountsByCustomerIdAsync(string customerId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BankAccountsResponse>> GetAccountsByCustomerIdAsync(string customerId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<AccountsResponse>();
+            var responseModel = new ApiResponse<BankAccountsResponse>();
 
-            var accountsList = await _dbContext.Accounts.Where(a => a.CustomerId == customerId && a.Disabled == false).ToListAsync();
+            var bankAccountsList = await _dbContext.BankAccounts.Where(a => a.CustomerId == customerId && a.Disabled == false).ToListAsync();
 
-            var accounts = new ImmutableArray<Account>();
+            var bankAccounts = new ImmutableArray<BankAccountResponse>();
 
-            foreach (var account in accountsList)
+            foreach (var bankAccount in bankAccountsList)
             {
-                accounts.Add(account);
+                var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
+                var branchName = bankAccount.Branch.Name;
+                var lastTransaction = await GetLastCashTransaction(bankAccount);
+
+                bankAccounts.Add(CreateBankAccountResponse(bankAccount, accountOwner, branchName, lastTransaction.CreatedOn));
             }
 
-            responseModel.Data = new AccountsResponse(accounts);
+            responseModel.Data = new BankAccountsResponse(bankAccounts);
 
             return responseModel;
  
         }
 
-        public async Task<ApiResponse<AccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BankAccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<AccountResponse>();
+            var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo && a.Disabled == false);
+            var bankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo && a.Disabled == false);
 
-            if (account == null)
+            if (bankAccount == null)
             {
-                responseModel.AddError($"Account No: {accountNo} Not found");
+                responseModel.AddError($"bank account No: {accountNo} Not found");
                 return responseModel;
             }
 
-            responseModel.Data = new AccountResponse(account);
+            var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
+            var branchName = bankAccount.Branch.Name;
+            var lastTransaction = await GetLastCashTransaction(bankAccount);
+
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, branchName, lastTransaction.CreatedOn);
 
             return responseModel;
         }
 
-        public async Task<ApiResponse> CreateOrUpdateAccountAsync(string accountNo,
-                                                                  CreateAccountRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BankAccountResponse>> GetAccountByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<BankAccountResponse>();
+
+            var bankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.IBAN == iban && a.Disabled == false);
+
+            if (bankAccount == null)
+            {
+                responseModel.AddError($"IBAN: {iban} Not found");
+                return responseModel;
+            }
+
+            var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
+            var branchName = bankAccount.Branch.Name;
+            var lastTransaction = await _dbContext.CashTransactions.Where(c => c.From == bankAccount.AccountNo || c.To == bankAccount.AccountNo)
+                                                                   .OrderByDescending(c => c.CreatedOn).FirstOrDefaultAsync();
+
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, branchName, lastTransaction.CreatedOn);
+
+            return responseModel;
+        }
+
+
+        public async Task<ApiResponse<RecipientBankAccountResponse>> GetRecipientAccountByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<RecipientBankAccountResponse>();
+
+            var bankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.IBAN == iban && a.Disabled == false);
+
+            if (bankAccount == null)
+            {
+                responseModel.AddError($"IBAN: {iban} Not found");
+                return responseModel;
+            }
+
+            var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
+            var branchName = bankAccount.Branch.Name;
+
+
+            responseModel.Data = CreateRecipientBankAccountResponse(bankAccount, accountOwner, branchName);
+
+            return responseModel;
+        }
+
+
+        public async Task<ApiResponse> CreateOrUpdateBankAccountAsync(string accountNo, CreateBankAccountRequest request,
+                                                                      CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;
-            var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo);
+            var bankaccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo);
 
-            if (account != null)
+            if (bankaccount != null)
             {
-                account.IBAN = request.Account.IBAN;
-                account.Currency = request.Account.Currency;
-                account.Balance = request.Account.Balance;
-                account.Type = request.Account.Type;
-                account.ModifiedBy = await _userManager.GetUserAsync(user);
-                account.ModifiedOn = DateTime.UtcNow;
+                bankaccount.IBAN = request.Account.IBAN;
+                bankaccount.Currency = request.Account.Currency;
+                bankaccount.Balance = request.Account.Balance;
+                bankaccount.Type = request.Account.Type;
+                bankaccount.ModifiedBy = user.Identity.Name;
+                bankaccount.ModifiedOn = DateTime.UtcNow;
             }
             else
             {
-                var newAccount = CreateAccount(request);
+                var newBankAccount = CreateBankAccount(request);
 
-                if (newAccount == null)
+                if (newBankAccount == null)
                 {
-                    responseModel.AddError("couldn't create new account");
+                    responseModel.AddError("couldn't create new bankaccount");
                     return responseModel;
                 }
 
-                newAccount.CreatedBy = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+                newBankAccount.CreatedBy = user.Identity.Name;
 
-                await _dbContext.Accounts.AddAsync(newAccount);
+                await _dbContext.BankAccounts.AddAsync(newBankAccount);
             }
 
             await _dbContext.SaveChangesAsync();
@@ -103,38 +159,38 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> ActivateAccountAsync(string accountId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> ActivateBankAccountAsync(string accountId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<AccountResponse>();
+            var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
+            var bankaccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountId);
 
-            if (account != null)
+            if (bankaccount != null)
             {
-                account.Disabled = false;
+                bankaccount.Disabled = false;
             }
             else
             {
-                responseModel.AddError($"Account Not found");
+                responseModel.AddError($"bank account Not found");
 
             }
 
             return responseModel;
         }
 
-        public async Task<ApiResponse> DeactivateAccountAsync(string accountId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> DeactivateBankAccountAsync(string accountId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<AccountResponse>();
+            var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
+            var bankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountId);
 
-            if (account != null)
+            if (bankAccount != null)
             {
-                account.Disabled = true;
+                bankAccount.Disabled = true;
             }
             else
             {
-                responseModel.AddError($"Account Not found");
+                responseModel.AddError($"bank account Not found");
 
             }
 
@@ -142,28 +198,58 @@ namespace VirtualBank.Api.Services
         }
 
 
-        private Account CreateAccount(CreateAccountRequest request)
+        #region
+        private BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, string branchName, DateTime? lastTransactionDate = null)
         {
-            var account = request.Account;
-
-            if (account != null)
+            if (bankAccount != null)
             {
-                var newAccount = new Account()
-                {
-                    AccountNo = Guid.NewGuid().ToString() + account.Branch.Code,
-                    CustomerId = account.CustomerId,
-                    BranchId = account.BranchId,
-                    Balance = account.Balance,
-                    Currency = account.Currency,
-                    Type = account.Type,                    
-                };
-
-                return newAccount;
+                return new BankAccountResponse(bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
+                                               accountOwner, branchName, bankAccount.Balance, bankAccount.AllowedBalanceToUse,
+                                               bankAccount.Currency.Name, bankAccount.CreatedOn, lastTransactionDate);
             }
 
             return null;
         }
 
-        
+        private RecipientBankAccountResponse CreateRecipientBankAccountResponse(BankAccount bankAccount, string accountOwner, string branchName)
+        {
+            if (bankAccount != null)
+            {
+                return new RecipientBankAccountResponse(bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type, accountOwner,
+                                                        branchName, bankAccount.Currency.Name);
+            }
+
+            return null;
+        }
+
+        private BankAccount CreateBankAccount(CreateBankAccountRequest request)
+        {
+            var bankAccount = request.Account;
+
+            if (bankAccount != null)
+            {
+                var newBankAccount = new BankAccount()
+                {
+                    AccountNo = Guid.NewGuid().ToString() + bankAccount.Branch.Code,
+                    CustomerId = bankAccount.CustomerId,
+                    BranchId = bankAccount.BranchId,
+                    Balance = bankAccount.Balance,
+                    Currency = bankAccount.Currency,
+                    Type = bankAccount.Type,                    
+                };
+
+                return newBankAccount;
+            }
+
+            return null;
+        }
+
+        private async Task<CashTransaction> GetLastCashTransaction(BankAccount bankAccount)
+        {
+            return await _dbContext.CashTransactions.Where(c => c.From == bankAccount.AccountNo || c.To == bankAccount.AccountNo)
+                                                                    .OrderByDescending(c => c.CreatedOn).FirstOrDefaultAsync();
+        }
+        #endregion
+
     }
 }

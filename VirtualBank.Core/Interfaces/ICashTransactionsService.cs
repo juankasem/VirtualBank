@@ -11,6 +11,8 @@ namespace VirtualBank.Core.Interfaces
     {
         Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByAccountNoAsync(string accountNo, int lastDays, CancellationToken cancellationToken = default);
 
+        Task<ApiResponse<CashTransactionResponse>> GetLastCashTransactionAsync(string accountNo, CancellationToken cancellationToken = default);
+
         Task<ApiResponse> AddCashTransactionAsync(CreateCashTransactionRequest request,  CancellationToken cancellationToken = default);
 
         Task<ApiResponse> DeleteCashTransactionAsync(string cashTransactionId, CancellationToken cancellationToken = default);

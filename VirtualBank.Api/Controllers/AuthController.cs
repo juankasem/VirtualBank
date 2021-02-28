@@ -13,13 +13,13 @@ using VirtualBank.Core.ApiRequestModels;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Entities;
+using VirtualBank.Core.ApiRoutes;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace VirtualBank.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]                         
     public class AuthController : ControllerBase
     {
         private readonly SignInManager<AppUser> _signInManager;
@@ -38,7 +38,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost, Route("checkEmail")]
+        [HttpPost(ApiRoutes.checkEmailExists)]
         public async Task<ActionResult<ApiResponse<CheckEmailResponse>>> CheckEmailExists(CheckEmailRequest request)
         {
             var response = new ApiResponse<CheckEmailResponse>
@@ -56,7 +56,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost, Route("register")]
+        [HttpPost(ApiRoutes.register)]
         public async Task<ActionResult<ApiResponse<SignupResponse>>> Register(SignupRequest request)
         {
             var response = new ApiResponse<SignupResponse>();
@@ -99,7 +99,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost, Route("login")]
+        [HttpPost(ApiRoutes.login)]
         public async Task<ActionResult<ApiResponse<LoginResponse>>> Login(LoginRequest request)
         {
             var response = new ApiResponse<LoginResponse>();

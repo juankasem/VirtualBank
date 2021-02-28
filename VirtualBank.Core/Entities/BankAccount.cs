@@ -6,14 +6,14 @@ using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.Entities
 {
-    public class Account : BaseClass
+    public class BankAccount : BaseClass
     {
         [Required]
         [MaxLength(50)]
         public string AccountNo { get; set; }
 
         [Required]
-        [MaxLength(50)]
+        [MaxLength(150)]
         public string IBAN { get; set; }
 
         [Required]
@@ -34,9 +34,17 @@ namespace VirtualBank.Core.Entities
         public decimal Balance { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(8,2)")]
+        public decimal AllowedBalanceToUse { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(8,2)")]
+        public decimal MinimumAllowedBalance { get; set; }
+
+        [Required]
         public Currency Currency { get; set; }
 
         public ICollection<CreditCard> CreditCards { get; set; }
-
     }
 }
+

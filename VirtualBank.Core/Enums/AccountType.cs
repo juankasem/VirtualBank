@@ -3,8 +3,9 @@ namespace VirtualBank.Core.Enums
 {
     public enum AccountType
     {
-        Saving = 1,
+        Savings = 1,
         Deposit = 2,
-        Current = 3
+        Current = 3,
+        Joint = 4
     }
 }

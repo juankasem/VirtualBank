@@ -2,13 +2,13 @@
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Entities;
 
-namespace VirtualBank.Core.ApiResponseModels.AccountApiResponses
+namespace VirtualBank.Core.ApiRequestModels.AccountApiRequests
 {
-    public class AccountResponse
+    public class CreateBankAccountRequest
     {
-        public Account Account { get; }
+        public BankAccount Account { get; }
 
-        public AccountResponse(Account account)
+        public CreateBankAccountRequest(BankAccount account)
         {
             Account = Throw.ArgumentNullException.IfNull(account, nameof(account));
         }

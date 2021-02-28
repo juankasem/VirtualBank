@@ -11,6 +11,9 @@ namespace VirtualBank.Core.Entities
         public CashTransactionType Type { get; set; }
 
         [Required]
+        public BankAssetType InitiatedBy { get; set; }
+
+        [Required]
         public string From { get; set; }
 
         [Required]
@@ -21,9 +24,18 @@ namespace VirtualBank.Core.Entities
         public decimal Amount { get; set; }
 
         [Required]
+        public Currency Currency { get; set; }
+
+        [Required]
         public double Fees { get; set; }
 
+        [Required]
+        [Column(TypeName = "decimal(8,2)")]
+        public decimal RemainingBalance { get; set; }
+
         public string Description { get; set; }
+
+        public PaymentType PaymentType { get; set; }
 
         [Required]
         public TransactionStatusType Status { get; set; }
