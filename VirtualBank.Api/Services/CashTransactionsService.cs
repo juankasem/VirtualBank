@@ -45,12 +45,12 @@ namespace VirtualBank.Api.Services
         /// <param name="accountNo"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByAccountNoAsync(string accountNo, int lastDays, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CashTransactionsResponse>> GetAllCashTransactionsByAccountNoAsync(string accountNo, int lastDays, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionsResponse>();
 
             var cashTransactionsList = await _dbContext.CashTransactions.Where(c => (c.From == accountNo || c.To == accountNo)
-                                                                               && DateTime.UtcNow.Subtract(c.CreatedOn).TotalDays <= lastDays)
+                                                                               && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays)
                                                                                  .AsNoTracking().ToListAsync();
 
             if(cashTransactionsList.Count() == 0) {
@@ -66,7 +66,7 @@ namespace VirtualBank.Api.Services
                     var senderAccount = await _customerService.GetCustomerByAccountNoAsync(cashTransaction.From, cancellationToken);
                     var sender = senderAccount?.Data?.Customer?.FirstName + " " + senderAccount?.Data?.Customer?.LastName;
 
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, sender, accountNo));
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, sender, accountNo, Direction.In));
                 }
 
                 else if(cashTransaction.To != accountNo && cashTransaction.Type == CashTransactionType.Transfer)
@@ -74,16 +74,20 @@ namespace VirtualBank.Api.Services
                     var recipientAccount = await _customerService.GetCustomerByAccountNoAsync(cashTransaction.To, cancellationToken);
                     var recipient = recipientAccount?.Data?.Customer?.FirstName + " " + recipientAccount?.Data?.Customer?.LastName;
 
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, accountNo, recipient));
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, accountNo, recipient, Direction.Out));
                 }
 
-                else if (cashTransaction.Type == CashTransactionType.Deposit || cashTransaction.Type == CashTransactionType.Withdrawal)
+                else if (cashTransaction.Type == CashTransactionType.Deposit)
                 {
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, cashTransaction.To));
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, cashTransaction.To, Direction.In));
+                }
+                else if (cashTransaction.Type == CashTransactionType.Withdrawal)
+                {
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, cashTransaction.To, Direction.Out));
                 }
                 else if (cashTransaction.Type == CashTransactionType.CommissionFees)
                 {
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, ""));
+                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, "", Direction.Out));
                 }
             }
 
@@ -92,6 +96,12 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
+        public Task<ApiResponse<CashTransactionsResponse>> GetFastCashTransactionsByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
 
         /// <summary>
         /// retrieve last transaction that occured the specified account(from or to)
@@ -104,14 +114,15 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
             var lastTransaction = await _dbContext.CashTransactions.Where(c => c.From == accountNo || c.To == accountNo)
-                                                                   .OrderByDescending(c => c.CreatedBy).FirstOrDefaultAsync();
+                                                                   .OrderByDescending(c => c.TransactionDate).FirstOrDefaultAsync();
                                                                              
             if (lastTransaction == null)
             {
                 return responseModel;
             }
 
-            responseModel.Data = CreateCashTransactionResponse(lastTransaction, lastTransaction.From, lastTransaction.To);
+
+            responseModel.Data = CreateCashTransactionResponse(lastTransaction, lastTransaction.From, lastTransaction.To, Direction.In);
 
             return responseModel;
         }
@@ -127,8 +138,6 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<CashTransactionResponse>();
             var user = _httpContextAccessor.HttpContext.User;
             var username = user.Identity.Name;
-            var sender = "";
-            var reipient = "";
 
             await using var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
@@ -251,7 +260,7 @@ namespace VirtualBank.Api.Services
                             await _dbContext.SaveChangesAsync();
 
                             //Create a transaction 
-                            var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, );
+                            var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, fees);
                     
                             //Save transaction into db
                             await _dbContext.CashTransactions.AddAsync(cashTransaction);
@@ -263,8 +272,11 @@ namespace VirtualBank.Api.Services
                             _dbContext.BankAccounts.Update(senderAccount);
                             await _dbContext.SaveChangesAsync();
 
+                            request.CashTransaction.Type = CashTransactionType.CommissionFees;
+                            request.CashTransaction.Amount = (decimal)fees;
+
                             //Create a transaction for the comission fees
-                            var commissionFeeTransaction = CreateCashTransaction(request, username, senderAccount.Balance, fees);
+                            var commissionFeeTransaction = CreateCashTransaction(request, username, senderAccount.Balance);
 
                             //Save transaction into db
                             await _dbContext.CashTransactions.AddAsync(commissionFeeTransaction);
@@ -310,33 +322,38 @@ namespace VirtualBank.Api.Services
         #region private Helper methods
         [NonAction]
         private CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, string username, decimal remainingBalance,
-                                                      string sender = "", string recipient = "", double fees = 0)
+                                                      double fees = 0, string sender = "", string recipient = "")
         {
+            var cashTransaction = request.CashTransaction;
+            var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
+
           return  new CashTransaction()
           {
-            Type = fees == 0 ? request.CashTransaction.Type : CashTransactionType.CommissionFees,
-            From = request.CashTransaction.From,
-            To = fees == 0 ? request.CashTransaction.To : "",
-            Amount = fees == 0 ? request.CashTransaction.Amount : (decimal)fees,
-            InitiatedBy = request.CashTransaction.InitiatedBy,
-            Description = fees == 0 ? $"From: {sender}, Account No: {request.CashTransaction.From}, " +
-                                      $" To: {recipient}, Account No: {request.CashTransaction.To}"
-                                      :
-                                      "Transafer comission Fee",
+            Type = cashTransaction.Type,
+            From = cashTransaction.From,
+            To = !isTransferFees ? cashTransaction.To : "",
+            Amount = cashTransaction.Amount,
+            InitiatedBy = cashTransaction.InitiatedBy,
+            Description = isTransferFees ? "Transafer comission Fees" :
+                                        $"From: {sender}, Account No: {request.CashTransaction.From}, " +
+                                        $" To: {recipient}, Account No: {request.CashTransaction.To} {request.CashTransaction.Description}"
+                                      
+                                      ,
             RemainingBalance = remainingBalance,
-            PaymentType = fees == 0 ? request.CashTransaction.PaymentType : PaymentType.ComissionFees,
+            PaymentType = !isTransferFees ? request.CashTransaction.PaymentType : PaymentType.ComissionFees,
             CreatedBy = username,
-            Status = TransactionStatusType.Completed
+            TransactionDate = cashTransaction.TransactionDate, 
+            Status = cashTransaction.TransactionDate == DateTime.Today ? TransactionStatusType.Completed : TransactionStatusType.Pending
           };
 
         }
 
         [NonAction]
-        private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string sender, string recipient)                        
+        private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string sender, string recipient, Direction direction)                        
         {
             return new CashTransactionResponse(cashTransaction.From,
                                                cashTransaction.To,
-                                               cashTransaction.Amount,
+                                               direction == Direction.In ? cashTransaction.Amount : -cashTransaction.Amount,
                                                sender,
                                                recipient,
                                                cashTransaction.PaymentType,

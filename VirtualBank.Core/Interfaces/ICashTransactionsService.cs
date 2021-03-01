@@ -9,7 +9,9 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface ICashTransactionsService
     {
-        Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByAccountNoAsync(string accountNo, int lastDays, CancellationToken cancellationToken = default);
+        Task<ApiResponse<CashTransactionsResponse>> GetAllCashTransactionsByAccountNoAsync(string accountNo, int lastDays, CancellationToken cancellationToken = default);
+
+        Task<ApiResponse<CashTransactionsResponse>> GetFastCashTransactionsByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CashTransactionResponse>> GetLastCashTransactionAsync(string accountNo, CancellationToken cancellationToken = default);
 

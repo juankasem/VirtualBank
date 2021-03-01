@@ -44,6 +44,8 @@ namespace VirtualBank.Core.Entities
         [Required]
         public Currency Currency { get; set; }
 
+        public ICollection<CashTransaction> CashTransactions { get; set; }
+
         public ICollection<CreditCard> CreditCards { get; set; }
     }
 }

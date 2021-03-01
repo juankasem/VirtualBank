@@ -29,7 +29,6 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string deactivateBankAccount = "api/BankAccount/deactivate/{accountNo}";
 
-        public const string BankAccount = "api/BankAccount/post/{accountNo}";
 
         #endregion
 
@@ -46,6 +45,8 @@ namespace VirtualBank.Core.ApiRoutes
         public const string getCustomerById = "api/Customer/getById/{customerId}";
 
         public const string getCustomerByAccountNo = "api/Customer/getByAccountNo/{accountNo}";
+
+        public const string getCustomerByIBAN = "api/Customer/getByIBAN/{iban}";
 
         public const string postCustomer= "api/Customer/post/{customerId}";
 

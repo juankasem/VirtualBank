@@ -45,10 +45,9 @@ namespace VirtualBank.Api.Services
             foreach (var bankAccount in bankAccountsList)
             {
                 var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
-                var branchName = bankAccount.Branch.Name;
                 var lastTransaction = await GetLastCashTransaction(bankAccount);
 
-                bankAccounts.Add(CreateBankAccountResponse(bankAccount, accountOwner, branchName, lastTransaction.CreatedOn));
+                bankAccounts.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn));
             }
 
             responseModel.Data = new BankAccountsResponse(bankAccounts);
@@ -70,10 +69,9 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
-            var branchName = bankAccount.Branch.Name;
             var lastTransaction = await GetLastCashTransaction(bankAccount);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, branchName, lastTransaction.CreatedOn);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
 
             return responseModel;
         }
@@ -91,11 +89,10 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
-            var branchName = bankAccount.Branch.Name;
             var lastTransaction = await _dbContext.CashTransactions.Where(c => c.From == bankAccount.AccountNo || c.To == bankAccount.AccountNo)
                                                                    .OrderByDescending(c => c.CreatedOn).FirstOrDefaultAsync();
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, branchName, lastTransaction.CreatedOn);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
 
             return responseModel;
         }
@@ -114,10 +111,8 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
-            var branchName = bankAccount.Branch.Name;
 
-
-            responseModel.Data = CreateRecipientBankAccountResponse(bankAccount, accountOwner, branchName);
+            responseModel.Data = CreateRecipientBankAccountResponse(bankAccount, accountOwner);
 
             return responseModel;
         }
@@ -199,24 +194,25 @@ namespace VirtualBank.Api.Services
 
 
         #region
-        private BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, string branchName, DateTime? lastTransactionDate = null)
+        private BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, DateTime? lastTransactionDate = null)
         {
             if (bankAccount != null)
             {
                 return new BankAccountResponse(bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
-                                               accountOwner, branchName, bankAccount.Balance, bankAccount.AllowedBalanceToUse,
+                                               accountOwner,bankAccount.Branch.Code, bankAccount.Branch.Name,
+                                               bankAccount.Balance, bankAccount.AllowedBalanceToUse,
                                                bankAccount.Currency.Name, bankAccount.CreatedOn, lastTransactionDate);
             }
 
             return null;
         }
 
-        private RecipientBankAccountResponse CreateRecipientBankAccountResponse(BankAccount bankAccount, string accountOwner, string branchName)
+        private RecipientBankAccountResponse CreateRecipientBankAccountResponse(BankAccount bankAccount, string accountOwner)
         {
             if (bankAccount != null)
             {
-                return new RecipientBankAccountResponse(bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type, accountOwner,
-                                                        branchName, bankAccount.Currency.Name);
+                return new RecipientBankAccountResponse(bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
+                                                        accountOwner, bankAccount.Branch.Name, bankAccount.Currency.Name);
             }
 
             return null;

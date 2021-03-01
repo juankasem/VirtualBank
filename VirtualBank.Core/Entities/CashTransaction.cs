@@ -27,15 +27,19 @@ namespace VirtualBank.Core.Entities
         public Currency Currency { get; set; }
 
         [Required]
-        public double Fees { get; set; }
-
-        [Required]
         [Column(TypeName = "decimal(8,2)")]
         public decimal RemainingBalance { get; set; }
 
+        [Required]
+        public double TransferFees { get; set; }
+
         public string Description { get; set; }
 
+        [Required]
         public PaymentType PaymentType { get; set; }
+
+        [Required]
+        public DateTime TransactionDate { get; set; }
 
         [Required]
         public TransactionStatusType Status { get; set; }

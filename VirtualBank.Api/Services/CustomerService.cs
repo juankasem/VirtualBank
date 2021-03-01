@@ -53,7 +53,7 @@ namespace VirtualBank.Api.Services
 
             var account = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo && a.Disabled == false);
 
-            if(account != null)
+            if(account == null)
             {
                 responseModel.AddError($"Account Number {accountNo} not found");
                 return responseModel;
@@ -61,7 +61,7 @@ namespace VirtualBank.Api.Services
 
              var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == account.CustomerId && c.Disabled == false);
 
-            if (customer != null)
+            if (customer == null)
             {
                 responseModel.AddError("Account holder not found");
                 return responseModel;
@@ -72,6 +72,32 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
+        public async Task<ApiResponse<RecipientCustomerResponse>> GetCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<RecipientCustomerResponse>();
+
+            var account = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.IBAN == iban && a.Disabled == false);
+
+            if (account == null)
+            {
+                responseModel.AddError($"Account with IBAN: {iban} not found");
+                return responseModel;
+            }
+
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == account.CustomerId && c.Disabled == false);
+
+            if (customer == null)
+            {
+                responseModel.AddError("Account holder not found");
+                return responseModel;
+            }
+
+            responseModel.Data = CreateRecipientCustomerResponse(customer);
+
+            return responseModel;
+        }
+
 
         public async Task<ApiResponse> CreateOrUpdateCustomerAsync(string customerId, CreateCustomerRequest request,
                                                                    CancellationToken cancellationToken)
@@ -194,7 +220,10 @@ namespace VirtualBank.Api.Services
             return null;     
         }
 
-        
+        private RecipientCustomerResponse CreateRecipientCustomerResponse(Customer customer)
+        {
+            return new RecipientCustomerResponse(customer.FirstName, customer.LastName);
+        }
 
         #endregion
     }

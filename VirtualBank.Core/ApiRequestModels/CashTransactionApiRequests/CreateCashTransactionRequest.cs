@@ -9,7 +9,6 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
     {
         public CashTransaction CashTransaction { get; set; }
 
-
         public CreateCashTransactionRequest(CashTransaction cashTransaction)
         {
             CashTransaction = Throw.ArgumentNullException.IfNull(cashTransaction, nameof(cashTransaction));

@@ -49,7 +49,7 @@ namespace VirtualBank.Core.Entities
 
         public AppUser User { get; set; }
 
-        public ICollection<Account> Accounts { get; set; }
+        public ICollection<BankAccount> BankAccounts { get; set; }
 
         public ICollection<CreditCard> CreditCards { get; set; }
     }

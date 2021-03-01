@@ -43,7 +43,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCashTransactionsByAccountNoAsync([FromRoute] string accountNo, [FromQuery] int lastDays,
+        public async Task<IActionResult> GetAllCashTransactionsByAccountNoAsync([FromRoute] string accountNo, [FromQuery] int lastDays,
                                                                              CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
@@ -61,7 +61,7 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _cashTransactionsService.GetCashTransactionsByAccountNoAsync(accountNo, lastDays, cancellationToken);
+                var apiResponse = await _cashTransactionsService.GetAllCashTransactionsByAccountNoAsync(accountNo, lastDays, cancellationToken);
 
                 if(apiResponse.Success)
                   return Ok(apiResponse);

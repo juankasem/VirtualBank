@@ -98,6 +98,33 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
+        [HttpGet(ApiRoutes.getAccountByIBAN)]
+        public async Task<IActionResult> GetCustomerByIBANAsync([FromRoute] string iban, CancellationToken cancellationToken = default)
+        {
+            var user = _userManager.GetUserAsync(User);
+
+            try
+            {
+                var apiResponse = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("not found"))
+                    return BadRequest(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
+        }
+
+
 
         [HttpPut(ApiRoutes.postCustomer)]
         public async Task<ActionResult<ApiResponse>> PostCustomerAsync([FromRoute] string customerId,[FromBody] CreateCustomerRequest request,
