@@ -10,16 +10,16 @@ namespace VirtualBank.Core.Entities
         [MaxLength(50)]
         public string Street { get; set; }
 
-        [ForeignKey("District")]
+        [ForeignKey(nameof(District))]
         public int DistrictId { get; set; }
         public District District { get; set; }
 
 
-        [ForeignKey("City")]
+        [ForeignKey(nameof(City))]
         public int CityId { get; set; }
         public City City { get; set; }
 
-        [ForeignKey("Country")]
+        [ForeignKey(nameof(Country))]
         public int CountryId { get; set; }
         public Country Country { get; set; }
 

@@ -63,15 +63,15 @@ namespace VirtualBank.Api
 
             services.AddControllers();
 
-            services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IBankAccountService, BankAccountService>();
             services.AddScoped<IBranchService, BranchService>();
             services.AddScoped<ICashTransactionsService, CashTransactionsService>();
-            services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICustomerService, CustomerService>();
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -92,6 +92,8 @@ namespace VirtualBank.Api
             {
                 endpoints.MapControllers();
             });
+
+            serviceProvider.ConfigureDatabseContext().GetAwaiter().GetResult();
         }
     }
 }

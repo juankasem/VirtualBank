@@ -9,32 +9,32 @@ namespace VirtualBank.Core.Entities
     public class Customer : BaseClass
     {
         [Required]
-        [MinLength(8)]
+        [MinLength(50)]
         public string IdentificationNo { get; set; }
 
         [Required]
         public IdentificationType IdentificationType { get; set; }
 
         [Required]
-        [MaxLength(50)]
+        [MaxLength(150)]
         public string FirstName { get; set; }
 
         [MaxLength(50)]
         public string MiddleName { get; set; }
 
         [Required]
-        [MaxLength(50)]
+        [MaxLength(150)]
         public string LastName { get; set; }
 
         [Required]
-        [MaxLength(50)]
+        [MaxLength(150)]
         public string FatherName { get; set; }
 
         [Required]
         public Gender Gender { get; set; }
 
         [Required]
-        [MaxLength(50)]
+        [MaxLength(150)]
         public string Nationality { get; set; }
 
         [Required]

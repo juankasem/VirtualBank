@@ -4,7 +4,6 @@ namespace VirtualBank.Core.ApiRoutes
     public static class ApiRoutes
     {
         #region Auth
-
         public const string checkEmailExists = "api/Auth/checkEmailExists";
 
         public const string register = "api/Auth/register";
@@ -29,6 +28,18 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string deactivateBankAccount = "api/BankAccount/deactivate/{accountNo}";
 
+        #endregion
+
+        #region Branch
+        public const string getAllBranches = "api/Branch/getAllBranches";
+
+        public const string getBranchesByCityId = "api/Branch/getBranchesByCityId/{cityId}";
+
+        public const string getBranchByCode = "api/Branch/getBranchByCode/{code}";
+
+        public const string postBranch = "api/Branch/postBranch/{code}";
+
+        public const string deleteBranch = "api/Branch/deleteBranch/{code}";
 
         #endregion
 

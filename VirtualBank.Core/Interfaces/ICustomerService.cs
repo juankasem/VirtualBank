@@ -15,7 +15,7 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<CustomerResponse>> GetCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> CreateOrUpdateCustomerAsync(string customerId, CreateCustomerRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse> AddOrEditCustomerAsync(string customerId, CreateCustomerRequest request, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> ActivateCustomerAsync(string customerId, CancellationToken cancellationToken = default);
 

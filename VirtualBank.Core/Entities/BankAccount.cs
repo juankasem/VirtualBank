@@ -13,18 +13,18 @@ namespace VirtualBank.Core.Entities
         public string AccountNo { get; set; }
 
         [Required]
-        [MaxLength(150)]
+        [MaxLength(50)]
         public string IBAN { get; set; }
 
         [Required]
         public AccountType Type { get; set; }
 
-        [ForeignKey("Owner")]
+        [ForeignKey(nameof(Owner))]
         [Required]
         public string CustomerId { get; set; }
         public Customer Owner { get; set; }
 
-        [ForeignKey("Branch")]
+        [ForeignKey(nameof(Branch))]
         [Required]
         public int BranchId { get; set; }
         public Branch Branch { get; set; }
@@ -39,9 +39,11 @@ namespace VirtualBank.Core.Entities
 
         [Required]
         [Column(TypeName = "decimal(8,2)")]
-        public decimal MinimumAllowedBalance { get; set; }
+        public decimal MinimumAllowedBalance { get; set; } = 1;
 
+        [ForeignKey(nameof(Currency))]
         [Required]
+        public string CurrencyId { get; set; }
         public Currency Currency { get; set; }
 
         public ICollection<CashTransaction> CashTransactions { get; set; }

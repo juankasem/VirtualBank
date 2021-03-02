@@ -22,6 +22,7 @@
     <Folder Include="ApiResponseModels\LoanApiResponses\" />
     <Folder Include="Entities\" />
     <Folder Include="ApiRoutes\" />
+    <Folder Include="ApiResponseModels\BranchApiResponses\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.3" />

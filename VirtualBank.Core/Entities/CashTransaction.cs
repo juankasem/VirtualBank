@@ -14,21 +14,16 @@ namespace VirtualBank.Core.Entities
         public BankAssetType InitiatedBy { get; set; }
 
         [Required]
+        [MaxLength(150)]
         public string From { get; set; }
 
         [Required]
+        [MaxLength(150)]
         public string To { get; set; }
 
         [Required]
         [Column(TypeName="decimal(8,2)")]
         public decimal Amount { get; set; }
-
-        [Required]
-        public Currency Currency { get; set; }
-
-        [Required]
-        [Column(TypeName = "decimal(8,2)")]
-        public decimal RemainingBalance { get; set; }
 
         [Required]
         public double TransferFees { get; set; }

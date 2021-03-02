@@ -177,7 +177,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _bankAccountService.CreateOrUpdateBankAccountAsync(accountNo, request, cancellationToken);
+                var apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountNo, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -247,7 +247,7 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-
+        #region private helper methods
         [NonAction]
         private async Task<Customer> GetCustomerByIdAsync(string customerId)
         {
@@ -278,5 +278,6 @@ namespace VirtualBank.Api.Controllers
             return customer;
         }
 
+        #endregion
     }
 }

@@ -99,7 +99,7 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public async Task<ApiResponse> CreateOrUpdateCustomerAsync(string customerId, CreateCustomerRequest request,
+        public async Task<ApiResponse> AddOrEditCustomerAsync(string customerId, CreateCustomerRequest request,
                                                                    CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();

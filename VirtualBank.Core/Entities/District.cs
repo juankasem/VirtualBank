@@ -9,7 +9,7 @@ namespace VirtualBank.Core.Entities
         [Required]
         public string Name { get; set; }
 
-        [ForeignKey("City")]
+        [ForeignKey(nameof(City))]
         public int CityId { get; set; }
         public City City { get; set; }
     }

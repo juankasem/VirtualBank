@@ -6,12 +6,14 @@ namespace VirtualBank.Core.Entities
     public class Currency : BaseClass
     {
         [Required]
-        [MaxLength(3)]
+        [MaxLength(6)]
         public string Code { get; set; }
 
         [Required]
+        [MaxLength(50)]
         public string Name { get; set; }
 
+        [MaxLength(4)]
         public string Symbol { get; set; }
     }
 }

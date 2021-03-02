@@ -19,18 +19,11 @@ namespace VirtualBank.Api.Services
     public class BankAccountService : IBankAccountService
     {
         private readonly VirtualBankDbContext _dbContext;
-        private readonly ICashTransactionsService _cashTransactionsService;
-        private readonly UserManager<AppUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BankAccountService(VirtualBankDbContext dbContext,
-                                  ICashTransactionsService cashTransactionsService,
-                                  UserManager<AppUser> userManager,
-                                  IHttpContextAccessor httpContextAccessor)
+        public BankAccountService(VirtualBankDbContext dbContext, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
-            _cashTransactionsService = cashTransactionsService;
-            _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -118,7 +111,7 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public async Task<ApiResponse> CreateOrUpdateBankAccountAsync(string accountNo, CreateBankAccountRequest request,
+        public async Task<ApiResponse> AddOrEditBankAccountAsync(string accountNo, CreateBankAccountRequest request,
                                                                       CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
@@ -193,7 +186,7 @@ namespace VirtualBank.Api.Services
         }
 
 
-        #region
+        #region private helper methods
         private BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, DateTime? lastTransactionDate = null)
         {
             if (bankAccount != null)

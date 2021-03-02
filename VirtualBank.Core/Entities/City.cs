@@ -9,9 +9,10 @@ namespace VirtualBank.Core.Entities
     public class City : BaseClass
     {
         [Required]
+        [MaxLength(150)]
         public string Name { get; set; }
 
-        [ForeignKey("Country")]
+        [ForeignKey(nameof(Country))]
         public int CountryId { get; set; }
         public Country Country { get; set; }
 
