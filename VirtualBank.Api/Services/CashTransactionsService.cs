@@ -305,16 +305,6 @@ namespace VirtualBank.Api.Services
 
         }
 
-        /// <summary>
-        /// delete a transaction from db
-        /// </summary>
-        /// <param name="cashTransactionId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task<ApiResponse> DeleteCashTransactionAsync(string cashTransactionId, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
 
         #region private Helper methods
         [NonAction]

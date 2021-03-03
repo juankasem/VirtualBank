@@ -38,16 +38,16 @@ namespace VirtualBank.Api.Controllers
         }
 
         // GET api/values/5
-        [HttpGet(ApiRoutes.getCashTransactionsByAccountNo)]
+        [HttpGet(ApiRoutes.getCashTransactionsByIBAN)]
         [ProducesResponseType(typeof(CashTransactionsResponse), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllCashTransactionsByAccountNoAsync([FromRoute] string accountNo, [FromQuery] int lastDays,
+        public async Task<IActionResult> GetAllCashTransactionsByIBANAsync([FromRoute] string iban, [FromQuery] int lastDays,
                                                                              CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
-            var customer = GetCustomerAsync(accountNo);
+            var customer = GetCustomerByIBANAsync(iban);
 
             if (customer == null)
             {
@@ -61,7 +61,7 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _cashTransactionsService.GetAllCashTransactionsByAccountNoAsync(accountNo, lastDays, cancellationToken);
+                var apiResponse = await _cashTransactionsService.GetAllCashTransactionsByIBANAsync(iban, lastDays, cancellationToken);
 
                 if(apiResponse.Success)
                   return Ok(apiResponse);
@@ -110,10 +110,10 @@ namespace VirtualBank.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
         }
-        
 
+        #region
         [NonAction]
-        private async Task<Customer> GetCustomerAsync(string accountNo)
+        private async Task<Customer> GetCustomerByAccountNoAsync(string accountNo)
         {
             var accountResponse = await _customerService.GetCustomerByAccountNoAsync(accountNo);
 
@@ -126,5 +126,21 @@ namespace VirtualBank.Api.Controllers
 
             return customer;
         }
+
+        [NonAction]
+        private async Task<Customer> GetCustomerByIBANAsync(string iban)
+        {
+            var accountResponse = await _customerService.GetCustomerByIBANAsync(iban);
+
+            if (accountResponse == null || accountResponse?.Data == null)
+            {
+                return null;
+            }
+
+            var customer = accountResponse?.Data?.Customer;
+
+            return customer;
+        }
+        #endregion
     }
 }

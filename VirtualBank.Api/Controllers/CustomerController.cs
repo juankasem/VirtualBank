@@ -22,13 +22,11 @@ namespace VirtualBank.Api.Controllers
     [Authorize]
     public class CustomerController : ControllerBase
     {
-        private readonly VirtualBankDbContext _dbContext;
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
 
-        public CustomerController(VirtualBankDbContext dbContext, ICustomerService customerService, UserManager<AppUser> userManager)
+        public CustomerController(ICustomerService customerService, UserManager<AppUser> userManager)
         {
-            _dbContext = dbContext;
             _customerService = customerService;
             _userManager = userManager;
         }
@@ -98,14 +96,14 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        [HttpGet(ApiRoutes.getAccountByIBAN)]
+        [HttpGet(ApiRoutes.getCustomerByIBAN)]
         public async Task<IActionResult> GetCustomerByIBANAsync([FromRoute] string iban, CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
 
             try
             {
-                var apiResponse = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
+                var apiResponse = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -128,13 +126,13 @@ namespace VirtualBank.Api.Controllers
 
         [HttpPut(ApiRoutes.postCustomer)]
         public async Task<ActionResult<ApiResponse>> PostCustomerAsync([FromRoute] string customerId,[FromBody] CreateCustomerRequest request,
-                                                                                  CancellationToken cancellationToken = default)
+                                                                       CancellationToken cancellationToken = default)
         {
             var user = await _userManager.GetUserAsync(User);
 
             try
             {
-                var apiResponse = await _customerService.CreateOrUpdateCustomerAsync(customerId, request, cancellationToken);
+                var apiResponse = await _customerService.AddOrEditCustomerAsync(customerId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

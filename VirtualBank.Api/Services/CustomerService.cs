@@ -73,7 +73,34 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse<RecipientCustomerResponse>> GetCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default)
+
+        public async Task<ApiResponse<CustomerResponse>> GetCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CustomerResponse>();
+
+            var account = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.IBAN == iban && a.Disabled == false);
+
+            if (account == null)
+            {
+                responseModel.AddError($"IBAN {iban} not found");
+                return responseModel;
+            }
+
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == account.CustomerId && c.Disabled == false);
+
+            if (customer == null)
+            {
+                responseModel.AddError("Account holder not found");
+                return responseModel;
+            }
+
+            responseModel.Data = new CustomerResponse(customer);
+
+            return responseModel;
+        }
+
+
+        public async Task<ApiResponse<RecipientCustomerResponse>> GetRecipientCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<RecipientCustomerResponse>();
 
@@ -164,7 +191,7 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError("customer not found");
+                responseModel.AddError(ex.ToString());
             }
 
             return responseModel;
@@ -185,7 +212,7 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError("customer not found");
+                responseModel.AddError(ex.ToString());
             }
 
             return responseModel;

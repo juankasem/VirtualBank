@@ -67,7 +67,6 @@ namespace VirtualBank.Api
             services.AddScoped<IBranchService, BranchService>();
             services.AddScoped<ICashTransactionsService, CashTransactionsService>();
             services.AddScoped<ICustomerService, CustomerService>();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -93,7 +92,7 @@ namespace VirtualBank.Api
                 endpoints.MapControllers();
             });
 
-            serviceProvider.ConfigureDatabseContext().GetAwaiter().GetResult();
+            //serviceProvider.ConfigureDatabseContext().GetAwaiter().GetResult();
         }
     }
 }
