@@ -15,6 +15,10 @@ namespace VirtualBank.Core.Entities
         public string Code { get; set; }
 
         [Required]
+        [Phone]
+        public string Phone { get; set; }
+
+        [Required]
         public Address Address { get; set; }
 
         public ICollection<BankAccount> BankAccounts { get; set; }

@@ -10,12 +10,15 @@ namespace VirtualBank.Core.ApiResponseModels.BranchApiResponses
 
         public string Code { get; }
 
+        public string Phone { get; }
+
         public Address Address { get;  }
 
-        public BranchResponse(string name, string code, Address address)
+        public BranchResponse(string name, string code, string phone, Address address)
         {
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
             Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
+            Phone = Throw.ArgumentNullException.IfNull(phone, nameof(phone));
             Address = Throw.ArgumentNullException.IfNull(address, nameof(address));
         }
     }

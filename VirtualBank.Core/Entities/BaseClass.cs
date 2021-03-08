@@ -8,7 +8,7 @@ namespace VirtualBank.Core.Entities
     public class BaseClass
     {
         [Key]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;

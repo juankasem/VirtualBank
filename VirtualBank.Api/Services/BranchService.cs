@@ -31,11 +31,11 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BranchesResponse>();
 
-            var branchesList = await _dbContext.Branches.ToListAsync();
+            var branchList = await _dbContext.Branches.ToListAsync();
 
             var branches = new ImmutableArray<BranchResponse>();
 
-            foreach (var branch in branchesList)
+            foreach (var branch in branchList)
             {
                 branches.Add(CreateBranchResponse(branch));
             }
@@ -49,7 +49,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BranchesResponse>();
 
-            var branchesList = await _dbContext.Branches.Where(b => b.Address.CityId == cityId).ToListAsync();
+            var branchesList = await _dbContext.Branches.Include(b => b.Address.CityId == cityId).ToListAsync();
 
             var branches = new ImmutableArray<BranchResponse>();
 
@@ -75,17 +75,17 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> AddOrEditBranch(string code, CreateBranchRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> AddOrEditBranch(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;
-            var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Code == code);
+            var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Id == branchId);
 
             if (branch != null)
             {
-                branch.Name = request.Branch.Name;
-                branch.Code = request.Branch.Code;
-                branch.Address = request.Branch.Address;
+                branch.Name = request.Name;
+                branch.Code = request.Code;
+                branch.Address = request.Address;
                 branch.ModifiedBy = user.Identity.Name;
                 branch.ModifiedOn = DateTime.UtcNow;
             }
@@ -113,18 +113,15 @@ namespace VirtualBank.Api.Services
         #region private helper methods
         private Branch CreateBranch(CreateBranchRequest request)
         {
-            var branch = request.Branch;
-
-            if (branch != null)
+            if (request != null)
             {
-                var newBranch = new Branch()
+                return new Branch()
                 {
-                    Name = request.Branch.Name,
-                    Code = request.Branch.Code,
-                    Address = request.Branch.Address,
+                    Name = request.Name,
+                    Code = request.Code,
+                    Phone = request.Phone,
+                    Address = request.Address,
                 };
-
-                return newBranch;
             }
 
             return null;
@@ -134,7 +131,7 @@ namespace VirtualBank.Api.Services
         {
             if (branch != null)
             {
-                return new BranchResponse(branch.Name, branch.Code, branch.Address);
+                return new BranchResponse(branch.Name, branch.Code, branch.Phone, branch.Address);
             }
 
             return null;

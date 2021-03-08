@@ -21,7 +21,7 @@ namespace VirtualBank.Core.Entities
 
         [ForeignKey(nameof(Owner))]
         [Required]
-        public string CustomerId { get; set; }
+        public int CustomerId { get; set; }
         public Customer Owner { get; set; }
 
         [ForeignKey(nameof(Branch))]

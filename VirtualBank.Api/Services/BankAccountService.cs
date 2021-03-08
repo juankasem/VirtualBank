@@ -4,10 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
-using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
 using VirtualBank.Core.Entities;
@@ -27,7 +25,7 @@ namespace VirtualBank.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ApiResponse<BankAccountsResponse>> GetAccountsByCustomerIdAsync(string customerId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BankAccountsResponse>> GetAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountsResponse>();
 
@@ -111,12 +109,12 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public async Task<ApiResponse> AddOrEditBankAccountAsync(string accountNo, CreateBankAccountRequest request,
+        public async Task<ApiResponse> AddOrEditBankAccountAsync(int accountId, CreateBankAccountRequest request,
                                                                       CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;
-            var bankaccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.AccountNo == accountNo);
+            var bankaccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountId);
 
             if (bankaccount != null)
             {
@@ -147,7 +145,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> ActivateBankAccountAsync(string accountId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> ActivateBankAccountAsync(int accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
@@ -166,7 +164,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> DeactivateBankAccountAsync(string accountId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> DeactivateBankAccountAsync(int accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 

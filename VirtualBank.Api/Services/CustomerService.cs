@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -17,19 +16,16 @@ namespace VirtualBank.Api.Services
     public class CustomerService : ICustomerService
     {
         private readonly VirtualBankDbContext _dbContext;
-        private readonly UserManager<AppUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CustomerService(VirtualBankDbContext dbContext,
-                               UserManager<AppUser> userManager,
                                IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
-            _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(string customerId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
@@ -126,7 +122,7 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public async Task<ApiResponse> AddOrEditCustomerAsync(string customerId, CreateCustomerRequest request,
+        public async Task<ApiResponse> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request,
                                                                    CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
@@ -176,7 +172,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> ActivateCustomerAsync(string customerId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
             var customer = await _dbContext.Customers.FirstOrDefaultAsync(a => a.Id == customerId);
@@ -197,7 +193,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> DeactivateCustomerAsync(string customerId, CancellationToken cancellationToken)
+        public async Task<ApiResponse> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
             var customer = await _dbContext.Customers.FirstOrDefaultAsync(a => a.Id == customerId);

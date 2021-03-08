@@ -37,9 +37,28 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string getBranchByCode = "api/Branch/getBranchByCode/{code}";
 
-        public const string postBranch = "api/Branch/postBranch/{code}";
+        public const string postBranch = "api/Branch/postBranch/{branchId}";
 
-        public const string deleteBranch = "api/Branch/deleteBranch/{code}";
+        public const string deleteBranch = "api/Branch/deleteBranch/{branchId}";
+
+        #endregion
+
+        #region City
+        public const string getAllCities = "api/City/getAllCities";
+
+        public const string getCityById = "api/Country/getById/{cityId}";
+
+        public const string postCity = "api/City/postCity/{cityId}";
+
+        #endregion
+
+
+        #region Country
+        public const string getAllCountries = "api/Country/getAllCountries";
+
+        public const string getCountryById = "api/Country/getById/{countryId}";
+
+        public const string postCountry = "api/Country/postCountry/{countryId}";
 
         #endregion
 

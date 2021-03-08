@@ -15,6 +15,6 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<BranchResponse>> GetBranchByCode(string code, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> AddOrEditBranch(string code, CreateBranchRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse> AddOrEditBranch(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default);
     }
 }

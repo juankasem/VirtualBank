@@ -8,43 +8,39 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
+using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace VirtualBank.Api.Controllers
 {
     [ApiController]
     [Authorize]
-    public class BranchController : ControllerBase
+    public class CountryController : Controller
     {
-        private readonly IBranchService _branchService;
-        private readonly ICustomerService _customerService;
+        private readonly ICountryService _countryService;
         private readonly UserManager<AppUser> _userManager;
 
-        public BranchController(IBranchService branchService,
-                                ICustomerService customerService,
-                                UserManager<AppUser> userManager)
+        public CountryController(ICountryService countryService, UserManager<AppUser> userManager)
         {
-            _branchService = branchService;
-            _customerService = customerService;
+            _countryService = countryService;
             _userManager = userManager;
         }
 
-        // GET: api/values
-        [HttpGet(ApiRoutes.getAllBranches)]
+        // GET: /<controller>/
+        [HttpGet(ApiRoutes.getAllCountries)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllBranches(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAllCountries(CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _branchService.GetAllBranches(cancellationToken);
+                var apiResponse = await _countryService.GetAllCountries(cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -63,43 +59,16 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        [HttpGet(ApiRoutes.getBranchesByCityId)]
+        // GET api/values/5
+        [HttpGet(ApiRoutes.getCountryById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetBranchesByCityId(int cityId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetCountryById(string countryId, CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _branchService.GetBranchesByCityId(cityId, cancellationToken);
-
-                if (apiResponse.Success)
-                    return Ok(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return BadRequest(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
-            }
-            catch (Exception exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
-            }
-        }
-
-
-        [HttpGet(ApiRoutes.getBranchByCode)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetBranchByCode(string code, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var apiResponse = await _branchService.GetBranchByCode(code, cancellationToken);
+                var apiResponse = await _countryService.GetCountryById(countryId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -119,17 +88,17 @@ namespace VirtualBank.Api.Controllers
         }
 
         // POST api/values
-        [HttpPut(ApiRoutes.postBranch)]
+        [HttpPut(ApiRoutes.postCountry)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostBranchAsync([FromRoute] string branchId, [FromBody] CreateBranchRequest request,
+        public async Task<IActionResult> PostCountryAsync([FromRoute] string countryId, [FromBody] CreateCountryRequest request,
                                                          CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _branchService.AddOrEditBranch(branchId, request, cancellationToken);
+                var apiResponse = await _countryService.AddOrEditCountry(countryId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -150,16 +119,5 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // DELETE api/values/5
-        [HttpDelete(ApiRoutes.deleteBranch)]
-        public void DeleteBranchAsync([FromRoute] string branchId, CancellationToken cancellationToken = default)
-        {
-
-        }
-
-        #region private helper methods
- 
-
-        #endregion
     }
 }
