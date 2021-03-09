@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CountryApiResponse;
@@ -108,7 +107,7 @@ namespace VirtualBank.Api.Services
         {
             if (country != null)
             {
-                return new CountryResponse(country.Name, country.Code);
+                return new CountryResponse(country.Id, country.Name, country.Code);
             }
 
             return null;

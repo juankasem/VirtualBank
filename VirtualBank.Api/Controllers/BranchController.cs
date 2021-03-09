@@ -91,6 +91,34 @@ namespace VirtualBank.Api.Controllers
         }
 
 
+
+        [HttpGet(ApiRoutes.getBranchById)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetBranchById(int branchId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _branchService.GetBranchById(branchId, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("not found"))
+                    return BadRequest(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
+        }
+
         [HttpGet(ApiRoutes.getBranchByCode)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]

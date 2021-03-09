@@ -13,6 +13,8 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<BranchesResponse>> GetBranchesByCityId(int cityId, CancellationToken cancellationToken = default);
 
+        Task<ApiResponse<BranchResponse>> GetBranchById(int branchId, CancellationToken cancellationToken = default);
+
         Task<ApiResponse<BranchResponse>> GetBranchByCode(string code, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> AddOrEditBranch(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default);

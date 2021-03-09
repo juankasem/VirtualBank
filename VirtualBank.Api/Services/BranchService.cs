@@ -63,6 +63,18 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+        public async Task<ApiResponse<BranchResponse>> GetBranchById(int branchId, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<BranchResponse>();
+
+            var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Id == branchId);
+
+
+            responseModel.Data = CreateBranchResponse(branch);
+
+            return responseModel;
+        }
+
         public async Task<ApiResponse<BranchResponse>> GetBranchByCode(string code, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchResponse>();
@@ -131,7 +143,7 @@ namespace VirtualBank.Api.Services
         {
             if (branch != null)
             {
-                return new BranchResponse(branch.Name, branch.Code, branch.Phone, branch.Address);
+                return new BranchResponse(branch.Id, branch.Name, branch.Code, branch.Phone, branch.Address);
             }
 
             return null;

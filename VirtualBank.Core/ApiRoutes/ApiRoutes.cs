@@ -35,7 +35,9 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string getBranchesByCityId = "api/Branch/getBranchesByCityId/{cityId}";
 
-        public const string getBranchByCode = "api/Branch/getBranchByCode/{code}";
+        public const string getBranchById = "api/Branch/getById/{branchId}";
+
+        public const string getBranchByCode = "api/Branch/getByCode/{code}";
 
         public const string postBranch = "api/Branch/postBranch/{branchId}";
 

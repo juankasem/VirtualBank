@@ -6,6 +6,8 @@ namespace VirtualBank.Core.ApiResponseModels.BranchApiResponses
 {
     public class BranchResponse
     {
+        public int Id { get; set; }
+
         public string Name { get; }
 
         public string Code { get; }
@@ -14,8 +16,9 @@ namespace VirtualBank.Core.ApiResponseModels.BranchApiResponses
 
         public Address Address { get;  }
 
-        public BranchResponse(string name, string code, string phone, Address address)
+        public BranchResponse(int id, string name, string code, string phone, Address address)
         {
+            Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
             Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
             Phone = Throw.ArgumentNullException.IfNull(phone, nameof(phone));
