@@ -14,7 +14,7 @@ namespace VirtualBank.Core.ApiRoutes
         #endregion
 
         #region Bank Account
-        public const string getAccountsByCustomerId = "api/BankAccount/getByCustomerId/{customerId}";
+        public const string getAccountsByCustomerId = "api/BankAccount/getByCustomerId/{customerId:int}";
 
         public const string getAccountByAccountNo = "api/BankAccount/getByAccountNo/{accountNo}";
 
@@ -22,35 +22,37 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string getRecipientAccountByIBAN = "api/BankAccount/getRecipientByIBAN/{iban}";
 
-        public const string postBankAccount = "api/BankAccount/post/{accountNo}";
+        public const string postBankAccount = "api/BankAccount/post/{accountId:int}";
 
-        public const string activateBankAccount = "api/BankAccount/activate/{accountNo}";
+        public const string activateBankAccount = "api/BankAccount/activate/{accountId:int}";
 
-        public const string deactivateBankAccount = "api/BankAccount/deactivate/{accountNo}";
+        public const string deactivateBankAccount = "api/BankAccount/deactivate/{accountId:int}";
 
         #endregion
 
         #region Branch
         public const string getAllBranches = "api/Branch/getAllBranches";
 
-        public const string getBranchesByCityId = "api/Branch/getBranchesByCityId/{cityId}";
+        public const string getBranchesByCityId = "api/Branch/getBranchesByCityId/{cityId:int}";
 
-        public const string getBranchById = "api/Branch/getById/{branchId}";
+        public const string getBranchById = "api/Branch/getById/{branchId:int}";
 
         public const string getBranchByCode = "api/Branch/getByCode/{code}";
 
-        public const string postBranch = "api/Branch/postBranch/{branchId}";
+        public const string postBranch = "api/Branch/postBranch/{branchId:int}";
 
-        public const string deleteBranch = "api/Branch/deleteBranch/{branchId}";
+        public const string deleteBranch = "api/Branch/deleteBranch/{branchId:int}";
 
         #endregion
 
         #region City
         public const string getAllCities = "api/City/getAllCities";
 
-        public const string getCityById = "api/Country/getById/{cityId}";
+        public const string getCitiesByCountryId = "api/City/getAllCities";
 
-        public const string postCity = "api/City/postCity/{cityId}";
+        public const string getCityById = "api/City/getById/{cityId:int}";
+
+        public const string postCity = "api/City/postCity/{cityId:int}";
 
         #endregion
 
@@ -58,9 +60,9 @@ namespace VirtualBank.Core.ApiRoutes
         #region Country
         public const string getAllCountries = "api/Country/getAllCountries";
 
-        public const string getCountryById = "api/Country/getById/{countryId}";
+        public const string getCountryById = "api/Country/getById/{countryId:int}";
 
-        public const string postCountry = "api/Country/postCountry/{countryId}";
+        public const string postCountry = "api/Country/postCountry/{countryId:int}";
 
         #endregion
 
@@ -75,13 +77,13 @@ namespace VirtualBank.Core.ApiRoutes
         #endregion
 
         #region
-        public const string getCustomerById = "api/Customer/getById/{customerId}";
+        public const string getCustomerById = "api/Customer/getById/{customerId:int}";
 
         public const string getCustomerByAccountNo = "api/Customer/getByAccountNo/{accountNo}";
 
         public const string getCustomerByIBAN = "api/Customer/getByIBAN/{iban}";
 
-        public const string postCustomer= "api/Customer/post/{customerId}";
+        public const string postCustomer= "api/Customer/post/{customerId:int}";
 
         #endregion
 

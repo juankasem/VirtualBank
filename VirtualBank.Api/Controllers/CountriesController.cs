@@ -8,12 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
+using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -21,29 +20,51 @@ namespace VirtualBank.Api.Controllers
 {
     [ApiController]
     [Authorize]
-    public class CustomerController : ControllerBase
+    public class CountryController : Controller
     {
-        private readonly ICustomerService _customerService;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly ICountriesService _countriesService;
 
-        public CustomerController(ICustomerService customerService, UserManager<AppUser> userManager)
+        public CountryController(ICountriesService countriesService)
         {
-            _customerService = customerService;
-            _userManager = userManager;
+            _countriesService = countriesService;
+        }
+
+        // GET: /<controller>/
+        [HttpGet(ApiRoutes.getAllCountries)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetAllCountries(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _countriesService.GetAllCountriesAsync(cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
         }
 
         // GET api/values/5
-        [HttpGet(ApiRoutes.getCustomerById)]
+        [HttpGet(ApiRoutes.getCountryById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCustomerById([FromRoute] int customerId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetCountryById([FromRoute] int countryId, [FromQuery] bool includeCities = false, CancellationToken cancellationToken = default)
         {
-
             try
             {
-                var apiResponse = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
+                var apiResponse = await _countriesService.GetCountryByIdAsync(countryId, includeCities, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -62,88 +83,21 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
-        [HttpGet(ApiRoutes.getCustomerByAccountNo)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCustomerByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
-        {
-            var user = _userManager.GetUserAsync(User);
-
-            try
-            {
-                var apiResponse = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
-
-                if (apiResponse.Success)
-                    return Ok(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
-
-                return BadRequest(apiResponse);
-            }
-            catch (Exception exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
-            }
-        }
-
-        [HttpGet(ApiRoutes.getCustomerByIBAN)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCustomerByIBAN([FromRoute] string iban, CancellationToken cancellationToken = default)
-        {
-            var user = _userManager.GetUserAsync(User);
-
-            try
-            {
-                var apiResponse = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
-
-                if (apiResponse.Success)
-                    return Ok(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
-
-                return BadRequest(apiResponse);
-            }
-            catch (Exception exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
-            }
-        }
-
-
-
-        [HttpPut(ApiRoutes.postCustomer)]
+        // POST api/values
+        [HttpPut(ApiRoutes.postCountry)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> PostCustomer([FromRoute] int customerId,[FromBody] CreateCustomerRequest request,
-                                                                   CancellationToken cancellationToken = default)
+        public async Task<IActionResult> PostCountry([FromRoute] int countryId, [FromBody] CreateCountryRequest request,
+                                                         CancellationToken cancellationToken = default)
         {
-            var user = await _userManager.GetUserAsync(User);
-
             try
             {
-                var apiResponse = await _customerService.AddOrEditCustomerAsync(customerId, request, cancellationToken);
+                var apiResponse = await _countriesService.AddOrEditCountryAsync(countryId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
-
 
                 else if (apiResponse.Errors[0].Contains("not found"))
                     return NotFound(apiResponse);
@@ -158,7 +112,7 @@ namespace VirtualBank.Api.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
-
         }
+
     }
 }

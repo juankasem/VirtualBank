@@ -4,10 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualBank.Core.Entities
 {
-    [NotMapped]
-    public class Address
+    public class Address : BaseClass
     {
-        [MaxLength(50)]
+        [MaxLength(150)]
         public string Street { get; set; }
 
         [ForeignKey(nameof(District))]
@@ -22,6 +21,5 @@ namespace VirtualBank.Core.Entities
         [ForeignKey(nameof(Country))]
         public int CountryId { get; set; }
         public Country Country { get; set; }
-
     }
 }

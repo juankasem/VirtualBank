@@ -27,7 +27,7 @@ namespace VirtualBank.Api.Services
         }
 
       
-        public async Task<ApiResponse<BranchesResponse>> GetAllBranches(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchesResponse>> GetAllBranchesAsync(CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchesResponse>();
 
@@ -45,7 +45,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse<BranchesResponse>> GetBranchesByCityId(int cityId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchesResponse>> GetBranchesByCityIdAsync(int cityId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchesResponse>();
 
@@ -63,7 +63,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse<BranchResponse>> GetBranchById(int branchId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchResponse>> GetBranchByIdAsync(int branchId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchResponse>();
 
@@ -75,7 +75,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse<BranchResponse>> GetBranchByCode(string code, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchResponse>> GetBranchByCodeAsync(string code, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchResponse>();
 
@@ -87,7 +87,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-        public async Task<ApiResponse> AddOrEditBranch(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> AddOrEditBranchAsync(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -42,7 +43,7 @@ namespace VirtualBank.Api.Services
         /// <param name="accountNo"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionsResponse>> GetMyCashTransactionsByIBANAsync(string iban, int lastDays, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByIBANAsync(string iban, int lastDays, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionsResponse>();
 
@@ -54,7 +55,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var cashTransactions = new ImmutableArray<CashTransactionResponse>();
+            var cashTransactions = new List<CashTransactionResponse>();
 
             foreach (var cashTransaction in cashTransactionList)
             {
@@ -88,7 +89,7 @@ namespace VirtualBank.Api.Services
                 }
             }
 
-            responseModel.Data = new CashTransactionsResponse(cashTransactions);
+            responseModel.Data = new CashTransactionsResponse(cashTransactions.ToImmutableArray());
 
 
             return responseModel;

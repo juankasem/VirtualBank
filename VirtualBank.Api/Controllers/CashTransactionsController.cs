@@ -41,10 +41,11 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.getCashTransactionsByIBAN)]
         [ProducesResponseType(typeof(CashTransactionsResponse), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int) HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetMyCashTransactionsByIBANAsync([FromRoute] string iban, [FromQuery] int lastDays,
-                                                                             CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetCashTransactionsByIBAN([FromRoute] string iban, [FromQuery] int lastDays,
+                                                                    CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
             var customer = GetCustomerByIBANAsync(iban);
@@ -61,16 +62,16 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _cashTransactionsService.GetMyCashTransactionsByIBANAsync(iban, lastDays, cancellationToken);
+                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban, lastDays, cancellationToken);
 
                 if(apiResponse.Success)
                   return Ok(apiResponse);
 
-
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+
+                return BadRequest(apiResponse);
 
             }
             catch (Exception exception)
@@ -82,28 +83,32 @@ namespace VirtualBank.Api.Controllers
         // POST api/values
         [HttpPost(ApiRoutes.postCashTransaction)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostCashTransactionAsync([FromBody] CreateCashTransactionRequest request,
-                                                                  CancellationToken cancellationToken = default)
+        public async Task<IActionResult> PostCashTransaction([FromBody] CreateCashTransactionRequest request,
+                                                              CancellationToken cancellationToken = default)
         {
             try
             {
                var apiResponse =  await _cashTransactionsService.AddCashTransactionAsync(request, cancellationToken);
 
                 if (apiResponse.Success)
-                return Ok(apiResponse);
+                    return Ok(apiResponse);
 
-                
-                else if (apiResponse.Errors[0].Contains("not found") || apiResponse.Errors[0].Contains("not enough balance"))
-                     return BadRequest(apiResponse);
+                else if (apiResponse.Errors[0].Contains("not found"))
+                    return NotFound(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("not enough balance"))
+                    return UnprocessableEntity(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
 
+                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {

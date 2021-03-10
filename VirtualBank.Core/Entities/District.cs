@@ -7,6 +7,7 @@ namespace VirtualBank.Core.Entities
     public class District : BaseClass
     {
         [Required]
+        [MaxLength(50)]
         public string Name { get; set; }
 
         [ForeignKey(nameof(City))]

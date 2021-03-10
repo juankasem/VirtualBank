@@ -4,35 +4,31 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
+using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
-using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace VirtualBank.Api.Controllers
 {
-    [ApiController]
-    [Authorize]
-    public class CountryController : Controller
+    public class CitiesController : Controller
     {
-        private readonly ICountryService _countryService;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly ICountriesService _countriesService;
+        private readonly ICitiesService _citiesService;
 
-        public CountryController(ICountryService countryService, UserManager<AppUser> userManager)
-        {
-            _countryService = countryService;
-            _userManager = userManager;
+        public CitiesController(ICountriesService countriesService, ICitiesService citiesService)
+        {;
+            _countriesService = countriesService;
+            _citiesService = citiesService;
         }
 
+
         // GET: /<controller>/
-        [HttpGet(ApiRoutes.getAllCountries)]
+        [HttpGet(ApiRoutes.getAllCities)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
@@ -40,18 +36,47 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _countryService.GetAllCountries(cancellationToken);
+                var apiResponse = await _citiesService.GetAllCitiesAsync(cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return BadRequest(apiResponse);
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
+        }
+
+        // GET: /<controller>/
+        [HttpGet(ApiRoutes.getCitiesByCountryId)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetCitiesByCountryId([FromRoute] int countryId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if(! await _countriesService.CountryExists(countryId))
+                {
+                    return NotFound();
+                }
+
+                var apiResponse = await _citiesService.GetCitiesByCountryIdAsync(countryId, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+
+                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
@@ -60,26 +85,27 @@ namespace VirtualBank.Api.Controllers
         }
 
         // GET api/values/5
-        [HttpGet(ApiRoutes.getCountryById)]
+        [HttpGet(ApiRoutes.getCityById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCountryById(string countryId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetCityById([FromRoute] int cityId, [FromQuery] bool includeCities = false, CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _countryService.GetCountryById(countryId, cancellationToken);
+                var apiResponse = await _citiesService.GetCityByIdAsync(cityId, includeCities, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("not found"))
-                    return BadRequest(apiResponse);
+                    return NotFound(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+
+                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
@@ -88,30 +114,29 @@ namespace VirtualBank.Api.Controllers
         }
 
         // POST api/values
-        [HttpPut(ApiRoutes.postCountry)]
+        [HttpPut(ApiRoutes.postCity)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostCountryAsync([FromRoute] string countryId, [FromBody] CreateCountryRequest request,
-                                                         CancellationToken cancellationToken = default)
+        public async Task<IActionResult> PostCity([FromRoute] int cityId, [FromBody] CreateCityRequest request,
+                                                   CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _countryService.AddOrEditCountry(countryId, request, cancellationToken);
+                var apiResponse = await _citiesService.AddOrEditCityAsync(cityId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-
                 else if (apiResponse.Errors[0].Contains("not found"))
-                    return BadRequest(apiResponse);
+                    return NotFound(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
 
+                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {

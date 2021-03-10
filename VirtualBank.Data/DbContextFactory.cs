@@ -10,7 +10,8 @@ namespace VirtualBank.Data
     {
        public static IServiceCollection AddDatabaseContext(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<VirtualBankDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("VirtualBankDbConnection")));
+            services.AddDbContext<VirtualBankDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("VirtualBankDbConnection")));
 
             return services;
         }

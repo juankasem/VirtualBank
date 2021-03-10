@@ -44,7 +44,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _branchService.GetAllBranches(cancellationToken);
+                var apiResponse = await _branchService.GetAllBranchesAsync(cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -71,7 +71,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _branchService.GetBranchesByCityId(cityId, cancellationToken);
+                var apiResponse = await _branchService.GetBranchesByCityIdAsync(cityId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -100,7 +100,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _branchService.GetBranchById(branchId, cancellationToken);
+                var apiResponse = await _branchService.GetBranchByIdAsync(branchId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -127,7 +127,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _branchService.GetBranchByCode(code, cancellationToken);
+                var apiResponse = await _branchService.GetBranchByCodeAsync(code, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -152,12 +152,12 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostBranchAsync([FromRoute] string branchId, [FromBody] CreateBranchRequest request,
+        public async Task<IActionResult> PostBranchAsync([FromRoute] int branchId, [FromBody] CreateBranchRequest request,
                                                          CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _branchService.AddOrEditBranch(branchId, request, cancellationToken);
+                var apiResponse = await _branchService.AddOrEditBranchAsync(branchId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

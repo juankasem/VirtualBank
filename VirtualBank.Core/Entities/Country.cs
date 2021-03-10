@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace VirtualBank.Core.Entities
@@ -12,5 +13,7 @@ namespace VirtualBank.Core.Entities
         [Required]
         [MaxLength(8)]
         public string Code { get; set; }
+
+        public ICollection<City> Cities { get; set; }
     }
 }

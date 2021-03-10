@@ -13,20 +13,11 @@ namespace VirtualBank.Core.ApiRequestModels.CityApiRequests
         [MaxLength(150)]
         public string Name { get; set; }
 
-        [Required]
-        [MaxLength(8)]
-        public string Code { get; set; }
 
-        [Required]
-        [Phone]
-        public string Phone { get; set; }
-
-        public CreateCityRequest(int countryId, string name, string code, string phone)
+        public CreateCityRequest(int countryId, string name)
         {
             CountryId = Throw.ArgumentNullException.IfNull(countryId, nameof(countryId));
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
-            Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
-            Phone = Throw.ArgumentNullException.IfNull(phone, nameof(phone));
         }
     }
 }

@@ -11,14 +11,11 @@ namespace VirtualBank.Core.ApiResponseModels.CityApiResponses
 
         public string Name { get; }
 
-        public string Code { get; }
-
-        public CityResponse(int id, int countryId, string name, string code)
+        public CityResponse(int id, int countryId, string name)
         {
             Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             CountryId = Throw.ArgumentNullException.IfNull(countryId, nameof(countryId));
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
-            Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
         }
     }
 }

@@ -65,6 +65,8 @@ namespace VirtualBank.Api
 
             services.AddScoped<IBankAccountService, BankAccountService>();
             services.AddScoped<IBranchService, BranchService>();
+            services.AddScoped<ICountriesService, CountriesService>();
+            services.AddScoped<IBranchService, BranchService>();
             services.AddScoped<ICashTransactionsService, CashTransactionsService>();
             services.AddScoped<ICustomerService, CustomerService>();
         }

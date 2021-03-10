@@ -40,13 +40,13 @@ namespace VirtualBank.Core.Entities
         [Required]
         public DateTime BirthDate { get; set; }
 
-        [Required]
+        [ForeignKey(nameof(Address))]
+        public int AddressId { get; set; }
         public Address Address { get; set; }
 
         [ForeignKey(nameof(User))]
         [MaxLength(450)]
         public string UserId { get; set; }
-
         public AppUser User { get; set; }
 
         public ICollection<BankAccount> BankAccounts { get; set; }

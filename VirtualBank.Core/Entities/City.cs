@@ -16,7 +16,6 @@ namespace VirtualBank.Core.Entities
         public int CountryId { get; set; }
         public Country Country { get; set; }
 
-        public ICollection<District> District { get; set; }
-
+        public ICollection<District> Districts { get; set; }
     }
 }

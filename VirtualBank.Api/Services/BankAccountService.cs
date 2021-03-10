@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -31,7 +32,7 @@ namespace VirtualBank.Api.Services
 
             var bankAccountsList = await _dbContext.BankAccounts.Where(a => a.CustomerId == customerId && a.Disabled == false).ToListAsync();
 
-            var bankAccounts = new ImmutableArray<BankAccountResponse>();
+            var bankAccounts = new List<BankAccountResponse>();
 
             foreach (var bankAccount in bankAccountsList)
             {
@@ -41,7 +42,7 @@ namespace VirtualBank.Api.Services
                 bankAccounts.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn));
             }
 
-            responseModel.Data = new BankAccountsResponse(bankAccounts);
+            responseModel.Data = new BankAccountsResponse(bankAccounts.ToImmutableArray());
 
             return responseModel;
  
@@ -110,7 +111,7 @@ namespace VirtualBank.Api.Services
 
 
         public async Task<ApiResponse> AddOrEditBankAccountAsync(int accountId, CreateBankAccountRequest request,
-                                                                      CancellationToken cancellationToken = default)
+                                                                 CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;
@@ -131,7 +132,7 @@ namespace VirtualBank.Api.Services
 
                 if (newBankAccount == null)
                 {
-                    responseModel.AddError("couldn't create new bankaccount");
+                    responseModel.AddError("couldn't create new bank account");
                     return responseModel;
                 }
 
@@ -158,7 +159,6 @@ namespace VirtualBank.Api.Services
             else
             {
                 responseModel.AddError($"bank account Not found");
-
             }
 
             return responseModel;
@@ -177,7 +177,6 @@ namespace VirtualBank.Api.Services
             else
             {
                 responseModel.AddError($"bank account Not found");
-
             }
 
             return responseModel;
