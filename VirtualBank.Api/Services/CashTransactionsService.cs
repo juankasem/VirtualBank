@@ -43,12 +43,18 @@ namespace VirtualBank.Api.Services
         /// <param name="accountNo"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionsResponse>> GetCashTransactionsByIBANAsync(string iban, int lastDays, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CashTransactionListResponse>> GetCashTransactionsByIBANAsync(string iban,
+                                                                                                   int lastDays,
+                                                                                                   int pageNumber,
+                                                                                                   int pageSize,
+                                                                                                   CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<CashTransactionsResponse>();
+            var responseModel = new ApiResponse<CashTransactionListResponse>();
+            var skip = (pageNumber - 1) * pageSize;
 
             var cashTransactionList = await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
                                                                                && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays)
+                                                                                 .Skip(skip).Take(pageSize)
                                                                                  .AsNoTracking().ToListAsync();
 
             if(cashTransactionList.Count() == 0) {
@@ -89,13 +95,12 @@ namespace VirtualBank.Api.Services
                 }
             }
 
-            responseModel.Data = new CashTransactionsResponse(cashTransactions.ToImmutableArray());
-
+            responseModel.Data = new CashTransactionListResponse(cashTransactions.ToImmutableList(), cashTransactions.Count);
 
             return responseModel;
         }
 
-        public Task<ApiResponse<CashTransactionsResponse>> GetFastCashTransactionsByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        public Task<ApiResponse<CashTransactionListResponse>> GetFastCashTransactionsByIBANAsync(string iban, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

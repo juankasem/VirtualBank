@@ -27,6 +27,9 @@
     <Folder Include="ApiResponseModels\CountryApiResponse\" />
     <Folder Include="ApiRequestModels\CityApiRequests\" />
     <Folder Include="ApiResponseModels\CityApiResponses\" />
+    <Folder Include="Constants\" />
+    <Folder Include="ApiRequestModels\DistrictApiRequests\" />
+    <Folder Include="ApiResponseModels\DistrictApiResponses\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.3" />

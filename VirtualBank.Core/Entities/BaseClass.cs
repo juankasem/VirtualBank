@@ -11,14 +11,14 @@ namespace VirtualBank.Core.Entities
         public int Id { get; set; }
 
         [Required]
-        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
-
-        [Required]
         public string CreatedBy { get; set; }
 
-        public DateTime? ModifiedOn { get; set; } 
+        [Required]
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
-        public string ModifiedBy { get; set; }
+        public string LastModifiedBy { get; set; }
+
+        public DateTime? LastModifiedOn { get; set; } 
 
         public bool Disabled { get; set; } = false;
 

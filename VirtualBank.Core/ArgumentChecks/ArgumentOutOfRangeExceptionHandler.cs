@@ -1,7 +1,8 @@
 ﻿using System;
+
 namespace VirtualBank.Core.ArgumentChecks
 {
-    public class ArgumentOutOfRangeExceptionHandler
+    public sealed class ArgumentOutOfRangeExceptionHandler
     {
         public void If(bool condition, string argumentName, Func<string> exceptionMessage)
         {

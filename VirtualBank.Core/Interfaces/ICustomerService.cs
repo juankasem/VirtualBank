@@ -9,6 +9,8 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface ICustomerService
     {
+        Task<ApiResponse<CustomerListResponse>> GetAllCustomersAsync(CancellationToken cancellationToken = default);
+
         Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(int customerId, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CustomerResponse>> GetCustomerByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);

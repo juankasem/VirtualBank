@@ -13,6 +13,7 @@ using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses;
 using VirtualBank.Core.ApiRoutes;
+using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
@@ -39,13 +40,16 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/values/5
         [HttpGet(ApiRoutes.getCashTransactionsByIBAN)]
-        [ProducesResponseType(typeof(CashTransactionsResponse), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCashTransactionsByIBAN([FromRoute] string iban, [FromQuery] int lastDays,
-                                                                    CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetCashTransactionsByIBAN([FromRoute] string iban,
+                                                                   [FromQuery] int lastDays,
+                                                                   [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,                                                                                                                                                             
+                                                                   [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                                   CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
             var customer = GetCustomerByIBANAsync(iban);
@@ -62,10 +66,18 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban, lastDays, cancellationToken);
+                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,
+                                                                                                lastDays,
+                                                                                                pageNumber,
+                                                                                                pageSize,
+                                                                                                cancellationToken);
 
-                if(apiResponse.Success)
-                  return Ok(apiResponse);
+                if (apiResponse.Success)
+                {
+                  var pagedResponse = new PagedResponse<CashTransactionListResponse>(apiResponse.Data);
+
+                  return Ok(pagedResponse);
+                }
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);

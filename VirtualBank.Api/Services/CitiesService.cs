@@ -26,9 +26,9 @@ namespace VirtualBank.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
      
-        public async Task<ApiResponse<CitiesResponse>> GetAllCitiesAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CityListResponse>> GetAllCitiesAsync(CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<CitiesResponse>();
+            var responseModel = new ApiResponse<CityListResponse>();
 
             var cityList = await _dbContext.Cities.OrderBy(c => c.Name).ToListAsync();
 
@@ -39,14 +39,14 @@ namespace VirtualBank.Api.Services
                 cities.Add(CreateCityResponse(city));
             }
 
-            responseModel.Data = new CitiesResponse(cities.ToImmutableArray());
+            responseModel.Data = new CityListResponse(cities.ToImmutableList(), cities.Count);
 
             return responseModel;
         }
 
-        public async Task<ApiResponse<CitiesResponse>> GetCitiesByCountryIdAsync(int countryId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CityListResponse>> GetCitiesByCountryIdAsync(int countryId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<CitiesResponse>();
+            var responseModel = new ApiResponse<CityListResponse>();
 
             var cityList = await _dbContext.Cities.Where(c => c.CountryId == countryId).OrderBy(c => c.Name).ToListAsync();
 
@@ -57,7 +57,7 @@ namespace VirtualBank.Api.Services
                 cities.Add(CreateCityResponse(city));
             }
 
-            responseModel.Data = new CitiesResponse(cities.ToImmutableArray());
+            responseModel.Data = new CityListResponse(cities.ToImmutableList(), cities.Count);
 
             return responseModel;
         }
@@ -88,9 +88,13 @@ namespace VirtualBank.Api.Services
 
             if (city != null)
             {
+                city.CountryId = request.CountryId;
                 city.Name = request.Name;
-                city.ModifiedBy = user.Identity.Name;
-                city.ModifiedOn = DateTime.UtcNow;
+                city.LastModifiedBy = user.Identity.Name;
+                city.LastModifiedOn = DateTime.UtcNow;
+
+                _dbContext.Cities.Update(city);
+
             }
             else
             {

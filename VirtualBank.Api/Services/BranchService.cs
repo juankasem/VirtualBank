@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -27,38 +28,38 @@ namespace VirtualBank.Api.Services
         }
 
       
-        public async Task<ApiResponse<BranchesResponse>> GetAllBranchesAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchListResponse>> GetAllBranchesAsync(CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<BranchesResponse>();
+            var responseModel = new ApiResponse<BranchListResponse>();
 
             var branchList = await _dbContext.Branches.ToListAsync();
 
-            var branches = new ImmutableArray<BranchResponse>();
+            var branches = new List<BranchResponse>();
 
             foreach (var branch in branchList)
             {
                 branches.Add(CreateBranchResponse(branch));
             }
 
-            responseModel.Data = new BranchesResponse(branches);
+            responseModel.Data = new BranchListResponse(branches.ToImmutableList(), branches.Count);
 
             return responseModel;
         }
 
-        public async Task<ApiResponse<BranchesResponse>> GetBranchesByCityIdAsync(int cityId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchListResponse>> GetBranchesByCityIdAsync(int cityId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<BranchesResponse>();
+            var responseModel = new ApiResponse<BranchListResponse>();
 
             var branchesList = await _dbContext.Branches.Include(b => b.Address.CityId == cityId).ToListAsync();
 
-            var branches = new ImmutableArray<BranchResponse>();
+            var branches = new List<BranchResponse>();
 
             foreach (var branch in branchesList)
             {
                 branches.Add(CreateBranchResponse(branch));
             }
 
-            responseModel.Data = new BranchesResponse(branches);
+            responseModel.Data = new BranchListResponse(branches.ToImmutableList(), branches.Count);
 
             return responseModel;
         }
@@ -98,8 +99,8 @@ namespace VirtualBank.Api.Services
                 branch.Name = request.Name;
                 branch.Code = request.Code;
                 branch.Address = request.Address;
-                branch.ModifiedBy = user.Identity.Name;
-                branch.ModifiedOn = DateTime.UtcNow;
+                branch.LastModifiedBy = user.Identity.Name;
+                branch.LastModifiedOn = DateTime.UtcNow;
             }
             else
             {

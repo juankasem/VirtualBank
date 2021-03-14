@@ -21,7 +21,7 @@ namespace VirtualBank.Core.ApiRequestModels.BranchApiRequests
         [Required]
         public Address Address { get; set; }
 
-        public CreateBranchRequest(string name, string code, string phone, Address address)
+        public CreateBranchRequest(string name, string code, string phone, Address address) 
         {
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
             Code = Throw.ArgumentNullException.IfNull(code, nameof(code));

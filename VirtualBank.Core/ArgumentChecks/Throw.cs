@@ -9,10 +9,9 @@ namespace VirtualBank.Core.ArgumentChecks
         public static ArgumentNullExceptionHandler ArgumentNullException => new ArgumentNullExceptionHandler();
 
 
-        public static ArgumentOutOfRangeException ArgumentOutOfRangeException => new ArgumentOutOfRangeException();
+        public static ArgumentOutOfRangeExceptionHandler ArgumentOutOfRangeException => new ArgumentOutOfRangeExceptionHandler();
 
 
         public static InvalidOperationExceptionHandler InvalidOperationException => new InvalidOperationExceptionHandler();
-
     }
 }

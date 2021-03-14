@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
+using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
@@ -43,7 +44,10 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAccountsByCustomerId([FromRoute] int customerId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAccountsByCustomerId([FromRoute] int customerId,
+                                                                 [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+                                                                 [FromQuery] int pageSize = PagingConstants.DefaultPageSize, 
+                                                                 CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
             var customer = GetCustomerByIdAsync(customerId);
@@ -60,7 +64,10 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _bankAccountService.GetAccountsByCustomerIdAsync(customerId, cancellationToken);
+                var apiResponse = await _bankAccountService.GetAccountsByCustomerIdAsync(customerId,
+                                                                                        pageNumber,
+                                                                                        pageSize,   
+                                                                                        cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

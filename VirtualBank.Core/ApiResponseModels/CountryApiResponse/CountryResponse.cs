@@ -14,9 +14,9 @@ namespace VirtualBank.Core.ApiResponseModels.CountryApiResponse
 
         public string Code { get; }
 
-        public ImmutableArray<CityResponse> Cities{ get;}
+        public ImmutableList<CityResponse> Cities{ get;}
 
-        public CountryResponse(int id, string name, string code, ImmutableArray<CityResponse> cities)
+        public CountryResponse(int id, string name, string code, ImmutableList<CityResponse> cities)
         {
             Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));

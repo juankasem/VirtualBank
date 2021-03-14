@@ -125,11 +125,10 @@ namespace VirtualBank.Api.Controllers
 
                 user.RefreshToken = response.Data.RefreshToken;
                 await _userManager.UpdateAsync(user);
-
             }
             else
             {
-                response.AddError("Invalid login credentials");
+                response.AddError("Invalid login attempt");
                 return Unauthorized(response);
             }
 

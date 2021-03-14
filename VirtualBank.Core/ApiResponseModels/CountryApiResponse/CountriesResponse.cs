@@ -5,11 +5,11 @@ namespace VirtualBank.Core.ApiResponseModels.CountryApiResponse
 {
     public class CountriesResponse
     {
-        public ImmutableArray<CountryResponse> Countries { get; }
+        public ImmutableList<CountryResponse> Countries { get; }
 
-        public CountriesResponse(ImmutableArray<CountryResponse> countries)
+        public CountriesResponse(ImmutableList<CountryResponse> countries)
         {
-            Countries = countries.IsDefault ? ImmutableArray<CountryResponse>.Empty : countries;
+            Countries = countries.IsEmpty ? ImmutableList<CountryResponse>.Empty : countries;
         }
     }
 }

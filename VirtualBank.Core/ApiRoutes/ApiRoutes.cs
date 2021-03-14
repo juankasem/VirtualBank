@@ -30,6 +30,7 @@ namespace VirtualBank.Core.ApiRoutes
 
         #endregion
 
+
         #region Branch
         public const string getAllBranches = "api/Branch/getAllBranches";
 
@@ -45,14 +46,27 @@ namespace VirtualBank.Core.ApiRoutes
 
         #endregion
 
+
+        #region District
+        public const string getAllDistricts = "api/Districts/getAll";
+
+        public const string getDistrictsByCityId = "api/Districts/getByCityId";
+
+        public const string getDistrictById = "api/Districts/getById/{districtId:int}";
+
+        public const string postDistrict = "api/Districts/post/{districtId:int}";
+
+        #endregion
+
+
         #region City
-        public const string getAllCities = "api/City/getAllCities";
+        public const string getAllCities = "api/Cities/getAllCities";
 
-        public const string getCitiesByCountryId = "api/City/getAllCities";
+        public const string getCitiesByCountryId = "api/Cities/getByCountryId";
 
-        public const string getCityById = "api/City/getById/{cityId:int}";
+        public const string getCityById = "api/Cities/getById/{cityId:int}";
 
-        public const string postCity = "api/City/postCity/{cityId:int}";
+        public const string postCity = "api/Cities/post/{cityId:int}";
 
         #endregion
 
@@ -62,7 +76,7 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string getCountryById = "api/Country/getById/{countryId:int}";
 
-        public const string postCountry = "api/Country/postCountry/{countryId:int}";
+        public const string postCountry = "api/Country/post/{countryId:int}";
 
         #endregion
 

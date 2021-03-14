@@ -9,9 +9,9 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface ICitiesService
     {
-        Task<ApiResponse<CitiesResponse>> GetAllCitiesAsync(CancellationToken cancellationToken = default);
+        Task<ApiResponse<CityListResponse>> GetAllCitiesAsync(CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<CitiesResponse>> GetCitiesByCountryIdAsync(int countryId, CancellationToken cancellationToken = default);
+        Task<ApiResponse<CityListResponse>> GetCitiesByCountryIdAsync(int countryId, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CityResponse>> GetCityByIdAsync(int cityId, bool includeDistricts = true, CancellationToken cancellationToken = default);
 

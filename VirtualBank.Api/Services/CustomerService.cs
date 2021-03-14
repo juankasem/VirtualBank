@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +25,25 @@ namespace VirtualBank.Api.Services
         {
             _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
+        }
+
+
+        public async Task<ApiResponse<CustomerListResponse>> GetAllCustomersAsync(CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CustomerListResponse>();
+
+            var customerList = await _dbContext.Customers.ToListAsync();
+
+            var customers = new List<CustomerResponse>();
+
+            foreach (var country in customerList)
+            {
+                customers.Add(CreateCustomerResponse(country));
+            }
+
+            responseModel.Data = new CustomerListResponse(customers.ToImmutableList(), customers.Count);
+
+            return responseModel;
         }
 
         public async Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(int customerId, CancellationToken cancellationToken = default)
@@ -123,29 +144,31 @@ namespace VirtualBank.Api.Services
 
 
         public async Task<ApiResponse> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request,
-                                                                   CancellationToken cancellationToken)
+                                                              CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;
 
-            var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
-            var existingCustomer = request.Customer;
+            var existingCustomer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
+            var customer = request.Customer;
 
             try
             {
-                if (customer != null)
+                if (existingCustomer != null)
                 {
-                    customer.IdentificationNo = existingCustomer.IdentificationNo;
-                    customer.IdentificationType = existingCustomer.IdentificationType;
-                    customer.FirstName = existingCustomer.FirstName;
-                    customer.MiddleName = existingCustomer.MiddleName.Length > 0 ? existingCustomer.MiddleName : "";
-                    customer.LastName = existingCustomer.LastName;
-                    customer.Gender = existingCustomer.Gender;
-                    customer.Nationality = existingCustomer.Nationality;
-                    customer.Address = existingCustomer.Address;
-                    customer.BirthDate = existingCustomer.BirthDate;
-                    customer.ModifiedOn = DateTime.UtcNow;
-                    customer.ModifiedBy = user.Identity.Name;
+                    existingCustomer.IdentificationNo = customer.IdentificationNo;
+                    existingCustomer.IdentificationType = customer.IdentificationType;
+                    existingCustomer.FirstName = customer.FirstName;
+                    existingCustomer.MiddleName = customer.MiddleName;
+                    existingCustomer.LastName = customer.LastName;
+                    existingCustomer.Gender = customer.Gender;
+                    existingCustomer.Nationality = customer.Nationality;
+                    existingCustomer.Address = customer.Address;
+                    existingCustomer.BirthDate = customer.BirthDate;
+                    existingCustomer.LastModifiedOn = DateTime.UtcNow;
+                    existingCustomer.LastModifiedBy = user.Identity.Name;
+
+                    _dbContext.Customers.Update(existingCustomer);
                 }
                 else
                 {
@@ -223,7 +246,7 @@ namespace VirtualBank.Api.Services
 
             if(customer != null)
             {
-                var newCustomer = new Customer()
+                return new Customer()
                 {
                     IdentificationNo = customer.IdentificationNo,
                     IdentificationType = customer.IdentificationType,
@@ -236,12 +259,21 @@ namespace VirtualBank.Api.Services
                     BirthDate = customer.BirthDate,
                     Address = customer.Address
                 };
-
-                return newCustomer;
             }
 
             return null;     
         }
+
+        private CustomerResponse CreateCustomerResponse(Customer customer)
+        {
+            if (customer != null)
+            {
+                return new CustomerResponse(customer);
+            }
+
+            return null;
+        }
+
 
         private RecipientCustomerResponse CreateRecipientCustomerResponse(Customer customer)
         {

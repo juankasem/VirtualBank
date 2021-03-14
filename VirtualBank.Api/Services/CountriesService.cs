@@ -41,7 +41,7 @@ namespace VirtualBank.Api.Services
                 countries.Add(CreateCountryResponse(country));
             }
 
-            responseModel.Data = new CountriesResponse(countries.ToImmutableArray());
+            responseModel.Data = new CountriesResponse(countries.ToImmutableList());
 
             return responseModel;
         }
@@ -86,8 +86,8 @@ namespace VirtualBank.Api.Services
             {
                 country.Name = request.Name;
                 country.Code = request.Code;
-                country.ModifiedBy = user.Identity.Name;
-                country.ModifiedOn = DateTime.UtcNow;
+                country.LastModifiedBy = user.Identity.Name;
+                country.LastModifiedOn = DateTime.UtcNow;
             }
             else
             {
@@ -133,7 +133,7 @@ namespace VirtualBank.Api.Services
         {
             if (country != null)
             {
-                return new CountryResponse(country.Id, country.Name, country.Code, new ImmutableArray<CityResponse>());
+                return new CountryResponse(country.Id, country.Name, country.Code, null);
             }
 
             return null;
@@ -151,7 +151,7 @@ namespace VirtualBank.Api.Services
                     cities.Add(CreateCityResponse(city));
                 }
 
-                return new CountryResponse(country.Id, country.Name, country.Code, cities.ToImmutableArray());
+                return new CountryResponse(country.Id, country.Name, country.Code, cities.ToImmutableList());
             }
 
             return null;

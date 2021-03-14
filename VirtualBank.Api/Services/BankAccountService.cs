@@ -26,9 +26,9 @@ namespace VirtualBank.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ApiResponse<BankAccountsResponse>> GetAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BankAccountListResponse>> GetAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<BankAccountsResponse>();
+            var responseModel = new ApiResponse<BankAccountListResponse>();
 
             var bankAccountsList = await _dbContext.BankAccounts.Where(a => a.CustomerId == customerId && a.Disabled == false).ToListAsync();
 
@@ -42,7 +42,7 @@ namespace VirtualBank.Api.Services
                 bankAccounts.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn));
             }
 
-            responseModel.Data = new BankAccountsResponse(bankAccounts.ToImmutableArray());
+            responseModel.Data = new BankAccountListResponse(bankAccounts.ToImmutableList(), bankAccounts.Count);
 
             return responseModel;
  
@@ -123,8 +123,8 @@ namespace VirtualBank.Api.Services
                 bankaccount.Currency = request.Account.Currency;
                 bankaccount.Balance = request.Account.Balance;
                 bankaccount.Type = request.Account.Type;
-                bankaccount.ModifiedBy = user.Identity.Name;
-                bankaccount.ModifiedOn = DateTime.UtcNow;
+                bankaccount.LastModifiedBy = user.Identity.Name;
+                bankaccount.LastModifiedOn = DateTime.UtcNow;
             }
             else
             {
