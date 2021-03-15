@@ -68,7 +68,7 @@ namespace VirtualBank.Api.Services
                 if (cashTransaction.From != iban && cashTransaction.Type == CashTransactionType.Transfer)
                 {
                     var senderResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.From, cancellationToken);
-                    var sender = senderResponse?.Data?.Customer?.FirstName + " " + senderResponse?.Data?.Customer?.LastName;
+                    var sender = senderResponse?.Data?.FullName;
 
                     cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, sender, iban, Direction.In));
                 }
@@ -76,7 +76,7 @@ namespace VirtualBank.Api.Services
                 else if(cashTransaction.To != iban && cashTransaction.Type == CashTransactionType.Transfer)
                 {
                     var recipientResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.To, cancellationToken);
-                    var recipient = recipientResponse?.Data?.Customer?.FirstName + " " + recipientResponse?.Data?.Customer?.LastName;
+                    var recipient = recipientResponse?.Data?.FullName;
 
                     cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, iban, recipient, Direction.Out));
                 }
@@ -142,68 +142,32 @@ namespace VirtualBank.Api.Services
             var user = _httpContextAccessor.HttpContext.User;
             var username = user.Identity.Name;
 
-            await using var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
+            var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
-            switch (request.CashTransaction.Type)
+            using (dbContextTransaction)
             {
-                case CashTransactionType.Deposit:
-                    try
-                    {
-                        var toAccount = await GetBankAccountByIBANAsync(request.CashTransaction.To);
-
-                        if (toAccount == null)
+                switch (request.CashTransaction.Type)
+                {
+                    case CashTransactionType.Deposit:
+                        try
                         {
-                            responseModel.AddError("account not found");
-                            return responseModel;
-                        }
+                            var toAccount = await GetBankAccountByIBANAsync(request.CashTransaction.To);
 
-                        //Add amount to recipient balance
-                        toAccount.Balance += request.CashTransaction.Amount;
+                            if (toAccount == null)
+                            {
+                                responseModel.AddError("account not found");
+                                return responseModel;
+                            }
 
-                        _dbContext.BankAccounts.Update(toAccount);
-                        await _dbContext.SaveChangesAsync();
+                            //Add amount to recipient balance
+                            toAccount.Balance += request.CashTransaction.Amount;
 
-                        var cashTransaction = CreateCashTransaction(request, username, 0, toAccount.Balance);
-
-                        //Add transaction to db & save changes 
-                        await _dbContext.CashTransactions.AddAsync(cashTransaction);
-                        await _dbContext.SaveChangesAsync();
-
-                        await dbContextTransaction.CommitAsync();
-
-                        return responseModel;
-                    }
-
-                    catch (Exception ex)
-                    {
-                       await dbContextTransaction.RollbackAsync();
-                        responseModel.AddError(ex.ToString());
-
-                        return responseModel;
-                    }
-
-
-                case CashTransactionType.Withdrawal:
-                    try
-                    {
-                        var fromAccount = await GetBankAccountByIBANAsync(request.CashTransaction.From);
-
-                        if (fromAccount == null)
-                        {
-                            responseModel.AddError("account not found");
-                            return responseModel;
-                        }
-                   
-                        if (request.CashTransaction.Amount <= fromAccount.Balance)
-                        {
-                            fromAccount.Balance -= request.CashTransaction.Amount;
-
-                            _dbContext.BankAccounts.Update(fromAccount);
+                            _dbContext.BankAccounts.Update(toAccount);
                             await _dbContext.SaveChangesAsync();
 
-                            var cashTransaction = CreateCashTransaction(request, username, fromAccount.Balance, 0);
-                            
+                            var cashTransaction = CreateCashTransaction(request, username, 0, toAccount.Balance);
 
+                            //Add transaction to db & save changes 
                             await _dbContext.CashTransactions.AddAsync(cashTransaction);
                             await _dbContext.SaveChangesAsync();
 
@@ -211,103 +175,143 @@ namespace VirtualBank.Api.Services
 
                             return responseModel;
                         }
-                        else
+
+                        catch (Exception ex)
                         {
-                            responseModel.AddError("balance is not enough to complete withdrawal");
+                            await dbContextTransaction.RollbackAsync();
+                            responseModel.AddError(ex.ToString());
+
                             return responseModel;
                         }
-                    }
 
-                    catch (Exception ex)
-                    {
-                       await dbContextTransaction.RollbackAsync();
-                       responseModel.AddError(ex.ToString());
 
+                    case CashTransactionType.Withdrawal:
+                        try
+                        {
+                            var fromAccount = await GetBankAccountByIBANAsync(request.CashTransaction.From);
+
+                            if (fromAccount == null)
+                            {
+                                responseModel.AddError("account not found");
+                                return responseModel;
+                            }
+
+                            if (request.CashTransaction.Amount <= fromAccount.Balance)
+                            {
+                                fromAccount.Balance -= request.CashTransaction.Amount;
+
+                                _dbContext.BankAccounts.Update(fromAccount);
+                                await _dbContext.SaveChangesAsync();
+
+                                var cashTransaction = CreateCashTransaction(request, username, fromAccount.Balance, 0);
+
+
+                                await _dbContext.CashTransactions.AddAsync(cashTransaction);
+                                await _dbContext.SaveChangesAsync();
+
+                                await dbContextTransaction.CommitAsync();
+
+                                return responseModel;
+                            }
+                            else
+                            {
+                                responseModel.AddError("balance is not enough to complete withdrawal");
+                                return responseModel;
+                            }
+                        }
+
+                        catch (Exception ex)
+                        {
+                            await dbContextTransaction.RollbackAsync();
+                            responseModel.AddError(ex.ToString());
+
+                            return responseModel;
+                        }
+
+                    case CashTransactionType.Transfer:
+
+                        try
+                        {
+                            var senderAccount = await GetBankAccountByIBANAsync(request.CashTransaction.From);
+                            var recipientAccount = await GetBankAccountByIBANAsync(request.CashTransaction.To);
+                            var amount = request.CashTransaction.Amount;
+
+                            if (senderAccount == null)
+                            {
+                                responseModel.AddError("account not found");
+                                return responseModel;
+                            }
+
+                            if (recipientAccount == null)
+                            {
+                                responseModel.AddError("account not found");
+                                return responseModel;
+                            }
+
+                            if (amount <= senderAccount.Balance)
+                            {
+                                const double FeesRate = 0.0015;
+
+                                var fees = (double)amount * FeesRate;
+
+                                //Deduct from sender account
+                                senderAccount.Balance -= amount;
+
+                                _dbContext.BankAccounts.Update(senderAccount);
+                                await _dbContext.SaveChangesAsync();
+
+                                //Deposit to recipient account
+                                recipientAccount.Balance += amount;
+
+                                _dbContext.BankAccounts.Update(recipientAccount);
+                                await _dbContext.SaveChangesAsync();
+
+                                //Create a transaction 
+                                var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
+
+                                //Save transaction into db
+                                await _dbContext.CashTransactions.AddAsync(cashTransaction);
+                                await _dbContext.SaveChangesAsync();
+
+                                //Deduct commission fees from sender account
+                                senderAccount.Balance -= (decimal)fees;
+
+                                _dbContext.BankAccounts.Update(senderAccount);
+                                await _dbContext.SaveChangesAsync();
+
+                                request.CashTransaction.Type = CashTransactionType.CommissionFees;
+                                request.CashTransaction.Amount = (decimal)fees;
+
+                                //Create a transaction for the comission fees
+                                var commissionFeeTransaction = CreateCashTransaction(request, username, senderAccount.Balance, 0);
+
+                                //Save transaction into db
+                                await _dbContext.CashTransactions.AddAsync(commissionFeeTransaction);
+                                await _dbContext.SaveChangesAsync();
+
+                                await dbContextTransaction.CommitAsync();
+
+
+                                return responseModel;
+                            }
+                            else
+                            {
+                                responseModel.AddError("No enough balance to complete transfer");
+                                return responseModel;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            await dbContextTransaction.RollbackAsync();
+                            responseModel.AddError(ex.ToString());
+
+                            return responseModel;
+                        }
+
+                    default:
                         return responseModel;
-                    }
+                }
 
-                case CashTransactionType.Transfer:
-                    
-                    try
-                    {               
-                        var senderAccount = await GetBankAccountByIBANAsync(request.CashTransaction.From);
-                        var recipientAccount = await GetBankAccountByIBANAsync(request.CashTransaction.To);
-                        var amount = request.CashTransaction.Amount;
-
-                        if (senderAccount == null)
-                        {
-                            responseModel.AddError("account not found");
-                            return responseModel;
-                        }
-
-                        if (recipientAccount == null)
-                        {
-                            responseModel.AddError("account not found");
-                            return responseModel;
-                        }
-
-                        if (amount <= senderAccount.Balance)
-                        {
-                            const double FeesRate = 0.0015;
-                            
-                            var fees = (double) amount * FeesRate;
-
-                            //Deduct from sender account
-                            senderAccount.Balance -= amount;
-
-                            _dbContext.BankAccounts.Update(senderAccount);
-                            await _dbContext.SaveChangesAsync();
-
-                            //Deposit to recipient account
-                            recipientAccount.Balance += amount;
-
-                            _dbContext.BankAccounts.Update(recipientAccount);
-                            await _dbContext.SaveChangesAsync();
-
-                            //Create a transaction 
-                            var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
-                    
-                            //Save transaction into db
-                            await _dbContext.CashTransactions.AddAsync(cashTransaction);
-                            await _dbContext.SaveChangesAsync();
-
-                            //Deduct commission fees from sender account
-                            senderAccount.Balance -= (decimal)fees;
-
-                            _dbContext.BankAccounts.Update(senderAccount);
-                            await _dbContext.SaveChangesAsync();
-
-                            request.CashTransaction.Type = CashTransactionType.CommissionFees;
-                            request.CashTransaction.Amount = (decimal)fees;
-
-                            //Create a transaction for the comission fees
-                            var commissionFeeTransaction = CreateCashTransaction(request, username, senderAccount.Balance, 0);
-
-                            //Save transaction into db
-                            await _dbContext.CashTransactions.AddAsync(commissionFeeTransaction);
-                            await _dbContext.SaveChangesAsync();
-
-                            await dbContextTransaction.CommitAsync();
-
-
-                            return responseModel;
-                        }
-                        else
-                        {
-                            responseModel.AddError("No enough balance to complete transfer");
-                            return responseModel;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        await dbContextTransaction.RollbackAsync();
-                        responseModel.AddError(ex.ToString());
-
-                        return responseModel;
-                    }    
-
-                default:
-                    return responseModel;
             }
 
         }
