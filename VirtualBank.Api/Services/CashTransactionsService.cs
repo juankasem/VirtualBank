@@ -276,9 +276,11 @@ namespace VirtualBank.Api.Services
                                 //Deduct commission fees from sender account
                                 senderAccount.Balance -= (decimal)fees;
 
+                                //Update entity & Save it to db
                                 _dbContext.BankAccounts.Update(senderAccount);
                                 await _dbContext.SaveChangesAsync();
 
+                                //Modify request for commission fees transaction
                                 request.CashTransaction.Type = CashTransactionType.CommissionFees;
                                 request.CashTransaction.Amount = (decimal)fees;
 
@@ -290,7 +292,6 @@ namespace VirtualBank.Api.Services
                                 await _dbContext.SaveChangesAsync();
 
                                 await dbContextTransaction.CommitAsync();
-
 
                                 return responseModel;
                             }
@@ -344,7 +345,8 @@ namespace VirtualBank.Api.Services
         }
 
         [NonAction]
-        private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string sender, string recipient, Direction direction)                        
+        private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string sender,
+                                                                     string recipient, Direction direction)                        
         {
             var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
 

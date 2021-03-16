@@ -41,12 +41,15 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
         public DateTime BirthDate { get; set; }
 
         [Required]
+        public string UserId { get; set; }
+
+        [Required]
         public Address Address { get; set; }
 
 
         public CreateCustomerRequest(string identificationNo, IdentificationType identificationType,
                                      string firstName, string middleName, string lastName, string fatherName,
-                                     string nationality, Gender gender, DateTime birthDate, Address address)
+                                     string nationality, Gender gender, DateTime birthDate, string userId, Address address)
         {
             IdentificationNo = Throw.ArgumentNullException.IfNull(identificationNo, nameof(identificationNo));
             IdentificationType = Throw.ArgumentNullException.IfNull(identificationType, nameof(identificationType));
@@ -57,6 +60,7 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
             Nationality = Throw.ArgumentNullException.IfNull(nationality, nameof(nationality));
             Gender= Throw.ArgumentNullException.IfNull(gender, nameof(gender));
             BirthDate = Throw.ArgumentNullException.IfNull(birthDate, nameof(birthDate));
+            UserId = Throw.ArgumentNullException.IfNull(userId, nameof(userId));
             Address = Throw.ArgumentNullException.IfNull(address, nameof(address));
         }
     }

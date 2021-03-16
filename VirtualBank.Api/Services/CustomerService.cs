@@ -324,7 +324,7 @@ namespace VirtualBank.Api.Services
                 var customerAddress = CreateAddressResponse(address);
 
                 return new CustomerResponse(customer.Id, fullName, customer.Nationality,
-                                            customer.Gender, customer.BirthDate, customerAddress);
+                                            customer.Gender, customer.BirthDate, customer.UserId, customerAddress);
             }
 
             return null;

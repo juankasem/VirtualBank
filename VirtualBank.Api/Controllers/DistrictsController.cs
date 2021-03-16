@@ -31,7 +31,7 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.getAllDistricts)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllDistricts(CancellationToken cancellationToken = default)
         {
             try
@@ -69,7 +69,7 @@ namespace VirtualBank.Api.Controllers
                     return NotFound();
                 }
 
-                var apiResponse = await _districtsService.GetDistrictByCityIdAsync(cityId, cancellationToken);
+                var apiResponse = await _districtsService.GetDistrictsByCityIdAsync(cityId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -89,12 +89,16 @@ namespace VirtualBank.Api.Controllers
         // POST api/values
         [HttpPut(ApiRoutes.postDistrict)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> PostDistrict([FromRoute] int districtId, [FromBody] CreateDistrictRequest request,
-                                                   CancellationToken cancellationToken = default)
+                                                      CancellationToken cancellationToken = default)
         {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             try
             {
                 var apiResponse = await _districtsService.AddOrEditDistrictAsync(districtId, request, cancellationToken);

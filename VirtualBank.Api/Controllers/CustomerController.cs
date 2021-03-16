@@ -36,11 +36,10 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.getCustomerById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCustomerById([FromRoute] int customerId, CancellationToken cancellationToken = default)
         {
-
             try
             {
                 var apiResponse = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
@@ -66,12 +65,10 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.getCustomerByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCustomerByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
         {
-            var user = _userManager.GetUserAsync(User);
-
             try
             {
                 var apiResponse = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
@@ -85,7 +82,6 @@ namespace VirtualBank.Api.Controllers
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
 
-
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
@@ -97,8 +93,8 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.getCustomerByIBAN)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCustomerByIBAN([FromRoute] string iban, CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
@@ -126,16 +122,17 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-
         [HttpPut(ApiRoutes.postCustomer)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult<ApiResponse>> PostCustomer([FromRoute] int customerId,[FromBody] CreateCustomerRequest request,
                                                                    CancellationToken cancellationToken = default)
         {
-            var user = await _userManager.GetUserAsync(User);
+            if (!ModelState.IsValid)
+                return BadRequest();
 
             try
             {
@@ -143,7 +140,6 @@ namespace VirtualBank.Api.Controllers
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
-
 
                 else if (apiResponse.Errors[0].Contains("not found"))
                     return NotFound(apiResponse);
@@ -158,7 +154,6 @@ namespace VirtualBank.Api.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
-
         }
     }
 }

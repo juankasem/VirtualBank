@@ -32,8 +32,8 @@ namespace VirtualBank.Api.Controllers
         // GET: /<controller>/
         [HttpGet(ApiRoutes.getAllCountries)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCountries(CancellationToken cancellationToken = default)
         {
             try

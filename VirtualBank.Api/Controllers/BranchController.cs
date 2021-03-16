@@ -38,8 +38,9 @@ namespace VirtualBank.Api.Controllers
         // GET: api/values
         [HttpGet(ApiRoutes.getAllBranches)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllBranches(CancellationToken cancellationToken = default)
         {
             try
@@ -65,8 +66,9 @@ namespace VirtualBank.Api.Controllers
 
         [HttpGet(ApiRoutes.getBranchesByCityId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBranchesByCityId(int cityId, CancellationToken cancellationToken = default)
         {
             try
@@ -95,8 +97,9 @@ namespace VirtualBank.Api.Controllers
 
         [HttpGet(ApiRoutes.getBranchById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBranchById(int branchId, CancellationToken cancellationToken = default)
         {
             try
@@ -150,12 +153,16 @@ namespace VirtualBank.Api.Controllers
         // POST api/values
         [HttpPut(ApiRoutes.postBranch)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> PostBranchAsync([FromRoute] int branchId, [FromBody] CreateBranchRequest request,
                                                          CancellationToken cancellationToken = default)
         {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             try
             {
                 var apiResponse = await _branchService.AddOrEditBranchAsync(branchId, request, cancellationToken);
@@ -165,13 +172,12 @@ namespace VirtualBank.Api.Controllers
 
 
                 else if (apiResponse.Errors[0].Contains("not found"))
-                    return BadRequest(apiResponse);
+                    return NotFound(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
-
+                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {

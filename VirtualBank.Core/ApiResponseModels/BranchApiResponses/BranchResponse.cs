@@ -1,4 +1,5 @@
 ﻿using System;
+using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Entities;
 
@@ -14,9 +15,9 @@ namespace VirtualBank.Core.ApiResponseModels.BranchApiResponses
 
         public string Phone { get; }
 
-        public Address Address { get;  }
+        public AddressResponse Address { get;  }
 
-        public BranchResponse(int id, string name, string code, string phone, Address address)
+        public BranchResponse(int id, string name, string code, string phone, AddressResponse address)
         {
             Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));

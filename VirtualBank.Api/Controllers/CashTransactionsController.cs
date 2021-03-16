@@ -52,24 +52,22 @@ namespace VirtualBank.Api.Controllers
                                                                    CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
-            var customer = GetCustomerByIBANAsync(iban);
+            var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
 
             if (customer == null)
             {
                 return NotFound();
             }
 
-            if (user.Id != customer?.Id)
+            if (user.Id != customer?.Data?.Id)
             {
                 return Unauthorized();
             }
 
             try
             {
-                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,
-                                                                                                lastDays,
-                                                                                                pageNumber,
-                                                                                                pageSize,
+                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays,
+                                                                                                pageNumber, pageSize,
                                                                                                 cancellationToken);
 
                 if (apiResponse.Success)
@@ -96,16 +94,19 @@ namespace VirtualBank.Api.Controllers
         [HttpPost(ApiRoutes.postCashTransaction)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> PostCashTransaction([FromBody] CreateCashTransactionRequest request,
                                                               CancellationToken cancellationToken = default)
         {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             try
             {
-               var apiResponse =  await _cashTransactionsService.AddCashTransactionAsync(request, cancellationToken);
+               var apiResponse = await _cashTransactionsService.AddCashTransactionAsync(request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -127,37 +128,5 @@ namespace VirtualBank.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
         }
-
-        #region
-        [NonAction]
-        private async Task<Customer> GetCustomerByAccountNoAsync(string accountNo)
-        {
-            var accountResponse = await _customerService.GetCustomerByAccountNoAsync(accountNo);
-
-            if (accountResponse == null || accountResponse?.Data == null)
-            {
-                return null;
-            }
-
-            var customer = accountResponse?.Data?.Customer;
-
-            return customer;
-        }
-
-        [NonAction]
-        private async Task<Customer> GetCustomerByIBANAsync(string iban)
-        {
-            var accountResponse = await _customerService.GetCustomerByIBANAsync(iban);
-
-            if (accountResponse == null || accountResponse?.Data == null)
-            {
-                return null;
-            }
-
-            var customer = accountResponse?.Data?.Customer;
-
-            return customer;
-        }
-        #endregion
     }
 }

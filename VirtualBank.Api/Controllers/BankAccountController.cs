@@ -43,6 +43,7 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.getAccountsByCustomerId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAccountsByCustomerId([FromRoute] int customerId,
                                                                  [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -50,24 +51,21 @@ namespace VirtualBank.Api.Controllers
                                                                  CancellationToken cancellationToken = default)
         {
             var user = _userManager.GetUserAsync(User);
-            var customer = GetCustomerByIdAsync(customerId);
+            var customer = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
 
             if (customer == null)
             {
                 return NotFound();
             }
 
-            if (user.Id != customer?.Id)
+            if (user.Id != customer?.Data?.Id)
             {
                 return Unauthorized();
             }
 
             try
             {
-                var apiResponse = await _bankAccountService.GetAccountsByCustomerIdAsync(customerId,
-                                                                                        pageNumber,
-                                                                                        pageSize,   
-                                                                                        cancellationToken);
+                var apiResponse = await _bankAccountService.GetAccountsByCustomerIdAsync(customerId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -95,15 +93,15 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAccountByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
         {
-            var user = _userManager.GetUserAsync(User);
-            var customer = GetCustomerByAccountNoAsync(accountNo);
+            var user = await _userManager.GetUserAsync(User);
+            var customer = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
 
             if (customer == null)
             {
                 return NotFound();
             }
 
-            if (user.Id != customer?.Id)
+            if (user.Id != customer?.Data?.UserId)
             {
                 return Unauthorized();
             }
@@ -190,12 +188,16 @@ namespace VirtualBank.Api.Controllers
         // POST api/values
         [HttpPut(ApiRoutes.postBankAccount)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> PostBankAccount([FromRoute] int accountId, [FromBody] CreateBankAccountRequest request,
                                                                           CancellationToken cancellationToken = default)
         {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             try
             {
                 var apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
@@ -203,9 +205,8 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-
                 else if (apiResponse.Errors[0].Contains("not found"))
-                    return BadRequest(apiResponse);
+                    return NotFound(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
@@ -266,39 +267,5 @@ namespace VirtualBank.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
         }
-
-
-        #region private helper methods
-        [NonAction]
-        private async Task<Customer> GetCustomerByIdAsync(int customerId)
-        {
-            var accountResponse = await _customerService.GetCustomerByIdAsync(customerId);
-
-            if (accountResponse == null || accountResponse?.Data == null)
-            {
-                return null;
-            }
-
-            var customer = accountResponse?.Data?.Customer;
-
-            return customer;
-        }
-
-        [NonAction]
-        private async Task<Customer> GetCustomerByAccountNoAsync(string accountNo)
-        {
-            var accountResponse = await _customerService.GetCustomerByAccountNoAsync(accountNo);
-
-            if (accountResponse == null || accountResponse?.Data == null)
-            {
-                return null;
-            }
-
-            var customer = accountResponse?.Data?.Customer;
-
-            return customer;
-        }
-
-        #endregion
     }
 }

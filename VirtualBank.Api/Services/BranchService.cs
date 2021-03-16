@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
+using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
 using VirtualBank.Core.ApiResponseModels.BranchApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
@@ -38,7 +39,8 @@ namespace VirtualBank.Api.Services
 
             foreach (var branch in branchList)
             {
-                branches.Add(CreateBranchResponse(branch));
+                var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+                branches.Add(CreateBranchResponse(branch, address));
             }
 
             responseModel.Data = new BranchListResponse(branches.ToImmutableList(), branches.Count);
@@ -56,7 +58,8 @@ namespace VirtualBank.Api.Services
 
             foreach (var branch in branchesList)
             {
-                branches.Add(CreateBranchResponse(branch));
+                var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+                branches.Add(CreateBranchResponse(branch, address));
             }
 
             responseModel.Data = new BranchListResponse(branches.ToImmutableList(), branches.Count);
@@ -70,8 +73,15 @@ namespace VirtualBank.Api.Services
 
             var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Id == branchId);
 
+            if (branch == null)
+            {
+                responseModel.AddError($"branch {branchId} not found");
+                return responseModel;
+            }
 
-            responseModel.Data = CreateBranchResponse(branch);
+            var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+
+            responseModel.Data = CreateBranchResponse(branch, address);
 
             return responseModel;
         }
@@ -82,8 +92,15 @@ namespace VirtualBank.Api.Services
 
             var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Code == code);
 
+            if (branch == null)
+            {
+                responseModel.AddError($"branch of code: {code} not found");
+                return responseModel;
+            }
 
-            responseModel.Data = CreateBranchResponse(branch);
+            var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+
+            responseModel.Data = CreateBranchResponse(branch, address);
 
             return responseModel;
         }
@@ -104,6 +121,7 @@ namespace VirtualBank.Api.Services
             }
             else
             {
+                var newAddress = CreateAddress(request);
                 var newBranch = CreateBranch(request);
 
                 if (newBranch == null)
@@ -140,11 +158,38 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-        private BranchResponse CreateBranchResponse(Branch branch)
+        private Address CreateAddress(CreateBranchRequest request)
+        {
+            if (request != null)
+            {
+                return new Address()
+                {
+                    Street = request.Address?.Street,
+                    DistrictId = request.Address.DistrictId,
+                    CityId = request.Address.CityId,
+                    CountryId = request.Address.CountryId
+                };
+            }
+
+            return null;
+        }
+
+        private BranchResponse CreateBranchResponse(Branch branch, Address address)
         {
             if (branch != null)
             {
-                return new BranchResponse(branch.Id, branch.Name, branch.Code, branch.Phone, branch.Address);
+                var branchAddress = CreateAddressResponse(address);
+                return new BranchResponse(branch.Id, branch.Name, branch.Code, branch.Phone, branchAddress);
+            }
+
+            return null;
+        }
+
+        private AddressResponse CreateAddressResponse(Address address)
+        {
+            if (address != null)
+            {
+                return new AddressResponse(address.DistrictId, address.CityId, address.CountryId, address.Street);
             }
 
             return null;
