@@ -188,7 +188,7 @@ namespace VirtualBank.Api.Services
         {
             if (bankAccount != null)
             {
-                return new BankAccountResponse(bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
+                return new BankAccountResponse(bankAccount.Id, bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
                                                accountOwner,bankAccount.Branch.Code, bankAccount.Branch.Name,
                                                bankAccount.Balance, bankAccount.AllowedBalanceToUse,
                                                bankAccount.Currency.Name, bankAccount.CreatedOn, lastTransactionDate);

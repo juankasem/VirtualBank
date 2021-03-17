@@ -94,7 +94,6 @@ namespace VirtualBank.Api.Services
                 city.LastModifiedOn = DateTime.UtcNow;
 
                 _dbContext.Cities.Update(city);
-
             }
             else
             {

@@ -66,7 +66,6 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-
             if (includeCities)
              responseModel.Data = CreateCountryWithCitiesResponse(country);
 
@@ -75,6 +74,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         public async Task<ApiResponse> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default)
         {
@@ -109,10 +109,12 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
         public async Task<bool> CountryExists(int countryId)
         {
             return await _dbContext.Countries.AnyAsync(c => c.Id == countryId);
         }
+
 
         #region private helper methods
         private Country CreateCountry(CreateCountryRequest request)

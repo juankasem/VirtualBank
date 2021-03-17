@@ -7,6 +7,8 @@ namespace VirtualBank.Core.ApiResponseModels.AccountApiResponses
 {
     public class BankAccountResponse
     {
+        public int Id { get; set; }
+
         public string AccountNo { get; set; }
 
         public string IBAN { get; set; }
@@ -29,10 +31,11 @@ namespace VirtualBank.Core.ApiResponseModels.AccountApiResponses
 
         public DateTime? LastTransactionDate { get; set; }
 
-        public BankAccountResponse(string accountNo, string iban, AccountType type, string accountOwner,
+        public BankAccountResponse(int id, string accountNo, string iban, AccountType type, string accountOwner,
                                    string branchCode, string branchName, decimal balance, decimal allowedBalanceToUse,
                                    string currency, DateTime createdOn, DateTime? lastTransactionDate = null)
         {
+            Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             AccountNo = Throw.ArgumentNullException.IfNull(accountNo, nameof(accountNo));
             IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));

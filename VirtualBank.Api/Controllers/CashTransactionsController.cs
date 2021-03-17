@@ -22,7 +22,7 @@ using VirtualBank.Core.Interfaces;
 namespace VirtualBank.Api.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public class CashTransactionsController : ControllerBase
     {
         private readonly ICashTransactionsService _cashTransactionsService;
@@ -41,10 +41,10 @@ namespace VirtualBank.Api.Controllers
         // GET api/values/5
         [HttpGet(ApiRoutes.getCashTransactionsByIBAN)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCashTransactionsByIBAN([FromRoute] string iban,
                                                                    [FromQuery] int lastDays,
                                                                    [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,                                                                                                                                                             
@@ -82,7 +82,6 @@ namespace VirtualBank.Api.Controllers
 
 
                 return BadRequest(apiResponse);
-
             }
             catch (Exception exception)
             {

@@ -136,7 +136,6 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAccountByIBAN([FromRoute] string iban, CancellationToken cancellationToken = default)
         {
-
             try
             {
                 var apiResponse = await _bankAccountService.GetAccountByIBANAsync(iban, cancellationToken);

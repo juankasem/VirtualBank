@@ -23,14 +23,17 @@ namespace VirtualBank.Api.Controllers
     public class BranchController : ControllerBase
     {
         private readonly IBranchService _branchService;
+        private readonly ICitiesService _citiesService;
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
 
         public BranchController(IBranchService branchService,
+                                ICitiesService citiesService,
                                 ICustomerService customerService,
                                 UserManager<AppUser> userManager)
         {
             _branchService = branchService;
+            _citiesService = citiesService;
             _customerService = customerService;
             _userManager = userManager;
         }
@@ -69,10 +72,15 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetBranchesByCityId(int cityId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetBranchesByCityId([FromRoute] int cityId, CancellationToken cancellationToken = default)
         {
             try
             {
+                if (!await _citiesService.CityExists(cityId))
+                {
+                    return NotFound();
+                }
+
                 var apiResponse = await _branchService.GetBranchesByCityIdAsync(cityId, cancellationToken);
 
                 if (apiResponse.Success)

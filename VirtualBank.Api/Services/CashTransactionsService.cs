@@ -184,7 +184,6 @@ namespace VirtualBank.Api.Services
                             return responseModel;
                         }
 
-
                     case CashTransactionType.Withdrawal:
                         try
                         {
