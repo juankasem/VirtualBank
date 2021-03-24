@@ -30,19 +30,19 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountListResponse>();
 
-            var bankAccountsList = await _dbContext.BankAccounts.Where(a => a.CustomerId == customerId && a.Disabled == false).ToListAsync();
+            var bankAccounts = await _dbContext.BankAccounts.Where(a => a.CustomerId == customerId && a.Disabled == false).ToListAsync();
 
-            var bankAccounts = new List<BankAccountResponse>();
+            var bankAccountList = new List<BankAccountResponse>();
 
-            foreach (var bankAccount in bankAccountsList)
+            foreach (var bankAccount in bankAccounts)
             {
                 var accountOwner = bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
                 var lastTransaction = await GetLastCashTransaction(bankAccount);
 
-                bankAccounts.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn));
+                bankAccountList.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn));
             }
 
-            responseModel.Data = new BankAccountListResponse(bankAccounts.ToImmutableList(), bankAccounts.Count);
+            responseModel.Data = new BankAccountListResponse(bankAccountList.ToImmutableList(), bankAccountList.Count);
 
             return responseModel;
  
@@ -116,6 +116,8 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse();
             var user = _httpContextAccessor.HttpContext.User;
             var bankaccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountId);
+
+
 
             if (bankaccount != null)
             {

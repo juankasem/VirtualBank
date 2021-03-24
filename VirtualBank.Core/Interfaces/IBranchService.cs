@@ -9,7 +9,7 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface IBranchService
     {
-        Task<ApiResponse<BranchListResponse>> GetAllBranchesAsync(CancellationToken cancellationToken = default);
+        Task<ApiResponse<BranchListResponse>> GetAllBranchesAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<BranchListResponse>> GetBranchesByCityIdAsync(int cityId, CancellationToken cancellationToken = default);
 
@@ -18,5 +18,7 @@ namespace VirtualBank.Core.Interfaces
         Task<ApiResponse<BranchResponse>> GetBranchByCodeAsync(string code, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> AddOrEditBranchAsync(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default);
+
+        Task<bool> BranchExists(string branchName);
     }
 }

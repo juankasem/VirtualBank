@@ -66,9 +66,7 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays,
-                                                                                                pageNumber, pageSize,
-                                                                                                cancellationToken);
+                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {

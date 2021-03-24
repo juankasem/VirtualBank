@@ -192,7 +192,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> PostBankAccount([FromRoute] int accountId, [FromBody] CreateBankAccountRequest request,
-                                                                          CancellationToken cancellationToken = default)
+                                                         CancellationToken cancellationToken = default)
         {
             if (!ModelState.IsValid)
                 return BadRequest();

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
+using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
@@ -44,11 +45,13 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllBranches(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAllBranches([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+                                                        [FromQuery] int pageSize = PagingConstants.DefaultPageSize,       
+                                                         CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _branchService.GetAllBranchesAsync(cancellationToken);
+                var apiResponse = await _branchService.GetAllBranchesAsync(pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

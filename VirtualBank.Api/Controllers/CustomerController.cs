@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
+using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
@@ -31,6 +32,34 @@ namespace VirtualBank.Api.Controllers
             _customerService = customerService;
             _userManager = userManager;
         }
+
+        // GET api/customer
+        [HttpGet(ApiRoutes.getAllCustomers)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetAllCustomers([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+                                                         [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                         CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _customerService.GetAllCustomersAsync(pageNumber, pageSize, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
+        }
+
 
         // GET api/values/5
         [HttpGet(ApiRoutes.getCustomerById)]

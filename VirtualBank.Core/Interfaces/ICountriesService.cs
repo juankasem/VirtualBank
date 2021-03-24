@@ -17,5 +17,8 @@ namespace VirtualBank.Core.Interfaces
         Task<ApiResponse> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default);
 
         Task<bool> CountryExists(int countryId);
+
+        Task<bool> CountryNameExists(string countryName);
+
     }
 }

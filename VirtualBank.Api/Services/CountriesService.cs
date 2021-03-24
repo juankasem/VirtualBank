@@ -32,16 +32,16 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CountriesResponse>();
 
-            var countryList = await _dbContext.Countries.OrderBy(c => c.Name).ToListAsync();
+            var countries = await _dbContext.Countries.OrderBy(c => c.Name).ToListAsync();
 
-            var countries = new List<CountryResponse>();
+            var countryList = new List<CountryResponse>();
 
-            foreach (var country in countryList)
+            foreach (var country in countries)
             {
-                countries.Add(CreateCountryResponse(country));
+                countryList.Add(CreateCountryResponse(country));
             }
 
-            responseModel.Data = new CountriesResponse(countries.ToImmutableList());
+            responseModel.Data = new CountriesResponse(countryList.ToImmutableList(), countryList.Count);
 
             return responseModel;
         }
@@ -79,6 +79,13 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
+
+            if (await CountryNameExists(request.Name))
+            {
+                responseModel.AddError("country name does already exist");
+                return responseModel;
+            }
+
             var user = _httpContextAccessor.HttpContext.User;
             var country = await _dbContext.Countries.FirstOrDefaultAsync(c => c.Id == countryId);
 
@@ -115,6 +122,10 @@ namespace VirtualBank.Api.Services
             return await _dbContext.Countries.AnyAsync(c => c.Id == countryId);
         }
 
+        public async Task<bool> CountryNameExists(string countryName)
+        {
+            return await _dbContext.Countries.AnyAsync(c => c.Name == countryName);
+        }
 
         #region private helper methods
         private Country CreateCountry(CreateCountryRequest request)

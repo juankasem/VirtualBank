@@ -90,7 +90,9 @@ namespace VirtualBank.Core.ApiRoutes
 
         #endregion
 
-        #region
+        #region Customers
+        public const string getAllCustomers = "api/Customer/getAll";
+
         public const string getCustomerById = "api/Customer/getById/{customerId:int}";
 
         public const string getCustomerByAccountNo = "api/Customer/getByAccountNo/{accountNo}";

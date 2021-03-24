@@ -6,9 +6,6 @@ namespace VirtualBank.Core.Entities
 {
     public class Address : BaseClass
     {
-        [MaxLength(150)]
-        public string Street { get; set; }
-
         [ForeignKey(nameof(District))]
         public int DistrictId { get; set; }
         public District District { get; set; }
@@ -21,5 +18,11 @@ namespace VirtualBank.Core.Entities
         [ForeignKey(nameof(Country))]
         public int CountryId { get; set; }
         public Country Country { get; set; }
+
+        [MaxLength(150)]
+        public string Street { get; set; }
+
+        [MaxLength(50)]
+        public string PostalCode { get; set; }
     }
 }

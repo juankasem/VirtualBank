@@ -9,7 +9,7 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface ICustomerService
     {
-        Task<ApiResponse<CustomerListResponse>> GetAllCustomersAsync(CancellationToken cancellationToken = default);
+        Task<ApiResponse<CustomerListResponse>> GetAllCustomersAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(int customerId, CancellationToken cancellationToken = default);
 
@@ -24,5 +24,7 @@ namespace VirtualBank.Core.Interfaces
         Task<ApiResponse> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken = default);
+
+        Task<bool> CustomerExists(CreateCustomerRequest request);
     }
 }

@@ -40,37 +40,35 @@ namespace VirtualBank.Api.Services
         /// <summary>
         /// retrieve all transactions that occured in the specified account(from or to)
         /// </summary>
-        /// <param name="accountNo"></param>
+        /// <param name="iban"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionListResponse>> GetCashTransactionsByIBANAsync(string iban,
-                                                                                                   int lastDays,
-                                                                                                   int pageNumber,
-                                                                                                   int pageSize,
+        public async Task<ApiResponse<CashTransactionListResponse>> GetCashTransactionsByIBANAsync(string iban, int lastDays,
+                                                                                                   int pageNumber, int pageSize,
                                                                                                    CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionListResponse>();
             var skip = (pageNumber - 1) * pageSize;
 
-            var cashTransactionList = await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
-                                                                               && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays)
+            var cashTransactions= await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
+                                                                                  && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays)
                                                                                  .Skip(skip).Take(pageSize)
                                                                                  .AsNoTracking().ToListAsync();
 
-            if(cashTransactionList.Count() == 0) {
+            if(cashTransactions.Count() == 0) {
                 return responseModel;
             }
 
-            var cashTransactions = new List<CashTransactionResponse>();
+            var cashTransactionList = new List<CashTransactionResponse>();
 
-            foreach (var cashTransaction in cashTransactionList)
+            foreach (var cashTransaction in cashTransactions)
             {
                 if (cashTransaction.From != iban && cashTransaction.Type == CashTransactionType.Transfer)
                 {
                     var senderResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.From, cancellationToken);
                     var sender = senderResponse?.Data?.FullName;
 
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, sender, iban, Direction.In));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, sender, iban, Direction.In));
                 }
 
                 else if(cashTransaction.To != iban && cashTransaction.Type == CashTransactionType.Transfer)
@@ -78,24 +76,24 @@ namespace VirtualBank.Api.Services
                     var recipientResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.To, cancellationToken);
                     var recipient = recipientResponse?.Data?.FullName;
 
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, iban, recipient, Direction.Out));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, recipient, Direction.Out));
                 }
 
                 else if (cashTransaction.Type == CashTransactionType.Deposit)
                 {
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, "", cashTransaction.To, Direction.In));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, "", cashTransaction.To, Direction.In));
                 }
                 else if (cashTransaction.Type == CashTransactionType.Withdrawal)
                 {
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, "", Direction.Out));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, "", Direction.Out));
                 }
                 else if (cashTransaction.Type == CashTransactionType.CommissionFees)
                 {
-                    cashTransactions.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, "", Direction.Out));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, "", Direction.Out));
                 }
             }
 
-            responseModel.Data = new CashTransactionListResponse(cashTransactions.ToImmutableList(), cashTransactions.Count);
+            responseModel.Data = new CashTransactionListResponse(cashTransactionList.ToImmutableList(), cashTransactionList.Count);
 
             return responseModel;
         }
@@ -107,7 +105,7 @@ namespace VirtualBank.Api.Services
 
 
         /// <summary>
-        /// retrieve last transaction that occured the specified account(from or to)
+        /// Retrieve last transaction that occured the specified account(from or to)
         /// </summary>
         /// <param name="accountNo"></param>
         /// <param name="cancellationToken"></param>
@@ -133,7 +131,7 @@ namespace VirtualBank.Api.Services
         /// <summary>
         /// Create a cash transaction in db
         /// </summary>
-        /// <param name="accountNo"></param>
+        /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<ApiResponse> AddCashTransactionAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)

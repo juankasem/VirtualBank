@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.ApiRequestModels.AddressApiRequests;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
@@ -30,21 +29,22 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public async Task<ApiResponse<CustomerListResponse>> GetAllCustomersAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CustomerListResponse>> GetAllCustomersAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CustomerListResponse>();
+            var skip = (pageNumber - 1) * pageSize;
 
-            var customerList = await _dbContext.Customers.ToListAsync();
+            var customers = await _dbContext.Customers.Skip(skip).Take(pageSize).AsNoTracking().ToListAsync();
 
-            var customers = new List<CustomerResponse>();
+            var customerList = new List<CustomerResponse>();
 
-            foreach (var customer in customerList)
+            foreach (var customer in customers)
             {
-                var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == customer.AddressId);
-                customers.Add(CreateCustomerResponse(customer, address));
+                var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == customer.Address.Id);
+                customerList.Add(CreateCustomerResponse(customer, address));
             }
 
-            responseModel.Data = new CustomerListResponse(customers.ToImmutableList(), customers.Count);
+            responseModel.Data = new CustomerListResponse(customerList.ToImmutableList(), customerList.Count);
 
             return responseModel;
         }
@@ -68,6 +68,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+     
         public async Task<ApiResponse<CustomerResponse>> GetCustomerByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CustomerResponse>();
@@ -96,7 +97,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-
+     
         public async Task<ApiResponse<CustomerResponse>> GetCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CustomerResponse>();
@@ -151,16 +152,21 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public async Task<ApiResponse> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request,
-                                                              CancellationToken cancellationToken)
+        public async Task<ApiResponse> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
-            var user = _httpContextAccessor.HttpContext.User;
 
-            var existingCustomer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
-
+            if (await CustomerExists(request))
+            {
+                responseModel.AddError("customer name does already exist");
+                return responseModel;
+            }
+             
             try
             {
+                var user = _httpContextAccessor.HttpContext.User;
+                var existingCustomer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
+
                 if (existingCustomer != null)
                 {
                     existingCustomer.IdentificationNo = request.IdentificationNo;
@@ -178,7 +184,6 @@ namespace VirtualBank.Api.Services
                     _dbContext.Customers.Update(existingCustomer);
 
                     await _dbContext.SaveChangesAsync();
-
                 }
                 else
                 {
@@ -202,9 +207,7 @@ namespace VirtualBank.Api.Services
                             await _dbContext.Addresses.AddAsync(newAddress);
                             await _dbContext.SaveChangesAsync();
 
-                            var savedAddress = await _dbContext.Addresses.OrderByDescending(a => a.CreatedOn).FirstOrDefaultAsync();
-
-                            newCustomer.AddressId = savedAddress.Id;
+                            newCustomer.AddressId = newAddress.Id;
                             _dbContext.Customers.Update(newCustomer);
 
                             await _dbContext.Customers.AddAsync(newCustomer);
@@ -271,6 +274,11 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+         public async Task<bool> CustomerExists(CreateCustomerRequest request)
+        {
+            return await _dbContext.Customers.AnyAsync(c => c.FirstName == request.FirstName && c.LastName == request.LastName
+                                                            && c.FatherName == request.FatherName);
+        }
 
         #region Helper methods
 
@@ -340,7 +348,10 @@ namespace VirtualBank.Api.Services
         {
             if (address != null)
             {
-                return new AddressResponse(address.DistrictId, address.CityId, address.CountryId, address.Street);
+                return new AddressResponse(address.Id, address.DistrictId, address.District.Name,
+                                           address.CityId, address.City.Name,
+                                           address.CountryId, address.Country.Name,
+                                           address.Street, address.PostalCode);
             }
 
             return null;

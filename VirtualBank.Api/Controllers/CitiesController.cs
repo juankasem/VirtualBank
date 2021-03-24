@@ -62,7 +62,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                if(! await _countriesService.CountryExists(countryId))
+                if (! await _countriesService.CountryExists(countryId))
                 {
                     return NotFound();
                 }

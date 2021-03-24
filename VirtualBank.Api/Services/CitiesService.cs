@@ -30,16 +30,16 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CityListResponse>();
 
-            var cityList = await _dbContext.Cities.OrderBy(c => c.Name).ToListAsync();
+            var cities = await _dbContext.Cities.OrderBy(c => c.Name).ToListAsync();
 
-            var cities = new List<CityResponse>();
+            var cityList = new List<CityResponse>();
 
-            foreach (var city in cityList)
+            foreach (var city in cities)
             {
-                cities.Add(CreateCityResponse(city));
+                cityList.Add(CreateCityResponse(city));
             }
 
-            responseModel.Data = new CityListResponse(cities.ToImmutableList(), cities.Count);
+            responseModel.Data = new CityListResponse(cityList.ToImmutableList(), cityList.Count);
 
             return responseModel;
         }
@@ -48,16 +48,16 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CityListResponse>();
 
-            var cityList = await _dbContext.Cities.Where(c => c.CountryId == countryId).OrderBy(c => c.Name).ToListAsync();
+            var cities = await _dbContext.Cities.Where(c => c.CountryId == countryId).OrderBy(c => c.Name).ToListAsync();
 
-            var cities = new List<CityResponse>();
+            var cityList = new List<CityResponse>();
 
-            foreach (var city in cityList)
+            foreach (var city in cities)
             {
-                cities.Add(CreateCityResponse(city));
+                cityList.Add(CreateCityResponse(city));
             }
 
-            responseModel.Data = new CityListResponse(cities.ToImmutableList(), cities.Count);
+            responseModel.Data = new CityListResponse(cityList.ToImmutableList(), cityList.Count);
 
             return responseModel;
         }
@@ -82,6 +82,12 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse> AddOrEditCityAsync(int cityId, CreateCityRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
+
+            if (await CityNameExists(request.Name))
+            {
+                responseModel.AddError("city name does already exist");
+                return responseModel;
+            }
 
             var user = _httpContextAccessor.HttpContext.User;
             var city = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == cityId);
@@ -118,6 +124,11 @@ namespace VirtualBank.Api.Services
         public async Task<bool> CityExists(int cityId)
         {
             return await _dbContext.Cities.AnyAsync(c => c.Id == cityId);
+        }
+
+        public async Task<bool> CityNameExists(string cityName)
+        {
+            return await _dbContext.Cities.AnyAsync(c => c.Name == cityName);
         }
 
         #region private helper methods
