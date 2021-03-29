@@ -296,6 +296,7 @@ namespace VirtualBank.Api.Services
                     FatherName = request.FatherName,
                     Gender = request.Gender,
                     Nationality = request.Nationality,
+                    TaxNumber = request.TaxNumber,
                     BirthDate = request.BirthDate,
                     Address = request.Address
                 };

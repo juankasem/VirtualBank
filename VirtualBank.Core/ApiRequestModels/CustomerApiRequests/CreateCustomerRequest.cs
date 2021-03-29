@@ -16,6 +16,10 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
         public IdentificationType IdentificationType { get; set; }
 
         [Required]
+        [MinLength(50)]
+        public string TaxNumber { get; set; }
+
+        [Required]
         [MaxLength(150)]
         public string FirstName { get; set; }
 
@@ -47,12 +51,13 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
         public Address Address { get; set; }
 
 
-        public CreateCustomerRequest(string identificationNo, IdentificationType identificationType,
+        public CreateCustomerRequest(string identificationNo, IdentificationType identificationType, string taxNumber,
                                      string firstName, string middleName, string lastName, string fatherName,
                                      string nationality, Gender gender, DateTime birthDate, string userId, Address address)
         {
             IdentificationNo = Throw.ArgumentNullException.IfNull(identificationNo, nameof(identificationNo));
             IdentificationType = Throw.ArgumentNullException.IfNull(identificationType, nameof(identificationType));
+            TaxNumber = Throw.ArgumentNullException.IfNull(taxNumber, nameof(taxNumber));
             FirstName = Throw.ArgumentNullException.IfNull(firstName, nameof(firstName));
             MiddleName = Throw.ArgumentNullException.IfNull(middleName, nameof(middleName));
             LastName = Throw.ArgumentNullException.IfNull(lastName, nameof(lastName));

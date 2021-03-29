@@ -22,5 +22,7 @@ namespace VirtualBank.Core.Interfaces
         Task<ApiResponse> ActivateBankAccountAsync(int accountId, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> DeactivateBankAccountAsync(int accountId, CancellationToken cancellationToken = default);
+
+        Task<ApiResponse<BankAccountResponse>> CalculateNetProfits(int accountId, CancellationToken cancellationToken = default);
     }
 }

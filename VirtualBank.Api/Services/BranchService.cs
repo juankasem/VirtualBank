@@ -139,7 +139,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse();
 
-            if (await BranchExists(request.Name))
+            if (await BranchExists(request.Address.CountryId, request.Address.CityId, request.Name))
             {
                 responseModel.AddError("branch name does already exist");
                 return responseModel;
@@ -205,9 +205,10 @@ namespace VirtualBank.Api.Services
         /// <param name="branchName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<bool> BranchExists(string branchName)
+        public async Task<bool> BranchExists(int countryId, int cityId, string branchName)
         {
-            return await _dbContext.Branches.AnyAsync(b => b.Name == branchName);
+            return await _dbContext.Branches.AnyAsync(b => b.Address.CountryId == countryId && b.Address.CityId == cityId &&
+                                                           b.Name == branchName);
         }
 
 

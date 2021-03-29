@@ -10,6 +10,7 @@ using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
 using VirtualBank.Core.Entities;
+using VirtualBank.Core.Enums;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
 
@@ -152,11 +153,11 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankaccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountId);
+            var bankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountId);
 
-            if (bankaccount != null)
+            if (bankAccount != null)
             {
-                bankaccount.Disabled = false;
+                bankAccount.Disabled = false;
             }
             else
             {
@@ -183,6 +184,112 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
+        public async Task<ApiResponse<BankAccountResponse>> CalculateNetProfits(int accountId, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<BankAccountResponse>();
+
+            var bankAccount = await _dbContext.BankAccounts.Include("Currency").FirstOrDefaultAsync(a => a.Id == accountId);
+
+            if (bankAccount == null)
+            {
+               responseModel.AddError($"bank account Not found");
+            }
+
+            if (bankAccount.Type == AccountType.Savings)
+            {
+
+                var deposits = await GetBankAccountDeposits(bankAccount.IBAN);
+
+                foreach (var deposit in deposits)
+                {
+                    decimal profit = 0;
+                    double profitRate = 0.00;
+
+                    switch (bankAccount.Currency.Code)
+                    {
+                        case "TL":
+                            
+                                try
+                                {
+                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
+                                    {
+                                        profitRate = 0.17;
+                                    }
+                                    else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
+                                    {
+                                        profitRate = 0.19;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    responseModel.AddError(ex.ToString());
+
+                                    return responseModel;
+                                }
+
+                            break;
+                            
+
+                         case "USD":
+
+                                try
+                                {
+                                if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
+                                {
+                                    profitRate = 0.15;
+                                }
+                                else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
+                                {
+                                    profitRate = 0.17;
+                                }
+                            }
+                                catch (Exception ex)
+                                {
+                                responseModel.AddError(ex.ToString());
+
+                                return responseModel;
+                            }
+
+                                break;
+
+                        case "EUR":
+
+                                try
+                                {
+                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
+                                    {
+                                        profitRate = 0.15;
+                                    }
+                                    else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
+                                    {
+                                        profitRate = 0.17;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    responseModel.AddError(ex.ToString());
+
+                                    return responseModel;
+                                }
+
+                                break;
+
+                        default:
+                            return responseModel;
+
+                    }
+
+                   
+                    profit = deposit.Amount * (decimal)profitRate;
+                    bankAccount.Balance += deposit.Amount + profit;                   
+                }
+            }
+
+            return responseModel;
+
+        }
+
 
 
         #region private helper methods
@@ -230,6 +337,13 @@ namespace VirtualBank.Api.Services
             }
 
             return null;
+        }
+
+        private async Task<List<CashTransaction>> GetBankAccountDeposits(string iban)
+        {
+            var deposits = await _dbContext.CashTransactions.Where(c => c.To == iban).ToListAsync();
+
+            return deposits;
         }
 
         private async Task<CashTransaction> GetLastCashTransaction(BankAccount bankAccount)
