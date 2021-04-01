@@ -139,6 +139,7 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<CashTransactionResponse>();
             var user = _httpContextAccessor.HttpContext.User;
             var username = user.Identity.Name;
+            var amount = request.CashTransaction.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
@@ -147,6 +148,7 @@ namespace VirtualBank.Api.Services
                 switch (request.CashTransaction.Type)
                 {
                     case CashTransactionType.Deposit:
+
                         try
                         {
                             var toAccount = await GetBankAccountByIBANAsync(request.CashTransaction.To);
@@ -184,9 +186,11 @@ namespace VirtualBank.Api.Services
 
 
                     case CashTransactionType.Withdrawal:
+
                         try
                         {
                             var fromAccount = await GetBankAccountByIBANAsync(request.CashTransaction.From);
+                            bool isBlocked = true;
 
                             if (fromAccount == null)
                             {
@@ -194,7 +198,26 @@ namespace VirtualBank.Api.Services
                                 return responseModel;
                             }
 
-                            if (request.CashTransaction.Amount <= fromAccount.Balance)
+                            if (fromAccount.Type == AccountType.Savings)
+                            {
+                                var deposits = await _dbContext.CashTransactions.ToListAsync();
+
+                                foreach(var deposit in deposits)
+                                {
+                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180)
+                                    {
+                                        isBlocked = false;
+                                    }
+                                }
+
+                                if (isBlocked)
+                                {
+                                    responseModel.AddError("Deposit is blocked");
+                                    return responseModel;
+                                }
+                            }
+
+                            if (amount <= fromAccount.Balance)
                             {
                                 fromAccount.Balance -= request.CashTransaction.Amount;
 
@@ -232,7 +255,6 @@ namespace VirtualBank.Api.Services
                         {
                             var senderAccount = await GetBankAccountByIBANAsync(request.CashTransaction.From);
                             var recipientAccount = await GetBankAccountByIBANAsync(request.CashTransaction.To);
-                            var amount = request.CashTransaction.Amount;
 
                             if (senderAccount == null)
                             {
@@ -246,11 +268,79 @@ namespace VirtualBank.Api.Services
                                 return responseModel;
                             }
 
-                            if (amount <= senderAccount.Balance)
-                            {
-                                const double FeesRate = 0.0015;
 
-                                var fees = (double)amount * FeesRate;
+                            if (amount <= senderAccount.AllowedBalanceToUse)
+                            {
+
+                                //Deduct from sender account
+                                senderAccount.Balance -= amount;
+
+                                _dbContext.BankAccounts.Update(senderAccount);
+                                await _dbContext.SaveChangesAsync();
+
+                                //Deposit to recipient account
+                                recipientAccount.Balance += amount;
+
+                                _dbContext.BankAccounts.Update(recipientAccount);
+                                await _dbContext.SaveChangesAsync();
+
+                                //Create a transaction 
+                                var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
+
+                                //Save transaction into db
+                                await _dbContext.CashTransactions.AddAsync(cashTransaction);
+                                await _dbContext.SaveChangesAsync();
+
+                                await dbContextTransaction.CommitAsync();
+
+                                return responseModel;
+                            }
+                            else
+                            {
+                                responseModel.AddError("No enough balance to complete transfer");
+                                return responseModel;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            await dbContextTransaction.RollbackAsync();
+                            responseModel.AddError(ex.ToString());
+
+                            return responseModel;
+                        }
+
+
+                    case CashTransactionType.EFT:
+
+                        try
+                        {
+                            var senderAccount = await GetBankAccountByIBANAsync(request.CashTransaction.From);
+                            var recipientAccount = await GetBankAccountByIBANAsync(request.CashTransaction.To);
+
+                            if (senderAccount == null)
+                            {
+                                responseModel.AddError("account not found");
+                                return responseModel;
+                            }
+
+                            if (recipientAccount == null)
+                            {
+                                responseModel.AddError("account not found");
+                                return responseModel;
+                            }
+
+                            if (recipientAccount.Owner.FirstName != request.RecipeintFirstName || recipientAccount.Owner.LastName != request.RecipeintLastName)
+                            {
+                                responseModel.AddError("Name is not valid");
+                                return responseModel;
+                            }
+
+
+                            if (amount <= senderAccount.AllowedBalanceToUse)
+                            {
+                                const double feesRate = 0.0015;
+
+                                var fees = (double)amount * feesRate;
 
                                 //Deduct from sender account
                                 senderAccount.Balance -= amount;

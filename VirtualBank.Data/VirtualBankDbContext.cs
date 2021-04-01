@@ -23,5 +23,7 @@ namespace VirtualBank.Data
         public DbSet<District> Districts { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<Country> Countries { get; set; }
+        public DbSet<Recipient> Recipients { get; set; }
+
     }
 }

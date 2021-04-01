@@ -6,7 +6,7 @@ namespace VirtualBank.Core.ApiRequestModels.AccountApiRequests
 {
     public class CreateBankAccountRequest
     {
-        public BankAccount Account { get; }
+        public BankAccount Account { get; set; }
 
         public CreateBankAccountRequest(BankAccount account)
         {

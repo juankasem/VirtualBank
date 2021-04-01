@@ -198,13 +198,12 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount.Type == AccountType.Savings)
             {
-
-                var deposits = await GetBankAccountDeposits(bankAccount.IBAN);
+                var deposits = await _dbContext.CashTransactions.Where(c => c.To == bankAccount.IBAN).ToListAsync();
 
                 foreach (var deposit in deposits)
                 {
                     decimal profit = 0;
-                    double profitRate = 0.00;
+                    double interestRate = 0.00;
 
                     switch (bankAccount.Currency.Code)
                     {
@@ -212,13 +211,13 @@ namespace VirtualBank.Api.Services
                             
                                 try
                                 {
-                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
+                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                     {
-                                        profitRate = 0.17;
+                                      interestRate = 0.1525;
                                     }
                                     else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
                                     {
-                                        profitRate = 0.19;
+                                      interestRate = 0.17;
                                     }
                                 }
                                 catch (Exception ex)
@@ -237,11 +236,11 @@ namespace VirtualBank.Api.Services
                                 {
                                 if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                 {
-                                    profitRate = 0.15;
+                                    interestRate = 0.0085;
                                 }
                                 else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
                                 {
-                                    profitRate = 0.17;
+                                    interestRate = 0.01;
                                 }
                             }
                                 catch (Exception ex)
@@ -259,11 +258,11 @@ namespace VirtualBank.Api.Services
                                 {
                                     if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                     {
-                                        profitRate = 0.15;
+                                       interestRate = 0.035;
                                     }
                                     else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
                                     {
-                                        profitRate = 0.17;
+                                       interestRate = 0.05;
                                     }
                                 }
                                 catch (Exception ex)
@@ -281,15 +280,13 @@ namespace VirtualBank.Api.Services
                     }
 
                    
-                    profit = deposit.Amount * (decimal)profitRate;
+                    profit = deposit.Amount * (decimal)interestRate;
                     bankAccount.Balance += deposit.Amount + profit;                   
                 }
             }
 
             return responseModel;
-
         }
-
 
 
         #region private helper methods
@@ -339,18 +336,14 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-        private async Task<List<CashTransaction>> GetBankAccountDeposits(string iban)
-        {
-            var deposits = await _dbContext.CashTransactions.Where(c => c.To == iban).ToListAsync();
-
-            return deposits;
-        }
-
+     
         private async Task<CashTransaction> GetLastCashTransaction(BankAccount bankAccount)
         {
             return await _dbContext.CashTransactions.Where(c => c.From == bankAccount.AccountNo || c.To == bankAccount.AccountNo)
                                                                     .OrderByDescending(c => c.CreatedOn).FirstOrDefaultAsync();
         }
+
+      
         #endregion
 
     }
