@@ -75,9 +75,6 @@ namespace VirtualBank.Api.Controllers
                   return Ok(pagedResponse);
                 }
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
 
                 return BadRequest(apiResponse);
             }

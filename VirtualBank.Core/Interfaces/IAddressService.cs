@@ -9,8 +9,12 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface IAddressService
     {
+        Task<ApiResponse<AddressListResponse>> GetAllAddressesAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+
         Task<ApiResponse<AddressResponse>> GetAddressByIdAsync(int addressId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> AddOrEditAddressAsync(int cityId, CreateAddressRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default);
+
+        Task<bool> AddressExists(int countryId, int cityId, int districtId, string street);
     }
 }

@@ -13,6 +13,7 @@ using VirtualBank.Core.ApiResponseModels.BranchApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
+using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
@@ -21,11 +22,18 @@ namespace VirtualBank.Api.Services
     {
         private readonly VirtualBankDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IBranchRepository _branchRepository;
+        private readonly IAddressRepository _addressRepository;
 
-        public BranchService(VirtualBankDbContext dbContext, IHttpContextAccessor httpContextAccessor)
+        public BranchService(VirtualBankDbContext dbContext,
+                             IHttpContextAccessor httpContextAccessor,
+                             IBranchRepository branchRepository,
+                             IAddressRepository addressRepository)
         {
             _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
+            _branchRepository = branchRepository;
+            _addressRepository = addressRepository;
         }
 
         /// <summary>
@@ -38,13 +46,14 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<BranchListResponse>();
             var skip = (pageNumber - 1) * pageSize;
 
-            var branches = await _dbContext.Branches.Skip(skip).AsNoTracking().ToListAsync();
+            var allBranches = await _branchRepository.GetAll();
+            var branches = allBranches.OrderBy(b => b.CreatedOn).Skip(skip).Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
             foreach (var branch in branches)
             {
-                var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+                var address = await _addressRepository.FindByIdAsync(branch.AddressId);
                 branchList.Add(CreateBranchResponse(branch, address));
             }
 
@@ -59,17 +68,19 @@ namespace VirtualBank.Api.Services
         /// <param name="cityId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<BranchListResponse>> GetBranchesByCityIdAsync(int cityId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchListResponse>> GetBranchesByCityIdAsync(int cityId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchListResponse>();
+            var skip = (pageNumber - 1) * pageSize;
 
-            var branches = await _dbContext.Branches.Include(b => b.Address.CityId == cityId).ToListAsync();
+            var cityBranches = await _branchRepository.GetByCityId(cityId);
+            var branches = cityBranches.OrderBy(b => b.CreatedOn).Skip(skip).Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
             foreach (var branch in branches)
             {
-                var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+                var address = await _addressRepository.FindByIdAsync(branch.AddressId);
                 branchList.Add(CreateBranchResponse(branch, address));
             }
 
@@ -79,7 +90,7 @@ namespace VirtualBank.Api.Services
         }
 
         /// <summary>
-        /// Retrieve the branch by the specified id
+        /// Retrieve the branch of the specified id
         /// </summary>
         /// <param name="branchId"></param>
         /// <param name="cancellationToken"></param>
@@ -88,7 +99,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BranchResponse>();
 
-            var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Id == branchId);
+            var branch = await _branchRepository.FindByIdAsync(branchId);
 
             if (branch == null)
             {
@@ -96,7 +107,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+            var address = await _addressRepository.FindByIdAsync(branch.AddressId);
 
             responseModel.Data = CreateBranchResponse(branch, address);
 
@@ -113,7 +124,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BranchResponse>();
 
-            var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Code == code);
+            var branch = await _branchRepository.FindByCodeAsync(code);
 
             if (branch == null)
             {
@@ -121,7 +132,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == branch.AddressId);
+            var address = await _addressRepository.FindByIdAsync(branch.AddressId);
 
             responseModel.Data = CreateBranchResponse(branch, address);
 
@@ -146,17 +157,26 @@ namespace VirtualBank.Api.Services
             }
 
             var user = _httpContextAccessor.HttpContext.User;
-            var branch = await _dbContext.Branches.FirstOrDefaultAsync(b => b.Id == branchId);
-           
-            if (branch != null)
-            {
-                branch.Name = request.Name;
-                branch.Code = request.Code;
-                branch.Address = request.Address;
-                branch.LastModifiedBy = user.Identity.Name;
-                branch.LastModifiedOn = DateTime.UtcNow;
 
-                await _dbContext.SaveChangesAsync();
+            if (branchId != 0)
+            {
+                var branch = await _branchRepository.FindByIdAsync(branchId);
+
+                if (branch != null)
+                {
+                    branch.Name = request.Name;
+                    branch.Code = request.Code;
+                    branch.Address = request.Address;
+                    branch.LastModifiedBy = user.Identity.Name;
+                    branch.LastModifiedOn = DateTime.UtcNow;
+
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    responseModel.AddError("branch not found");
+                    return responseModel;
+                }
             }
             else
             {
@@ -177,14 +197,11 @@ namespace VirtualBank.Api.Services
                 {
                     try
                     {
-                        await _dbContext.Addresses.AddAsync(newAddress);
-                        await _dbContext.SaveChangesAsync();
+                        await _addressRepository.AddAsync(newAddress);
 
                         newBranch.AddressId = newAddress.Id;
-                        _dbContext.Branches.Update(newBranch);
 
-                        await _dbContext.Branches.AddAsync(newBranch);
-                        await _dbContext.SaveChangesAsync();
+                        await _branchRepository.AddAsync(newBranch);
 
                         await dbContextTransaction.CommitAsync();
                     }
@@ -208,7 +225,7 @@ namespace VirtualBank.Api.Services
         public async Task<bool> BranchExists(int countryId, int cityId, string branchName)
         {
             return await _dbContext.Branches.AnyAsync(b => b.Address.CountryId == countryId && b.Address.CityId == cityId &&
-                                                           b.Name == branchName);
+                                                           b.Name.Equals(branchName));
         }
 
 
@@ -233,12 +250,16 @@ namespace VirtualBank.Api.Services
         {
             if (request != null)
             {
+                var address = request.Address;
+
                 return new Address()
                 {
-                    Street = request.Address?.Street,
-                    DistrictId = request.Address.DistrictId,
-                    CityId = request.Address.CityId,
-                    CountryId = request.Address.CountryId
+                    Name = address.Name,
+                    DistrictId = address.DistrictId,
+                    CityId = address.CityId,
+                    CountryId = address.CountryId,
+                    Street = address?.Street,
+                    PostalCode = address?.PostalCode
                 };
             }
 
@@ -260,7 +281,8 @@ namespace VirtualBank.Api.Services
         {
             if (address != null)
             {
-                return new AddressResponse(address.Id, address.DistrictId, address.District.Name,
+                return new AddressResponse(address.Id, address.Name,
+                                           address.DistrictId, address.District.Name,
                                            address.CityId, address.City.Name,
                                            address.CountryId, address.Country.Name,
                                            address.Street, address.PostalCode);

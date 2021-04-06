@@ -85,6 +85,36 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
+        [HttpGet(ApiRoutes.getAccountById)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetAccountById([FromRoute] int accountId, CancellationToken cancellationToken = default)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            try
+            {
+                var apiResponse = await _bankAccountService.GetAccountByIdAsync(accountId, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("not found"))
+                    return NotFound(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
+        }
 
         [HttpGet(ApiRoutes.getAccountByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]

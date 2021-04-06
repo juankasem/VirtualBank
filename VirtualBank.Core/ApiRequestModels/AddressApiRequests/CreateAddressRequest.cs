@@ -6,8 +6,9 @@ namespace VirtualBank.Core.ApiRequestModels.AddressApiRequests
 {
     public class CreateAddressRequest
     {
-        [MaxLength(150)]
-        public string Street { get; set; }
+        [Required]
+        [MaxLength(50)]
+        public string Name { get; set; }
 
         [Required]
         public int DistrictId { get; set; }
@@ -18,13 +19,21 @@ namespace VirtualBank.Core.ApiRequestModels.AddressApiRequests
         [Required]
         public int CountryId { get; set; }
 
-       
-        public CreateAddressRequest( int districtId, int cityId, int countryId, string street)
+        [MaxLength(150)]
+        public string Street { get; set; }
+
+        [MaxLength(50)]
+        public string PostalCode { get; set; }
+
+
+        public CreateAddressRequest(string name, int districtId, int cityId, int countryId, string street, string postalCode)
         {
+            Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
             DistrictId = Throw.ArgumentNullException.IfNull(districtId, nameof(districtId));
             CityId = Throw.ArgumentNullException.IfNull(cityId, nameof(cityId));
             CountryId = Throw.ArgumentNullException.IfNull(countryId, nameof(countryId));
             Street = street;
+            PostalCode = postalCode;
         }
     }
 }

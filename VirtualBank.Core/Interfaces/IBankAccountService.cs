@@ -12,6 +12,8 @@ namespace VirtualBank.Core.Interfaces
     {
         Task<ApiResponse<BankAccountListResponse>> GetAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default);
 
+        Task<ApiResponse<BankAccountResponse>> GetAccountByIdAsync(int accountId, CancellationToken cancellationToken = default);
+
         Task<ApiResponse<BankAccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<BankAccountResponse>> GetAccountByIBANAsync(string iban, CancellationToken cancellationToken = default);

@@ -27,9 +27,9 @@ namespace VirtualBank.Api.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CashTransactionsService(VirtualBankDbContext dbContext,
-                                     ICustomerService customersService,
-                                     IBankAccountService bankAccountsService,
-                                     IHttpContextAccessor httpContextAccessor)
+                                       ICustomerService customersService,
+                                       IBankAccountService bankAccountsService,
+                                       IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _customerService = customersService;

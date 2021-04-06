@@ -3,6 +3,18 @@ namespace VirtualBank.Core.ApiRoutes
 {
     public static class ApiRoutes
     {
+        #region Address
+        public const string getAllAddresses = "api/Address/getAlAddresses";
+
+        public const string getAddressById = "api/Address/getById/{addressId:int}";
+
+        public const string postAddress = "api/Address/postAddress/{addressId:int}";
+
+        public const string deleteAddress = "api/Address/deleteAddress/{addressId:int}";
+
+        #endregion
+
+
         #region Auth
         public const string checkEmailExists = "api/Auth/checkEmailExists";
 
@@ -15,6 +27,8 @@ namespace VirtualBank.Core.ApiRoutes
 
         #region Bank Account
         public const string getAccountsByCustomerId = "api/BankAccount/getByCustomerId/{customerId:int}";
+
+        public const string getAccountById = "api/BankAccount/getById/{accountId:int}";
 
         public const string getAccountByAccountNo = "api/BankAccount/getByAccountNo/{accountNo}";
 
@@ -102,6 +116,19 @@ namespace VirtualBank.Core.ApiRoutes
         public const string postCustomer= "api/Customer/post/{customerId:int}";
 
         #endregion
+
+        #region Fast Transactions
+        public const string getAllFastTransactions = "api/FastTransactions/getAll";
+
+        public const string getAccountFastTransactions = "api/FastTransactions/getAccountFastTransactions/{accountId:int}";
+
+        public const string getFastTransactionById = "api/FastTransactions/getById/{id:int}";
+
+        public const string AddOrEditFastTransaction = "api/FastTransactions//get";
+
+
+        #endregion
+
 
         #region Token
         public const string refresh = "api/Token/refresh";

@@ -39,10 +39,9 @@ namespace VirtualBank.Api.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/values
+        // GET: api/Branch
         [HttpGet(ApiRoutes.getAllBranches)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllBranches([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -56,8 +55,6 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return NotFound(apiResponse);
 
                 else if (apiResponse.Errors[0].Contains("unauthorized"))
                     return Unauthorized(apiResponse);
@@ -70,12 +67,16 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
+        // GET: api/Branch/id
         [HttpGet(ApiRoutes.getBranchesByCityId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetBranchesByCityId([FromRoute] int cityId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetBranchesByCityId([FromRoute] int cityId,
+                                                             [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+                                                             [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                             CancellationToken cancellationToken = default)
         {
             try
             {
@@ -84,7 +85,7 @@ namespace VirtualBank.Api.Controllers
                     return NotFound();
                 }
 
-                var apiResponse = await _branchService.GetBranchesByCityIdAsync(cityId, cancellationToken);
+                var apiResponse = await _branchService.GetBranchesByCityIdAsync(cityId, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -103,7 +104,6 @@ namespace VirtualBank.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
         }
-
 
 
         [HttpGet(ApiRoutes.getBranchById)]
