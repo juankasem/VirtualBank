@@ -153,6 +153,44 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+        /// <summary>
+        /// Disable address
+        /// </summary>
+        /// <param name="addressId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse> DeleteAddressAsync(int addressId, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse();
+
+            var address = await _addressRepository.FindByIdAsync(addressId);
+
+            if (address == null)
+            {
+                responseModel.AddError($"address {addressId} not found");
+                return responseModel;
+            }
+
+            try
+            {
+                await _addressRepository.RemoveAsync(address.Id);
+            }
+            catch (Exception ex)
+            {
+                responseModel.AddError(ex.ToString());
+            }
+
+            return responseModel;
+        }
+
+        /// <summary>
+        /// Check if address exists
+        /// </summary>
+        /// <param name="countryId"></param>
+        /// <param name="cityId"></param>
+        /// <param name="districtId"></param>
+        /// <param name="street"></param>
+        /// <returns></returns>
         public async Task<bool> AddressExists(int countryId, int cityId, int districtId, string street)
         {
             return await _dbContext.Addresses.AnyAsync(a => a.CountryId == countryId && a.CityId == cityId &&
@@ -192,7 +230,6 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-      
         #endregion
     }
 }

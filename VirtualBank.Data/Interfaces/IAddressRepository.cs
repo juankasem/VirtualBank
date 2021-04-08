@@ -9,9 +9,9 @@ namespace VirtualBank.Data.Interfaces
     {
         Task<IEnumerable<Address>> GetAll();
         Task<Address> FindByIdAsync(int id);
-        Task<Address> AddAsync(Address address);
-        Task<Address> UpdateAsync(Address address);
-        Task<Address> RemoveAsync(int id);
-        Task SaveAsync();
+        Task<Address> AddAsync(Address address, VirtualBankDbContext dbContext = null);
+        Task<Address> UpdateAsync(Address address, VirtualBankDbContext dbContext = null);
+        Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext = null);
+        Task SaveAsync(VirtualBankDbContext dbContext = null);
     }
 }

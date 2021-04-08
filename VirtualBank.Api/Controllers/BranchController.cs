@@ -198,14 +198,32 @@ namespace VirtualBank.Api.Controllers
 
         // DELETE api/values/5
         [HttpDelete(ApiRoutes.deleteBranch)]
-        public void DeleteBranchAsync([FromRoute] string branchId, CancellationToken cancellationToken = default)
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> DeleteBranchAsync([FromRoute] int branchId, CancellationToken cancellationToken = default)
         {
+            try
+            {
+                var apiResponse = await _branchService.DeleteBranchAsync(branchId, cancellationToken);
 
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("not found"))
+                    return BadRequest(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("unauthorized"))
+                    return Unauthorized(apiResponse);
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
         }
-
-        #region private helper methods
- 
-
-        #endregion
     }
 }

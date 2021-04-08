@@ -22,6 +22,9 @@ namespace VirtualBank.Core.Interfaces
         Task<ApiResponse> AddOrEditBranchAsync(int branchId, CreateBranchRequest request,
                                               CancellationToken cancellationToken = default);
 
+
+        Task<ApiResponse> DeleteBranchAsync(int branchId, CancellationToken cancellationToken = default);
+
         Task<bool> BranchExists(int countryId, int cityId, string branchName);
     }
 }

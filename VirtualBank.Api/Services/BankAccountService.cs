@@ -21,22 +21,25 @@ namespace VirtualBank.Api.Services
     {
         private readonly VirtualBankDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IBankAccountRepository _bankAccountRepository;
+        private readonly IBankAccountRepository _bankAccountRepo;
+        private readonly ICashTransactionsRepository _cashTransactionsRepo;
 
         public BankAccountService(VirtualBankDbContext dbContext,
                                   IHttpContextAccessor httpContextAccessor,
-                                  IBankAccountRepository bankAccountRepository)
+                                  IBankAccountRepository bankAccountRepo,
+                                  ICashTransactionsRepository cashTransactionsRepo)
         {
             _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
-            _bankAccountRepository = bankAccountRepository;
+            _bankAccountRepo = bankAccountRepo;
+            _cashTransactionsRepo = cashTransactionsRepo;
         }
 
         public async Task<ApiResponse<BankAccountListResponse>> GetAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountListResponse>();
 
-            var bankAccounts = await _bankAccountRepository.GetByCustomerId(customerId);
+            var bankAccounts = await _bankAccountRepo.GetByCustomerId(customerId);
 
             var bankAccountList = new List<BankAccountResponse>();
 
@@ -48,7 +51,7 @@ namespace VirtualBank.Api.Services
             foreach (var bankAccount in bankAccounts)
             {
                 var accountOwner = CreateBankAccountOwner(bankAccount);
-                var lastTransaction = await GetLastCashTransaction(bankAccount);
+                var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
                 bankAccountList.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn));
             }
@@ -63,7 +66,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepository.FindByIdAsync(accountId);
+            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
 
             if (bankAccount == null)
             {
@@ -72,7 +75,7 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = CreateBankAccountOwner(bankAccount);
-            var lastTransaction = await GetLastCashTransaction(bankAccount);
+            var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
             responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
 
@@ -84,7 +87,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepository.FindByAccountNoAsync(accountNo);
+            var bankAccount = await _bankAccountRepo.FindByAccountNoAsync(accountNo);
 
             if (bankAccount == null)
             {
@@ -93,7 +96,7 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = CreateBankAccountOwner(bankAccount);
-            var lastTransaction = await GetLastCashTransaction(bankAccount);
+            var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
             responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
 
@@ -104,7 +107,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepository.FindByIBANAsync(iban);
+            var bankAccount = await _bankAccountRepo.FindByIBANAsync(iban);
 
 
             if (bankAccount == null)
@@ -127,7 +130,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<RecipientBankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepository.FindByIBANAsync(iban);
+            var bankAccount = await _bankAccountRepo.FindByIBANAsync(iban);
 
             if (bankAccount == null)
             {
@@ -151,7 +154,7 @@ namespace VirtualBank.Api.Services
 
             if (accountId > 0)
             {
-                var bankaccount = await _bankAccountRepository.FindByIdAsync(accountId);
+                var bankaccount = await _bankAccountRepo.FindByIdAsync(accountId);
 
                 if (bankaccount != null)
                 {
@@ -183,7 +186,7 @@ namespace VirtualBank.Api.Services
 
                 newBankAccount.CreatedBy = user.Identity.Name;
 
-                await _bankAccountRepository.AddAsync(newBankAccount);
+                await _bankAccountRepo.AddAsync(newBankAccount);
             }
             
 
@@ -194,7 +197,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepository.FindByIdAsync(accountId);
+            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
 
             if (bankAccount != null)
             {
@@ -212,7 +215,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepository.FindByIdAsync(accountId);
+            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
 
             if (bankAccount != null)
             {
@@ -230,7 +233,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepository.FindByIdAsync(accountId);
+            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
 
             if (bankAccount == null)
             {
@@ -239,7 +242,7 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount.Type == AccountType.Savings)
             {
-                var deposits = await _dbContext.CashTransactions.Where(c => c.To == bankAccount.IBAN).ToListAsync();
+                var deposits = await _cashTransactionsRepo.GetDepositsByIBAN(bankAccount.IBAN);
 
                 foreach (var deposit in deposits)
                 {
@@ -380,12 +383,6 @@ namespace VirtualBank.Api.Services
         private string CreateBankAccountOwner(BankAccount bankAccount)
         {
             return bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
-        }
-     
-        private async Task<CashTransaction> GetLastCashTransaction(BankAccount bankAccount)
-        {
-            return await _dbContext.CashTransactions.Where(c => c.From == bankAccount.AccountNo || c.To == bankAccount.AccountNo)
-                                                                    .OrderByDescending(c => c.CreatedOn).FirstOrDefaultAsync();
         }
 
       

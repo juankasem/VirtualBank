@@ -66,6 +66,14 @@ namespace VirtualBank.Data.Repositories
         }
 
 
+        public async Task<BankAccount> AddAsync(VirtualBankDbContext dbContext, BankAccount bankAccount)
+        {
+            await dbContext.BankAccounts.AddAsync(bankAccount);
+            await SaveAsync(dbContext);
+
+            return bankAccount;
+        }
+
         public async Task<BankAccount> UpdateAsync(BankAccount bankAccount)
         {
             var existingBankAccount = await _dbContext.BankAccounts
@@ -83,6 +91,24 @@ namespace VirtualBank.Data.Repositories
         }
 
 
+        public async Task<BankAccount> UpdateAsync(VirtualBankDbContext dbContext, BankAccount bankAccount)
+       
+        {
+            var existingBankAccount = await dbContext.BankAccounts
+                                                      .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && b.Disabled == false);
+
+            if (existingBankAccount is not null)
+            {
+                dbContext.Entry(existingBankAccount).State = EntityState.Detached;
+            }
+
+            dbContext.Entry(bankAccount).State = EntityState.Modified;
+            await SaveAsync(dbContext);
+
+            return bankAccount;
+        }
+
+
         public async Task<BankAccount> RemoveAsync(int id)
         {
             var bankAccount = await _dbContext.BankAccounts.FindAsync(id);
@@ -94,11 +120,32 @@ namespace VirtualBank.Data.Repositories
             }
 
             return bankAccount;
-        }      
+        }
+
+
+        public async Task<BankAccount> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        {
+            var bankAccount = await dbContext.BankAccounts.FindAsync(id);
+
+            if (bankAccount is not null)
+            {
+                bankAccount.Disabled = true;
+                await SaveAsync(dbContext);
+            }
+
+            return bankAccount;
+        }
+
 
         public async Task SaveAsync()
         {
             await _dbContext.SaveChangesAsync();
+        }
+
+
+        public async Task SaveAsync(VirtualBankDbContext dbContext)
+        {
+            await dbContext.SaveChangesAsync();
         }
     }
 }
