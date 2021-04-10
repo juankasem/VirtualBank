@@ -13,17 +13,22 @@ using VirtualBank.Core.ApiResponseModels.CountryApiResponse;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
+using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
     public class CountriesService : ICountriesService
     {
         private readonly VirtualBankDbContext _dbContext;
+        private readonly ICountriesRepository _countriesRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CountriesService(VirtualBankDbContext dbContext, IHttpContextAccessor httpContextAccessor)
+        public CountriesService(VirtualBankDbContext dbContext,
+                                ICountriesRepository countriesRepo,
+                                IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
+            _countriesRepo = countriesRepo;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -32,7 +37,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CountriesResponse>();
 
-            var countries = await _dbContext.Countries.OrderBy(c => c.Name).ToListAsync();
+            var countries = await _countriesRepo.GetAll();
 
             var countryList = new List<CountryResponse>();
 
@@ -54,10 +59,10 @@ namespace VirtualBank.Api.Services
             Country country= null;
 
             if (includeCities)
-               country = await _dbContext.Countries.Include(c => c.Cities).FirstOrDefaultAsync(c => c.Id == countryId);
-            
+                country = await _countriesRepo.FindByIdWithCitiesAsync(countryId);
+
             else
-              country = await _dbContext.Countries.FirstOrDefaultAsync(c => c.Id == countryId);
+                country = await _countriesRepo.FindByIdAsync(countryId);
 
 
             if (country == null)
@@ -87,7 +92,7 @@ namespace VirtualBank.Api.Services
             }
 
             var user = _httpContextAccessor.HttpContext.User;
-            var country = await _dbContext.Countries.FirstOrDefaultAsync(c => c.Id == countryId);
+            var country = await _countriesRepo.FindByIdAsync(countryId);
 
             if (country != null)
             {
@@ -95,6 +100,8 @@ namespace VirtualBank.Api.Services
                 country.Code = request.Code;
                 country.LastModifiedBy = user.Identity.Name;
                 country.LastModifiedOn = DateTime.UtcNow;
+
+                await _countriesRepo.UpdateAsync(country);
             }
             else
             {
@@ -108,10 +115,9 @@ namespace VirtualBank.Api.Services
 
                 newCountry.CreatedBy = user.Identity.Name;
 
-                await _dbContext.Countries.AddAsync(newCountry);
+                await _countriesRepo.AddAsync(newCountry);
             }
 
-            await _dbContext.SaveChangesAsync();
 
             return responseModel;
         }
@@ -179,8 +185,6 @@ namespace VirtualBank.Api.Services
 
             return null;
         }
-
-        
 
         #endregion
     }

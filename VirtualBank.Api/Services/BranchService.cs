@@ -47,7 +47,7 @@ namespace VirtualBank.Api.Services
             var skip = (pageNumber - 1) * pageSize;
 
             var allBranches = await _branchRepo.GetAll();
-            var branches = allBranches.OrderBy(b => b.CreatedOn).Skip(skip).Take(pageSize);
+            var branches = allBranches.OrderBy(b => b.CreatedAt).Skip(skip).Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
@@ -74,7 +74,7 @@ namespace VirtualBank.Api.Services
             var skip = (pageNumber - 1) * pageSize;
 
             var cityBranches = await _branchRepo.GetByCityId(cityId);
-            var branches = cityBranches.OrderBy(b => b.CreatedOn).Skip(skip).Take(pageSize);
+            var branches = cityBranches.OrderByDescending(b => b.CreatedAt).Skip(skip).Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
@@ -170,7 +170,7 @@ namespace VirtualBank.Api.Services
                     branch.LastModifiedBy = user.Identity.Name;
                     branch.LastModifiedOn = DateTime.UtcNow;
 
-                    await _dbContext.SaveChangesAsync();
+                    await _branchRepo.UpdateAsync(_dbContext, branch);
                 }
                 else
                 {
@@ -255,8 +255,7 @@ namespace VirtualBank.Api.Services
         /// <returns></returns>
         public async Task<bool> BranchExists(int countryId, int cityId, string branchName)
         {
-            return await _dbContext.Branches.AnyAsync(b => b.Address.CountryId == countryId && b.Address.CityId == cityId &&
-                                                           b.Name.Equals(branchName));
+            return await _branchRepo.ExistsAsync(countryId, cityId, branchName);
         }
 
 

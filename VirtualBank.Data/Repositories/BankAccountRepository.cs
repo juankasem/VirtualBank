@@ -109,31 +109,38 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<BankAccount> RemoveAsync(int id)
+        public async Task<bool> RemoveAsync(int id)
         {
+            var isDeleted = false;
             var bankAccount = await _dbContext.BankAccounts.FindAsync(id);
 
             if (bankAccount is not null)
             {
                 bankAccount.Disabled = true;
                 await SaveAsync();
+
+                isDeleted = true;
             }
 
-            return bankAccount;
+            return isDeleted;
+
         }
 
 
-        public async Task<BankAccount> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        public async Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id)
         {
+            var isDeleted = false;
             var bankAccount = await dbContext.BankAccounts.FindAsync(id);
 
             if (bankAccount is not null)
             {
                 bankAccount.Disabled = true;
                 await SaveAsync(dbContext);
+
+                isDeleted = true;
             }
 
-            return bankAccount;
+            return isDeleted;
         }
 
 

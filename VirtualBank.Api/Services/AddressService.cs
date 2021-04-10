@@ -46,7 +46,7 @@ namespace VirtualBank.Api.Services
             var skip = (pageNumber - 1) * pageSize;
 
             var allAddresses = await _addressRepository.GetAll();
-            var addresses = allAddresses.OrderBy(a => a.CreatedOn).Skip(skip).Take(pageSize);
+            var addresses = allAddresses.OrderBy(a => a.CreatedAt).Skip(skip).Take(pageSize);
 
             var addressList = new List<AddressResponse>();
 

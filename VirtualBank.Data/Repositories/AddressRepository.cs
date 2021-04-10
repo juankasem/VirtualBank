@@ -93,7 +93,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext = null)
         {
-            var isRemoved = false;
+            var isDeleted= false;
 
             if (dbContext != null)
             {
@@ -103,7 +103,7 @@ namespace VirtualBank.Data.Repositories
                 {
                     address.Disabled = true;
                     await SaveAsync(dbContext);
-                    isRemoved = true;
+                    isDeleted = true;
                 }
             }
             else
@@ -114,11 +114,11 @@ namespace VirtualBank.Data.Repositories
                 {
                     address.Disabled = true;
                     await SaveAsync();
-                    isRemoved = true;
+                    isDeleted = true;
                 }
             }
           
-            return isRemoved;
+            return isDeleted;
         }
 
 

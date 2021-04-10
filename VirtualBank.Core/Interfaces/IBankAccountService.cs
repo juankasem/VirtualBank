@@ -10,15 +10,15 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface IBankAccountService
     {
-        Task<ApiResponse<BankAccountListResponse>> GetAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default);
+        Task<ApiResponse<BankAccountListResponse>> GetBankAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<BankAccountResponse>> GetAccountByIdAsync(int accountId, CancellationToken cancellationToken = default);
+        Task<ApiResponse<BankAccountResponse>> GetBankAccountByIdAsync(int accountId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<BankAccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);
+        Task<ApiResponse<BankAccountResponse>> GetBankAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<BankAccountResponse>> GetAccountByIBANAsync(string iban, CancellationToken cancellationToken = default);
+        Task<ApiResponse<BankAccountResponse>> GetBankAccountByIBANAsync(string iban, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<RecipientBankAccountResponse>> GetRecipientAccountByIBANAsync(string iban, CancellationToken cancellationToken = default);
+        Task<ApiResponse<RecipientBankAccountResponse>> GetRecipientBankAccountByIBANAsync(string iban, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> AddOrEditBankAccountAsync(int accountId, CreateBankAccountRequest request, CancellationToken cancellationToken = default);
 

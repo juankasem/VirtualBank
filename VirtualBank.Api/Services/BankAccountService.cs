@@ -35,7 +35,13 @@ namespace VirtualBank.Api.Services
             _cashTransactionsRepo = cashTransactionsRepo;
         }
 
-        public async Task<ApiResponse<BankAccountListResponse>> GetAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Retrieve bank accounts for the specified customer
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<BankAccountListResponse>> GetBankAccountsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountListResponse>();
 
@@ -53,7 +59,7 @@ namespace VirtualBank.Api.Services
                 var accountOwner = CreateBankAccountOwner(bankAccount);
                 var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
-                bankAccountList.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn));
+                bankAccountList.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt));
             }
 
             responseModel.Data = new BankAccountListResponse(bankAccountList.ToImmutableList(), bankAccountList.Count);
@@ -62,7 +68,14 @@ namespace VirtualBank.Api.Services
  
         }
 
-        public async Task<ApiResponse<BankAccountResponse>> GetAccountByIdAsync(int accountId, CancellationToken cancellationToken = default)
+
+        /// <summary>
+        /// Retrieve bank account for the specified id
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<BankAccountResponse>> GetBankAccountByIdAsync(int accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
@@ -77,13 +90,19 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt);
 
             return responseModel;
         }
 
 
-        public async Task<ApiResponse<BankAccountResponse>> GetAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Retrieve bank account for the specified account number
+        /// </summary>
+        /// <param name="accountNo"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<BankAccountResponse>> GetBankAccountByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
@@ -98,12 +117,19 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt);
 
             return responseModel;
         }
 
-        public async Task<ApiResponse<BankAccountResponse>> GetAccountByIBANAsync(string iban, CancellationToken cancellationToken = default)
+
+        /// <summary>
+        /// Retrieve bank account for the specified iban
+        /// </summary>
+        /// <param name="iban"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<BankAccountResponse>> GetBankAccountByIBANAsync(string iban, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
@@ -117,16 +143,20 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = CreateBankAccountOwner(bankAccount);
-            var lastTransaction = await _dbContext.CashTransactions.Where(c => c.From == bankAccount.AccountNo || c.To == bankAccount.AccountNo)
-                                                                   .OrderByDescending(c => c.CreatedOn).FirstOrDefaultAsync();
+            var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt);
 
             return responseModel;
         }
 
-
-        public async Task<ApiResponse<RecipientBankAccountResponse>> GetRecipientAccountByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Retrieve recipient bank account for the specified iban
+        /// </summary>
+        /// <param name="iban"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<RecipientBankAccountResponse>> GetRecipientBankAccountByIBANAsync(string iban, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<RecipientBankAccountResponse>();
 
@@ -146,6 +176,13 @@ namespace VirtualBank.Api.Services
         }
 
 
+        /// <summary>
+        /// Add or Edit bank account
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> AddOrEditBankAccountAsync(int accountId, CreateBankAccountRequest request,
                                                                  CancellationToken cancellationToken = default)
         {
@@ -193,6 +230,13 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Activate bank account for for the specified id
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> ActivateBankAccountAsync(int accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
@@ -211,6 +255,13 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Deactivate bank account for for the specified id
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> DeactivateBankAccountAsync(int accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
@@ -229,6 +280,13 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Calculate net profits of savings in savings account
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<BankAccountResponse>> CalculateNetProfits(int accountId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
@@ -341,7 +399,7 @@ namespace VirtualBank.Api.Services
                 return new BankAccountResponse(bankAccount.Id, bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
                                                accountOwner,bankAccount.Branch.Code, bankAccount.Branch.Name,
                                                bankAccount.Balance, bankAccount.AllowedBalanceToUse,
-                                               bankAccount.Currency.Name, bankAccount.CreatedOn, lastTransactionDate);
+                                               bankAccount.Currency.Name, bankAccount.CreatedAt, lastTransactionDate);
             }
 
             return null;

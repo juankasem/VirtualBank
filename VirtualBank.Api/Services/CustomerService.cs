@@ -349,7 +349,7 @@ namespace VirtualBank.Api.Services
         {
             if (address != null)
             {
-                return new AddressResponse(address.Id, address.DistrictId, address.District.Name,
+                return new AddressResponse(address.Id, address.Name, address.DistrictId, address.District.Name,
                                            address.CityId, address.City.Name,
                                            address.CountryId, address.Country.Name,
                                            address.Street, address.PostalCode);

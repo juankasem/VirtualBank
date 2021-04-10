@@ -36,7 +36,8 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<CashTransaction> GetLastAsync(string iban)
         {
-           return await _dbContext.CashTransactions.Where(c => c.From == iban || c.To == iban)
+           return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
+                                                                && c.Disabled == false)
                                                    .OrderByDescending(c => c.CreatedOn)
                                                    .FirstOrDefaultAsync();
         }
@@ -51,8 +52,8 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<CashTransaction> FindByIBANAsync(string iban)
         {
-            return await _dbContext.CashTransactions.Where(c => c.From == iban || c.To == iban
-                                                                && c.Disabled == false)
+            return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
+                                                            && c.Disabled == false)
                                                     .OrderByDescending(c => c.TransactionDate)
                                                     .FirstOrDefaultAsync();
         }
@@ -95,7 +96,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<CashTransaction> UpdateAsync(VirtualBankDbContext dbContext, CashTransaction transaction)
         {
             var existingCashTransaction = await dbContext.CashTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
-                                                                           .FirstOrDefaultAsync();
+                                                                          .FirstOrDefaultAsync();
 
             if (existingCashTransaction is not null)
             {
@@ -108,41 +109,49 @@ namespace VirtualBank.Data.Repositories
             return transaction;
         }
 
-        public async Task<CashTransaction> RemoveAsync(int id)
+        public async Task<bool> RemoveAsync(int id)
         {
             var transaction = await _dbContext.CashTransactions.FindAsync(id);
+            var isDeleted = false;
 
             if (transaction is not null)
             {
                 transaction.Disabled = true;
                 await SaveAsync();
+
+                isDeleted = true;
             }
 
-            return transaction;
+            return isDeleted;
         }
 
-        public async Task<CashTransaction> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        public async Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id)
         {
             var transaction = await dbContext.CashTransactions.FindAsync(id);
+            var isDeleted = false;
 
             if (transaction is not null)
             {
                 transaction.Disabled = true;
                 await SaveAsync(dbContext);
+
+                isDeleted = true;
+
             }
 
-            return transaction;
+            return isDeleted; 
         }
+
 
         public async Task SaveAsync()
         {
             await _dbContext.SaveChangesAsync();
         }
 
+
         public async Task SaveAsync(VirtualBankDbContext dbContext)
         {
             await dbContext.SaveChangesAsync();
         }
-
     }
 }

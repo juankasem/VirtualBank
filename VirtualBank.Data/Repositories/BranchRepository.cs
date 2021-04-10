@@ -46,6 +46,11 @@ namespace VirtualBank.Data.Repositories
                                             .FirstOrDefaultAsync(branch => branch.Code == code && branch.Disabled == false);
         }
 
+        public async Task<bool> ExistsAsync(int countryId, int cityId, string branchName)
+        {
+            return await _dbContext.Branches.AnyAsync(b => b.Address.CountryId == countryId && b.Address.CityId == cityId &&
+                                                           b.Name.Equals(branchName));
+        }
 
         public async Task<Branch> AddAsync(Branch branch)
         {
@@ -99,31 +104,37 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<Branch> RemoveAsync(int id)
+        public async Task<bool> RemoveAsync(int id)
         {
+            var isDeleted = false;
             var branch = await _dbContext.Branches.FindAsync(id);
 
             if (branch is not null)
             {
                 branch.Disabled = true;
                 await SaveAsync();
+
+                isDeleted = true;
             }
 
-            return branch;
+            return isDeleted;
         }
 
 
-        public async Task<Branch> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        public async Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id)
         {
+            var isDeleted = false;
             var branch = await dbContext.Branches.FindAsync(id);
 
             if (branch is not null)
             {
                 branch.Disabled = true;
                 await SaveAsync(dbContext);
+
+                isDeleted = true;
             }
 
-            return branch;
+            return isDeleted;
         }
 
 
@@ -136,5 +147,6 @@ namespace VirtualBank.Data.Repositories
         {
             await dbContext.SaveChangesAsync();
         }
+
     }
 }

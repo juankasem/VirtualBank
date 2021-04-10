@@ -16,8 +16,8 @@ namespace VirtualBank.Data.Interfaces
         Task<BankAccount> AddAsync(VirtualBankDbContext dbContext, BankAccount bankAccount);
         Task<BankAccount> UpdateAsync(BankAccount bankAccount);
         Task<BankAccount> UpdateAsync(VirtualBankDbContext dbContext, BankAccount bankAccount);
-        Task<BankAccount> RemoveAsync(int id);
-        Task<BankAccount> RemoveAsync(VirtualBankDbContext dbContext, int id);
+        Task<bool> RemoveAsync(int id);
+        Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id);
         Task SaveAsync();
         Task SaveAsync(VirtualBankDbContext dbContext);
 

@@ -59,7 +59,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var cashTransactions = ibanCashTransactions.OrderByDescending(c => c.CreatedOn).Skip(skip).Take(pageSize);
+            var cashTransactions = ibanCashTransactions.OrderByDescending(c => c.CreatedAt).Skip(skip).Take(pageSize);
 
             var cashTransactionList = new List<CashTransactionResponse>();
 
@@ -264,7 +264,6 @@ namespace VirtualBank.Api.Services
 
                             if (amount <= senderAccount.AllowedBalanceToUse)
                             {
-
                                 //Deduct from sender account
                                 senderAccount.Balance -= amount;
 
@@ -329,7 +328,6 @@ namespace VirtualBank.Api.Services
                             if (amount <= senderAccount.AllowedBalanceToUse)
                             {
                                 const double feesRate = 0.0015;
-
                                 var fees = (double)amount * feesRate;
 
                                 //Deduct from sender account
