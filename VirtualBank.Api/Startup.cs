@@ -22,6 +22,8 @@ using VirtualBank.Api.Services;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
+using VirtualBank.Data.Interfaces;
+using VirtualBank.Data.Repositories;
 
 namespace VirtualBank.Api
 {
@@ -47,7 +49,7 @@ namespace VirtualBank.Api
 
             services.AddJwtAuthentication(Configuration);
 
-            //Allow all origins
+            // Allow all origins
             services.AddCors(options =>
             {
                 options.AddPolicy(corsPolicy,
@@ -63,14 +65,26 @@ namespace VirtualBank.Api
 
             services.AddControllers();
 
+            // Add repositories
+            services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+            services.AddScoped<IBranchRepository, BranchRepository>();
+            services.AddScoped<IBranchRepository, BranchRepository>();
+            services.AddScoped<ICountriesRepository, CountriesRepository>();
+            services.AddScoped<ICitiesRepository, CitiesRepository>();
+            services.AddScoped<ICashTransactionsRepository, CashTransactionsRepository>();
+            services.AddScoped<IFastTransactionsRepository, FastTransactionsRepository>();
+
+
+            // Add services
             services.AddScoped<IBankAccountService, BankAccountService>();
-            services.AddScoped<IBranchService, BranchService>();
             services.AddScoped<IBranchService, BranchService>();
             services.AddScoped<ICountriesService, CountriesService>();
             services.AddScoped<ICitiesService, CitiesService>();
             services.AddScoped<ICashTransactionsService, CashTransactionsService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IDistrictsService, DistrictsService>();
+            services.AddScoped<IDistrictsService, DistrictsService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
