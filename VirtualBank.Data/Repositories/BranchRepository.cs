@@ -73,7 +73,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<Branch> UpdateAsync(Branch branch)
         {
             var existingBranch = await _dbContext.Branches
-                                                 .FirstOrDefaultAsync(branch => branch.Id == branch.Id && branch.Disabled == false);
+                                                 .FirstOrDefaultAsync(b => b.Id == branch.Id && b.Disabled == false);
 
             if (existingBranch is not null)
             {
@@ -90,7 +90,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<Branch> UpdateAsync(VirtualBankDbContext dbContext, Branch branch)
         {
             var existingBranch = await dbContext.Branches
-                                                 .FirstOrDefaultAsync(branch => branch.Id == branch.Id && branch.Disabled == false);
+                                                 .FirstOrDefaultAsync(b => b.Id == branch.Id && b.Disabled == false);
 
             if (existingBranch is not null)
             {

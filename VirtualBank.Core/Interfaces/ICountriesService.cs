@@ -19,6 +19,5 @@ namespace VirtualBank.Core.Interfaces
         Task<bool> CountryExists(int countryId);
 
         Task<bool> CountryNameExists(string countryName);
-
     }
 }

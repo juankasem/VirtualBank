@@ -437,7 +437,7 @@ namespace VirtualBank.Api.Services
                                                 $"{cashTransaction.To}--{recipient}, {cashTransaction.Description}", 
                                                cashTransaction.InitiatedBy,
                                                direction == Direction.In ? cashTransaction.RecipientRemainingBalance : cashTransaction.SenderRemainingBalance,
-                                               cashTransaction.CreatedOn,
+                                               cashTransaction.CreatedAt,
                                                cashTransaction.CreatedBy);
         }
 
