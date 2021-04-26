@@ -46,8 +46,8 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<BranchListResponse>();
             var skip = (pageNumber - 1) * pageSize;
 
-            var allBranches = await _branchRepo.GetAll();
-            var branches = allBranches.OrderBy(b => b.CreatedAt).Skip(skip).Take(pageSize);
+            var allBranches = await _branchRepo.GetAllAsync();
+            var branches = allBranches.OrderByDescending(b => b.CreatedAt).Skip(skip).Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
@@ -73,7 +73,7 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<BranchListResponse>();
             var skip = (pageNumber - 1) * pageSize;
 
-            var cityBranches = await _branchRepo.GetByCityId(cityId);
+            var cityBranches = await _branchRepo.GetByCityIdAsync(cityId);
             var branches = cityBranches.OrderByDescending(b => b.CreatedAt).Skip(skip).Take(pageSize);
 
             var branchList = new List<BranchResponse>();

@@ -18,7 +18,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<IEnumerable<Country>> GetAll()
+        public async Task<IEnumerable<Country>> GetAllAsync()
         {
             return await _dbContext.Countries.Where(country => country.Disabled == false)
                                              .AsNoTracking().ToListAsync();

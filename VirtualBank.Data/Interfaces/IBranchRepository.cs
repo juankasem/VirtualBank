@@ -7,8 +7,8 @@ namespace VirtualBank.Data.Interfaces
 {
     public interface IBranchRepository
     {
-        Task<IEnumerable<Branch>> GetAll();
-        Task<IEnumerable<Branch>> GetByCityId(int cityId);
+        Task<IEnumerable<Branch>> GetAllAsync();
+        Task<IEnumerable<Branch>> GetByCityIdAsync(int cityId);
         Task<Branch> FindByIdAsync(int id);
         Task<Branch> FindByCodeAsync(string code);
         Task<bool> ExistsAsync(int countryId, int cityId, string branchName);

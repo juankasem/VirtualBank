@@ -21,14 +21,17 @@ namespace VirtualBank.Api.Services
     {
         private readonly VirtualBankDbContext _dbContext;
         private readonly ICountriesRepository _countriesRepo;
+        private readonly ICitiesRepository _citiesRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CountriesService(VirtualBankDbContext dbContext,
                                 ICountriesRepository countriesRepo,
+                                ICitiesRepository  citiesRepo,
                                 IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _countriesRepo = countriesRepo;
+            _citiesRepo = citiesRepo;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -37,7 +40,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CountriesResponse>();
 
-            var countries = await _countriesRepo.GetAll();
+            var countries = await _countriesRepo.GetAllAsync();
 
             var countryList = new List<CountryResponse>();
 
@@ -72,7 +75,7 @@ namespace VirtualBank.Api.Services
             }
 
             if (includeCities)
-             responseModel.Data = CreateCountryWithCitiesResponse(country);
+             responseModel.Data = await CreateCountryWithCitiesResponse(country);
 
             else
             responseModel.Data = CreateCountryResponse(country);
@@ -158,11 +161,11 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-        private CountryResponse CreateCountryWithCitiesResponse(Country country)
+        private async Task<CountryResponse> CreateCountryWithCitiesResponse(Country country)
         {
             if (country != null)
             {
-                var cityList = country.Cities.ToList();
+                var cityList = await _citiesRepo.GetByCountryIdAsync(country.Id);
                 var cities = new List<CityResponse>();
 
                 foreach (var city in cityList)

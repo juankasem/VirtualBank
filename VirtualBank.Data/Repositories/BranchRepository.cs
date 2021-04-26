@@ -17,7 +17,7 @@ namespace VirtualBank.Data.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<Branch>> GetAll()
+        public async Task<IEnumerable<Branch>> GetAllAsync()
         {
             return await _dbContext.Branches.Include(branch => branch.Address)
                                             .Where(branch => branch.Disabled == false)
@@ -25,7 +25,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<IEnumerable<Branch>> GetByCityId(int cityId)
+        public async Task<IEnumerable<Branch>> GetByCityIdAsync(int cityId)
         {
             return await _dbContext.Branches.Include(branch => branch.Address)
                                             .Where(branch => branch.Address.CityId == cityId && branch.Disabled == false)

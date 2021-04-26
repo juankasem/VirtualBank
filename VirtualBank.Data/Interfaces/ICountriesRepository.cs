@@ -7,7 +7,7 @@ namespace VirtualBank.Data.Interfaces
 {
     public interface ICountriesRepository
     {
-        Task<IEnumerable<Country>> GetAll();
+        Task<IEnumerable<Country>> GetAllAsync();
         Task<Country> FindByIdAsync(int id);
         Task<Country> FindByIdWithCitiesAsync(int id);
         Task<Country> AddAsync(Country country);

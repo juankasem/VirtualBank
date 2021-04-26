@@ -18,7 +18,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<IEnumerable<City>> GetAll()
+        public async Task<IEnumerable<City>> GetAllAsync()
         {
             return await _dbContext.Cities.Include(c => c.Country)
                                           .Where(city => city.Disabled == false)
@@ -26,7 +26,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<IEnumerable<City>> GetByCountryId(int countryId)
+        public async Task<IEnumerable<City>> GetByCountryIdAsync(int countryId)
         {
             return await _dbContext.Cities.Include(c => c.Country)
                                           .Where(city => city.CountryId == countryId
