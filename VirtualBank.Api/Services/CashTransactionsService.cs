@@ -124,269 +124,305 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
         /// <summary>
-        /// Create a cash transaction in db
+        /// Create a deposit transaction in db
         /// </summary>
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> AddCashTransactionAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
             var user = _httpContextAccessor.HttpContext.User;
             var username = user.Identity.Name;
-            var amount = request.CashTransaction.Amount;
+            var amountToDeposit = request.CashTransaction.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
-            using (dbContextTransaction)
+            try
             {
-                switch (request.CashTransaction.Type)
+                var toAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
+
+                if (toAccount == null)
                 {
-                    case CashTransactionType.Deposit:
-
-                        try
-                        {
-                            var toAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
-
-                            if (toAccount == null)
-                            {
-                                responseModel.AddError("account not found");
-                                return responseModel;
-                            }
-
-                            //Add amount to recipient balance
-                            toAccount.Balance += amount;
-
-
-                            await _bankAccountRepo.UpdateAsync(_dbContext, toAccount);
-
-                            var cashTransaction = CreateCashTransaction(request, username, 0, toAccount.Balance);
-
-                            //Add transaction to db & save changes 
-                            await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
-
-                            await dbContextTransaction.CommitAsync();
-
-                            return responseModel;
-                        }
-
-                        catch (Exception ex)
-                        {
-                            await dbContextTransaction.RollbackAsync();
-                            responseModel.AddError(ex.ToString());
-
-                            return responseModel;
-                        }
-
-
-                    case CashTransactionType.Withdrawal:
-
-                        try
-                        {
-                            var fromAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
-                            bool isBlocked = true;
-
-                            if (fromAccount == null)
-                            {
-                                responseModel.AddError("account not found");
-                                return responseModel;
-                            }
-
-                            if (fromAccount.Type == AccountType.Savings)
-                            {
-                                var deposits = await _cashTransactionsRepo.GetDepositsByIBAN(fromAccount.IBAN);
-
-                                foreach(var deposit in deposits)
-                                {
-                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180)
-                                    {
-                                        isBlocked = false;
-                                    }
-                                }
-
-                                if (isBlocked)
-                                {
-                                    responseModel.AddError("Deposit is blocked");
-                                    return responseModel;
-                                }
-                            }
-
-                            if (amount <= fromAccount.AllowedBalanceToUse)
-                            {
-                                fromAccount.Balance -= request.CashTransaction.Amount;
-
-                                await _bankAccountRepo.UpdateAsync(_dbContext, fromAccount);
-
-                                var cashTransaction = CreateCashTransaction(request, username, fromAccount.Balance, 0);
-
-                                await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
-
-                                await dbContextTransaction.CommitAsync();
-
-                                return responseModel;
-                            }
-                            else
-                            {
-                                responseModel.AddError("balance is not enough to complete withdrawal");
-                                return responseModel;
-                            }
-                        }
-
-                        catch (Exception ex)
-                        {
-                            await dbContextTransaction.RollbackAsync();
-                            responseModel.AddError(ex.ToString());
-
-                            return responseModel;
-                        }
-
-                    case CashTransactionType.Transfer:
-
-                        try
-                        {
-                            var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
-                            var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
-
-                            if (senderAccount == null)
-                            {
-                                responseModel.AddError("account not found");
-                                return responseModel;
-                            }
-
-                            if (recipientAccount == null)
-                            {
-                                responseModel.AddError("account not found");
-                                return responseModel;
-                            }
-
-
-                            if (amount <= senderAccount.AllowedBalanceToUse)
-                            {
-                                //Deduct from sender account
-                                senderAccount.Balance -= amount;
-
-                                await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
-
-                                //Deposit to recipient account
-                                recipientAccount.Balance += amount;
-
-                                await _bankAccountRepo.UpdateAsync(recipientAccount);
-
-                                //Create a transaction 
-                                var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
-
-                                //Save transaction into db
-                                await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
-
-                                await dbContextTransaction.CommitAsync();
-
-                                return responseModel;
-                            }
-                            else
-                            {
-                                responseModel.AddError("No enough balance to complete transfer");
-                                return responseModel;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await dbContextTransaction.RollbackAsync();
-                            responseModel.AddError(ex.ToString());
-
-                            return responseModel;
-                        }
-
-
-                    case CashTransactionType.EFT:
-
-                        try
-                        {
-                            var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
-                            var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
-
-                            if (senderAccount == null)
-                            {
-                                responseModel.AddError("sender account not found");
-                                return responseModel;
-                            }
-
-                            if (recipientAccount == null)
-                            {
-                                responseModel.AddError("recipient account not found");
-                                return responseModel;
-                            }
-
-                            if (recipientAccount.Owner.FirstName != request.RecipeintFirstName || recipientAccount.Owner.LastName != request.RecipeintLastName)
-                            {
-                                responseModel.AddError("Name is not valid");
-                                return responseModel;
-                            }
-
-
-                            if (amount <= senderAccount.AllowedBalanceToUse)
-                            {
-                                const double feesRate = 0.0015;
-                                var fees = (double)amount * feesRate;
-
-                                //Deduct from sender account
-                                senderAccount.Balance -= amount;
-
-                                await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
-
-                                //Deposit to recipient account
-                                recipientAccount.Balance += amount;
-
-                                await _bankAccountRepo.UpdateAsync(_dbContext, recipientAccount);
-
-                                //Create a transaction 
-                                var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
-
-                                //Save transaction into db
-                                await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
-
-                                //Deduct commission fees from sender account
-                                senderAccount.Balance -= (decimal)fees;
-
-                                //Update entity & Save it to db
-                                await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
-
-                                //Modify request for commission fees transaction
-                                request.CashTransaction.Type = CashTransactionType.CommissionFees;
-                                request.CashTransaction.Amount = (decimal)fees;
-
-                                //Create a transaction for the comission fees
-                                var commissionFeeTransaction = CreateCashTransaction(request, username, senderAccount.Balance, 0);
-
-                                //Save transaction into db
-                                await _cashTransactionsRepo.AddAsync(_dbContext, commissionFeeTransaction);
-
-                                await dbContextTransaction.CommitAsync();
-
-                                return responseModel;
-                            }
-                            else
-                            {
-                                responseModel.AddError("No enough balance to complete transfer");
-                                return responseModel;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await dbContextTransaction.RollbackAsync();
-                            responseModel.AddError(ex.ToString());
-
-                            return responseModel;
-                        }
-
-                    default:
-                        return responseModel;
+                    responseModel.AddError("account not found");
+                    return responseModel;
                 }
 
+                //Add amount to recipient balance
+                toAccount.Balance += amountToDeposit;
+
+
+                await _bankAccountRepo.UpdateAsync(_dbContext, toAccount);
+
+                var cashTransaction = CreateCashTransaction(request, username, 0, toAccount.Balance);
+
+                //Add transaction to db & save changes 
+                await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+
+                await dbContextTransaction.CommitAsync();
+
+                return responseModel;
             }
 
+            catch (Exception ex)
+            {
+                await dbContextTransaction.RollbackAsync();
+                responseModel.AddError(ex.ToString());
+
+                return responseModel;
+            }
         }
+
+
+        /// <summary>
+        /// Create a withdrawal transaction in db
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CashTransactionResponse>();
+
+            var user = _httpContextAccessor.HttpContext.User;
+            var username = user.Identity.Name;
+            var amountToWithdraw = request.CashTransaction.Amount;
+
+            var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var fromAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
+                bool isBlocked = true;
+
+                if (fromAccount == null)
+                {
+                    responseModel.AddError("account not found");
+                    return responseModel;
+                }
+
+                if (fromAccount.Type == AccountType.Savings)
+                {
+                    var deposits = await _cashTransactionsRepo.GetDepositsByIBAN(fromAccount.IBAN);
+
+                    foreach (var deposit in deposits)
+                    {
+                        if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180)
+                        {
+                            isBlocked = false;
+                        }
+                    }
+
+                    if (isBlocked)
+                    {
+                        responseModel.AddError("Deposit is blocked");
+                        return responseModel;
+                    }
+                }
+
+                if (amountToWithdraw <= fromAccount.AllowedBalanceToUse)
+                {
+                    fromAccount.Balance -= amountToWithdraw;
+
+                    await _bankAccountRepo.UpdateAsync(_dbContext, fromAccount);
+
+                    var cashTransaction = CreateCashTransaction(request, username, fromAccount.Balance, 0);
+
+                    await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+
+                    await dbContextTransaction.CommitAsync();
+
+                    return responseModel;
+                }
+                else
+                {
+                    responseModel.AddError("balance is not enough to complete withdrawal");
+
+                    return responseModel;
+                }
+            }
+
+            catch (Exception ex)
+            {
+                await dbContextTransaction.RollbackAsync();
+                responseModel.AddError(ex.ToString());
+
+                return responseModel;
+            }
+        }
+
+
+        /// <summary>
+        /// Create a Transfer transaction in db (between acoounts in the same bank)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CashTransactionResponse>();
+
+            var user = _httpContextAccessor.HttpContext.User;
+            var username = user.Identity.Name;
+            var amountToTransfer = request.CashTransaction.Amount;
+
+            var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
+                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
+
+                if (senderAccount == null)
+                {
+                    responseModel.AddError("account not found");
+                    return responseModel;
+                }
+
+                if (recipientAccount == null)
+                {
+                    responseModel.AddError("account not found");
+                    return responseModel;
+                }
+
+
+                if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
+                {
+                    //Deduct from sender account
+                    senderAccount.Balance -= amountToTransfer;
+
+                    await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
+
+                    //Deposit to recipient account
+                    recipientAccount.Balance += amountToTransfer;
+
+                    await _bankAccountRepo.UpdateAsync(recipientAccount);
+
+                    //Create a transaction 
+                    var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
+
+                    //Save transaction into db
+                    await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+
+                    await dbContextTransaction.CommitAsync();
+
+                    return responseModel;
+                }
+                else
+                {
+                    responseModel.AddError("No enough balance to complete transfer");
+                    return responseModel;
+                }
+            }
+            catch (Exception ex)
+            {
+                await dbContextTransaction.RollbackAsync();
+                responseModel.AddError(ex.ToString());
+
+                return responseModel;
+            }
+        }
+
+
+        /// <summary>
+        /// Create an EFT Transfer transaction in db (from/to acoounts in different banks)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CashTransactionResponse>();
+
+            var user = _httpContextAccessor.HttpContext.User;
+            var username = user.Identity.Name;
+            var amountToTransfer = request.CashTransaction.Amount;
+
+            var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
+                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
+
+                if (senderAccount == null)
+                {
+                    responseModel.AddError("sender account not found");
+                    return responseModel;
+                }
+
+                if (recipientAccount == null)
+                {
+                    responseModel.AddError("recipient account not found");
+                    return responseModel;
+                }
+
+                if (recipientAccount.Owner.FirstName != request.RecipeintFirstName || recipientAccount.Owner.LastName != request.RecipeintLastName)
+                {
+                    responseModel.AddError("Name is not valid");
+                    return responseModel;
+                }
+
+
+                if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
+                {
+                    const double feesRate = 0.0015;
+                    var fees = (double)amountToTransfer * feesRate;
+
+                    //Deduct from sender account
+                    senderAccount.Balance -= amountToTransfer;
+
+                    await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
+
+                    //Deposit to recipient account
+                    recipientAccount.Balance += amountToTransfer;
+
+                    await _bankAccountRepo.UpdateAsync(_dbContext, recipientAccount);
+
+                    //Create a transaction 
+                    var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
+
+                    //Save transaction into db
+                    await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+
+                    //Deduct commission fees from sender account
+                    senderAccount.Balance -= (decimal)fees;
+
+                    //Update entity & Save it to db
+                    await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
+
+                    //Modify request for commission fees transaction
+                    request.CashTransaction.Type = CashTransactionType.CommissionFees;
+                    request.CashTransaction.Amount = (decimal)fees;
+
+                    //Create a transaction for the comission fees
+                    var commissionFeeTransaction = CreateCashTransaction(request, username, senderAccount.Balance, 0);
+
+                    //Save transaction into db
+                    await _cashTransactionsRepo.AddAsync(_dbContext, commissionFeeTransaction);
+
+                    await dbContextTransaction.CommitAsync();
+
+                    return responseModel;
+                }
+                else
+                {
+                    responseModel.AddError("No enough balance to complete transfer");
+                    return responseModel;
+                }
+            }
+            catch (Exception ex)
+            {
+                await dbContextTransaction.RollbackAsync();
+                responseModel.AddError(ex.ToString());
+
+                return responseModel;
+            }
+        }
+
 
 
         #region private Helper methods
@@ -410,7 +446,7 @@ namespace VirtualBank.Api.Services
             PaymentType = !isTransferFees ? cashTransaction.PaymentType : PaymentType.ComissionFees,
             CreatedBy = username,
             TransactionDate = cashTransaction.TransactionDate, 
-            Status = cashTransaction.TransactionDate == DateTime.Today ? TransactionStatusType.Completed : TransactionStatusType.Pending
+            Status = cashTransaction.TransactionDate == DateTime.Today ? TransactionStatusType.Succeeded : TransactionStatusType.Pending
           };
 
         }
@@ -441,7 +477,8 @@ namespace VirtualBank.Api.Services
                                                cashTransaction.CreatedBy);
         }
 
-  
+       
+
         #endregion
     }
 }

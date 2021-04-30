@@ -15,6 +15,7 @@ using VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
+using VirtualBank.Core.Enums;
 using VirtualBank.Core.Interfaces;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -85,22 +86,42 @@ namespace VirtualBank.Api.Controllers
         }
 
         // POST api/values
-        [HttpPost(ApiRoutes.postCashTransaction)]
+        [HttpPost(ApiRoutes.createCashTransaction)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostCashTransaction([FromBody] CreateCashTransactionRequest request,
-                                                              CancellationToken cancellationToken = default)
+        public async Task<IActionResult> CreateCashTransaction([FromBody] CreateCashTransactionRequest request,
+                                                               CancellationToken cancellationToken = default)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
 
             try
             {
-               var apiResponse = await _cashTransactionsService.AddCashTransactionAsync(request, cancellationToken);
+                ApiResponse apiResponse = new();
+
+                switch (request.CashTransaction.Type)
+                {
+                    case CashTransactionType.Deposit:
+                        apiResponse = await _cashTransactionsService.MakeDepositAsync(request, cancellationToken);
+                        break;
+
+                    case CashTransactionType.Withdrawal:
+                        apiResponse = await _cashTransactionsService.MakeWithdrawalAsync(request, cancellationToken);
+                        break;
+
+                    case CashTransactionType.Transfer:
+                        apiResponse = await _cashTransactionsService.MakeTransferAsync(request, cancellationToken);
+                        break;
+
+                    case CashTransactionType.EFT:
+                        apiResponse = await _cashTransactionsService.MakeEFTTransferAsync(request, cancellationToken);
+                        break;
+                }
+
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

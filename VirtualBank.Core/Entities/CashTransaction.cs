@@ -20,6 +20,11 @@ namespace VirtualBank.Core.Entities
         public BankAssetType InitiatedBy { get; set; }
 
         /// <summary>
+        /// unique reference number
+        /// </summary>
+        public string ReferenceNo { get; set; }
+
+        /// <summary>
         /// IBAN of bank account of the sender
         /// </summary>
         [MaxLength(150)]
@@ -74,5 +79,11 @@ namespace VirtualBank.Core.Entities
         /// </summary>
         [Required]
         public TransactionStatusType Status { get; set; }
+
+
+        public CashTransaction()
+        {
+            ReferenceNo = $"{Guid.NewGuid().ToString().Replace("-", "").Substring(1, 27)}";
+        }
     }
 }

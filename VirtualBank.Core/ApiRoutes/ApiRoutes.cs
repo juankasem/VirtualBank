@@ -100,7 +100,7 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string getCashTransactionsByIBAN = "api/CashTransactions/getByIBAN/{iban}";
 
-        public const string postCashTransaction = "api/CashTransactions/post";
+        public const string createCashTransaction = "api/CashTransactions/create";
 
         #endregion
 
