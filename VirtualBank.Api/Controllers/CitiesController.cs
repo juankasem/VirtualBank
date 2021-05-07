@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -19,11 +20,15 @@ namespace VirtualBank.Api.Controllers
     {
         private readonly ICountriesService _countriesService;
         private readonly ICitiesService _citiesService;
+        private readonly IActionResultMapper<CitiesController> _actionResultMapper;
 
-        public CitiesController(ICountriesService countriesService, ICitiesService citiesService)
+        public CitiesController(ICountriesService countriesService,
+                                ICitiesService citiesService,
+                                IActionResultMapper<CitiesController> actionResultMapper)
         {;
             _countriesService = countriesService;
             _citiesService = citiesService;
+            _actionResultMapper = actionResultMapper;
         }
 
 
@@ -48,7 +53,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -80,7 +85,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -109,7 +114,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -120,12 +125,9 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostCity([FromRoute] int cityId, [FromBody] CreateCityRequest request,
+        public async Task<IActionResult> AddOrEditCity([FromRoute] int cityId, [FromBody] CreateCityRequest request,
                                                    CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 var apiResponse = await _citiesService.AddOrEditCityAsync(cityId, request, cancellationToken);
@@ -144,7 +146,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 

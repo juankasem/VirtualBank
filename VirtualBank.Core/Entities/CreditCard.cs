@@ -8,7 +8,7 @@ namespace VirtualBank.Core.Entities
     {
         [Required]
         [MaxLength(50)]
-        public string Number { get; set; }
+        public string CreditCardNo { get; set; }
 
         [Required]
         [MinLength(4)]

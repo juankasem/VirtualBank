@@ -419,18 +419,24 @@ namespace VirtualBank.Api.Services
         private BankAccount CreateBankAccount(CreateBankAccountRequest request)
         {
             var bankAccount = request.Account;
+            var BANK_CODE= "820001000";
 
             if (bankAccount != null)
             {
                 var newBankAccount = new BankAccount()
                 {
-                    AccountNo = Guid.NewGuid().ToString() + bankAccount.Branch.Code,
+                    AccountNo = Guid.NewGuid().ToString(),
                     CustomerId = bankAccount.CustomerId,
                     BranchId = bankAccount.BranchId,
                     Balance = bankAccount.Balance,
                     Currency = bankAccount.Currency,
                     Type = bankAccount.Type,                    
                 };
+
+                newBankAccount.IBAN = bankAccount.Branch.Address.Country.Code +
+                                      BANK_CODE +
+                                      bankAccount.Branch.Code +
+                                      newBankAccount.AccountNo;
 
                 return newBankAccount;
             }

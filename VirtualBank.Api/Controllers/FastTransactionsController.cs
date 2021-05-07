@@ -77,7 +77,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var bankAccount = await _bankAccountService.GetAccountByIdAsync(accountId);
+                var bankAccount = await _bankAccountService.GetBankAccountByIdAsync(accountId);
 
                 if (bankAccount.Data == null)
                 {
@@ -131,21 +131,46 @@ namespace VirtualBank.Api.Controllers
         }
 
         // POST api/values
-        [HttpPost(ApiRoutes.postCashTransaction)]
+        [HttpPost(ApiRoutes.postFastTransaction)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostFastTransaction([FromRoute] int id,
+        public async Task<IActionResult> AddOrEditFastTransaction([FromRoute] int id,
                                                              [FromBody] CreateFastTransactionRequest request,
                                                               CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 var apiResponse = await _fastTransactionsService.AddOrEditFastTransactionAsync(id, request, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Contains("not found"))
+                    return NotFound(apiResponse);
+
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+            }
+        }
+
+        // POST api/values
+        [HttpPost(ApiRoutes.deleteFastTransaction)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> DeleteFastTransaction([FromRoute] int id,
+                                                              CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _fastTransactionsService.DeleteFastTransactionAsync(id, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

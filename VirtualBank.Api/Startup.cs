@@ -22,6 +22,7 @@ using VirtualBank.Api.Services;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
+using VirtualBank.Data.ActionResults;
 using VirtualBank.Data.Interfaces;
 using VirtualBank.Data.Repositories;
 
@@ -41,6 +42,7 @@ namespace VirtualBank.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(typeof(Startup));
             services.AddDatabaseContext(Configuration);
 
             services.AddIdentity()
@@ -64,6 +66,9 @@ namespace VirtualBank.Api
             services.AddOpenAPI();
 
             services.AddControllers();
+
+            services.AddSingleton<IActionResultProvider, ActionResultProvider>();
+            services.AddHttpContextAccessor();
 
             // Add repositories
             services.AddScoped<IBankAccountRepository, BankAccountRepository>();

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Core.ApiRequestModels.DistrictApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -19,11 +20,15 @@ namespace VirtualBank.Api.Controllers
     {
         private readonly IDistrictsService _districtsService;
         private readonly ICitiesService _citiesService;
+        private readonly IActionResultMapper<DistrictsController> _actionResultMapper;
 
-        public DistrictsController(IDistrictsService districtsService, ICitiesService citiesService)
+        public DistrictsController(IDistrictsService districtsService,
+                                   ICitiesService citiesService,
+                                   IActionResultMapper<DistrictsController> actionResultMapper)
         {
             _districtsService = districtsService;
             _citiesService = citiesService;
+            _actionResultMapper = actionResultMapper;
         }
 
 
@@ -48,7 +53,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -82,7 +87,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -93,12 +98,9 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostDistrict([FromRoute] int districtId, [FromBody] CreateDistrictRequest request,
+        public async Task<IActionResult> AddOrEditDistrict([FromRoute] int districtId, [FromBody] CreateDistrictRequest request,
                                                       CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 var apiResponse = await _districtsService.AddOrEditDistrictAsync(districtId, request, cancellationToken);
@@ -117,7 +119,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
     }

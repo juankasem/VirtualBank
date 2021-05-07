@@ -124,7 +124,9 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string getFastTransactionById = "api/FastTransactions/getById/{id:int}";
 
-        public const string AddOrEditFastTransaction = "api/FastTransactions//get";
+        public const string postFastTransaction = "api/FastTransactions/post/{id}";
+
+        public const string deleteFastTransaction = "api/FastTransactions/delete/{id}";
 
 
         #endregion

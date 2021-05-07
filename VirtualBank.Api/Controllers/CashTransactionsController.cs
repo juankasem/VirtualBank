@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses;
@@ -29,14 +30,17 @@ namespace VirtualBank.Api.Controllers
         private readonly ICashTransactionsService _cashTransactionsService;
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IActionResultMapper<CashTransactionsController> _actionResultMapper;
 
         public CashTransactionsController(ICashTransactionsService cashTransactionsService,
                                           ICustomerService customerService,
-                                          UserManager<AppUser> userManager)
+                                          UserManager<AppUser> userManager,
+                                          IActionResultMapper<CashTransactionsController> actionResultMapper)
         {
             _cashTransactionsService = cashTransactionsService;
             _customerService = customerService;
             _userManager = userManager;
+            _actionResultMapper = actionResultMapper;
         }
 
         // GET api/values/5
@@ -79,9 +83,10 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -93,12 +98,9 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CreateCashTransaction([FromBody] CreateCashTransactionRequest request,
+        public async Task<IActionResult> AddCashTransaction([FromBody] CreateCashTransactionRequest request,
                                                                CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 ApiResponse apiResponse = new();
@@ -138,9 +140,10 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
     }

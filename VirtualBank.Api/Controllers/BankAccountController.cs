@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -29,14 +30,17 @@ namespace VirtualBank.Api.Controllers
         private readonly IBankAccountService _bankAccountService;
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IActionResultMapper<BankAccountController> _actionResultMapper;
 
         public BankAccountController(IBankAccountService bankAccountService,
                                      ICustomerService customerService,
-                                     UserManager<AppUser> userManager)
+                                     UserManager<AppUser> userManager,
+                                     IActionResultMapper<BankAccountController> actionResultMapper)
         {
             _bankAccountService = bankAccountService;
             _customerService = customerService;
             _userManager = userManager;
+            _actionResultMapper = actionResultMapper;
         }
 
         // GET api/values/5
@@ -65,7 +69,7 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _bankAccountService.GetAccountsByCustomerIdAsync(customerId, cancellationToken);
+                var apiResponse = await _bankAccountService.GetBankAccountsByCustomerIdAsync(customerId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -79,9 +83,10 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -96,7 +101,7 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _bankAccountService.GetAccountByIdAsync(accountId, cancellationToken);
+                var apiResponse = await _bankAccountService.GetBankAccountByIdAsync(accountId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -110,6 +115,7 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
@@ -138,7 +144,7 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _bankAccountService.GetAccountByAccountNoAsync(accountNo, cancellationToken);
+                var apiResponse = await _bankAccountService.GetBankAccountByAccountNoAsync(accountNo, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -152,9 +158,10 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -168,7 +175,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _bankAccountService.GetAccountByIBANAsync(iban, cancellationToken);
+                var apiResponse = await _bankAccountService.GetBankAccountByIBANAsync(iban, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -181,9 +188,10 @@ namespace VirtualBank.Api.Controllers
 
                 return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -195,7 +203,7 @@ namespace VirtualBank.Api.Controllers
 
             try
             {
-                var apiResponse = await _bankAccountService.GetRecipientAccountByIBANAsync(iban, cancellationToken);
+                var apiResponse = await _bankAccountService.GetRecipientBankAccountByIBANAsync(iban, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -210,7 +218,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -221,12 +229,9 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostBankAccount([FromRoute] int accountId, [FromBody] CreateBankAccountRequest request,
+        public async Task<IActionResult> AddOrEditBankAccount([FromRoute] int accountId, [FromBody] CreateBankAccountRequest request,
                                                          CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 var apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
@@ -245,7 +250,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -267,9 +272,10 @@ namespace VirtualBank.Api.Controllers
 
                 return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -293,7 +299,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
     }

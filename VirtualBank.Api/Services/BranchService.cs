@@ -44,10 +44,9 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<BranchListResponse>> GetAllBranchesAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchListResponse>();
-            var skip = (pageNumber - 1) * pageSize;
 
             var allBranches = await _branchRepo.GetAllAsync();
-            var branches = allBranches.OrderByDescending(b => b.CreatedAt).Skip(skip).Take(pageSize);
+            var branches = allBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 

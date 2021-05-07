@@ -65,7 +65,7 @@ namespace VirtualBank.Api.Services
 
             foreach (var cashTransaction in cashTransactions)
             {
-                if (cashTransaction.From != iban && cashTransaction.Type == CashTransactionType.Transfer)
+                if (cashTransaction.From != iban && IsTransferTransaction(cashTransaction))
                 {
                     var senderResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.From, cancellationToken);
                     var sender = senderResponse?.Data?.FullName;
@@ -73,7 +73,7 @@ namespace VirtualBank.Api.Services
                     cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, sender, iban, Direction.In));
                 }
 
-                else if(cashTransaction.To != iban && cashTransaction.Type == CashTransactionType.Transfer)
+                else if(cashTransaction.To != iban && IsTransferTransaction(cashTransaction))
                 {
                     var recipientResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.To, cancellationToken);
                     var recipient = recipientResponse?.Data?.FullName;
@@ -477,7 +477,11 @@ namespace VirtualBank.Api.Services
                                                cashTransaction.CreatedBy);
         }
 
-       
+
+        private bool IsTransferTransaction(CashTransaction cashTransaction)
+        {
+            return cashTransaction.Type == CashTransactionType.Transfer || cashTransaction.Type == CashTransactionType.EFT;
+        }
 
         #endregion
     }

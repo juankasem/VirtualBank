@@ -7,17 +7,17 @@ namespace VirtualBank.Core.ApiResponseModels.AccountApiResponses
 {
     public class RecipientBankAccountResponse
     {
-        public string AccountNo { get; set; }
+        public string AccountNo { get; }
 
-        public string IBAN { get; set; }
+        public string IBAN { get; }
 
-        public AccountType AccountType { get; set; }
+        public AccountType AccountType { get; }
 
-        public string AccountOwner { get; set; }
+        public string AccountOwner { get; }
 
-        public string BranchName { get; set; }
+        public string BranchName { get; }
 
-        public string Currency { get; set; }
+        public string Currency { get; }
 
 
         public RecipientBankAccountResponse(string accountNo, string iban, AccountType accountType,

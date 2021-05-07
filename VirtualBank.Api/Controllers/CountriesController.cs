@@ -89,7 +89,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostCountry([FromRoute] int countryId, [FromBody] CreateCountryRequest request,
+        public async Task<IActionResult> AddOrEditCountry([FromRoute] int countryId, [FromBody] CreateCountryRequest request,
                                                          CancellationToken cancellationToken = default)
         {
             try

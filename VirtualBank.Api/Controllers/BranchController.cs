@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -27,16 +28,19 @@ namespace VirtualBank.Api.Controllers
         private readonly ICitiesService _citiesService;
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IActionResultMapper<BranchController> _actionResultMapper;
 
         public BranchController(IBranchService branchService,
                                 ICitiesService citiesService,
                                 ICustomerService customerService,
-                                UserManager<AppUser> userManager)
+                                UserManager<AppUser> userManager,
+                                IActionResultMapper<BranchController> actionResultMapper)
         {
             _branchService = branchService;
             _citiesService = citiesService;
             _customerService = customerService;
             _userManager = userManager;
+            _actionResultMapper = actionResultMapper;
         }
 
         // GET: api/Branch
@@ -61,9 +65,10 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -99,9 +104,10 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -128,9 +134,10 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -155,9 +162,10 @@ namespace VirtualBank.Api.Controllers
 
                 return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -171,9 +179,6 @@ namespace VirtualBank.Api.Controllers
         public async Task<IActionResult> PostBranchAsync([FromRoute] int branchId, [FromBody] CreateBranchRequest request,
                                                          CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 var apiResponse = await _branchService.AddOrEditBranchAsync(branchId, request, cancellationToken);
@@ -190,6 +195,7 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
@@ -220,6 +226,7 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());

@@ -11,9 +11,6 @@ namespace VirtualBank.Api.Controllers
     public class CreditCardController : Controller
     {
         // GET: /<controller>/
-        public IActionResult Index()
-        {
-            return View();
-        }
+       
     }
 }

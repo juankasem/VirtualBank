@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Core.ApiRequestModels.AddressApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -22,10 +23,13 @@ namespace VirtualBank.Api.Controllers
     public class AddressController : ControllerBase
     {
         private readonly IAddressService _addressService;
+        private readonly IActionResultMapper<AddressController> _actionResultMapper;
 
-        public AddressController(IAddressService addressService)
+        public AddressController(IAddressService addressService,
+                                 IActionResultMapper<AddressController> actionResultMapper)
         {
             _addressService = addressService;
+            _actionResultMapper = actionResultMapper;
         }
 
         // GET: api/Address/getAlAddresses
@@ -52,7 +56,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -93,12 +97,9 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostAddressAsync([FromRoute] int addressId, [FromBody] CreateAddressRequest request,
+        public async Task<IActionResult> AddOrEditAddressAsync([FromRoute] int addressId, [FromBody] CreateAddressRequest request,
                                                          CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 var apiResponse = await _addressService.AddOrEditAddressAsync(addressId, request, cancellationToken);
@@ -117,7 +118,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -148,7 +149,7 @@ namespace VirtualBank.Api.Controllers
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
     }

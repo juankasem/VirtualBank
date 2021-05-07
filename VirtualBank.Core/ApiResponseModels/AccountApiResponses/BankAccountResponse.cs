@@ -7,29 +7,29 @@ namespace VirtualBank.Core.ApiResponseModels.AccountApiResponses
 {
     public class BankAccountResponse
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
-        public string AccountNo { get; set; }
+        public string AccountNo { get; }
 
-        public string IBAN { get; set; }
+        public string IBAN { get; }
 
-        public AccountType Type { get; set; }
+        public AccountType Type { get; }
 
-        public string AccountOwner { get; set; }
+        public string AccountOwner { get; }
 
-        public string BranchCode { get; set; }
+        public string BranchCode { get; }
 
-        public string BranchName { get; set; }
+        public string BranchName { get; }
 
-        public decimal Balance { get; set; }
+        public decimal Balance { get; }
 
-        public decimal AllowedBalanceToUse { get; set; }
+        public decimal AllowedBalanceToUse { get; }
 
-        public string Currency { get; set; }
+        public string Currency { get; }
 
-        public DateTime CreatedOn { get; set; }
+        public DateTime CreatedOn { get; }
 
-        public DateTime? LastTransactionDate { get; set; }
+        public DateTime? LastTransactionDate { get; }
 
         public BankAccountResponse(int id, string accountNo, string iban, AccountType type, string accountOwner,
                                    string branchCode, string branchName, decimal balance, decimal allowedBalanceToUse,

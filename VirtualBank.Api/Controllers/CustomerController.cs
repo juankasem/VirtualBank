@@ -157,12 +157,9 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> PostCustomer([FromRoute] int customerId,[FromBody] CreateCustomerRequest request,
+        public async Task<ActionResult<ApiResponse>> AddOrEditCustomer([FromRoute] int customerId,[FromBody] CreateCustomerRequest request,
                                                                    CancellationToken cancellationToken = default)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             try
             {
                 var apiResponse = await _customerService.AddOrEditCustomerAsync(customerId, request, cancellationToken);

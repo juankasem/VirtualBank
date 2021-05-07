@@ -49,6 +49,7 @@ namespace VirtualBank.Core.Entities
         public ICollection<CashTransaction> CashTransactions { get; set; }
 
         public ICollection<CreditCard> CreditCards { get; set; }
+
     }
 }
 
