@@ -79,7 +79,7 @@ namespace VirtualBank.Data.Repositories
             var existingBankAccount = await _dbContext.BankAccounts
                                                       .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && b.Disabled == false);
 
-            if (existingBankAccount is not null)
+            if (existingBankAccount != null)
             {
                 _dbContext.Entry(existingBankAccount).State = EntityState.Detached;
             }
@@ -97,7 +97,7 @@ namespace VirtualBank.Data.Repositories
             var existingBankAccount = await dbContext.BankAccounts
                                                       .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && b.Disabled == false);
 
-            if (existingBankAccount is not null)
+            if (existingBankAccount != null)
             {
                 dbContext.Entry(existingBankAccount).State = EntityState.Detached;
             }
@@ -114,7 +114,7 @@ namespace VirtualBank.Data.Repositories
             var isDeleted = false;
             var bankAccount = await _dbContext.BankAccounts.FindAsync(id);
 
-            if (bankAccount is not null)
+            if (bankAccount != null)
             {
                 bankAccount.Disabled = true;
                 await SaveAsync();
@@ -132,7 +132,7 @@ namespace VirtualBank.Data.Repositories
             var isDeleted = false;
             var bankAccount = await dbContext.BankAccounts.FindAsync(id);
 
-            if (bankAccount is not null)
+            if (bankAccount != null)
             {
                 bankAccount.Disabled = true;
                 await SaveAsync(dbContext);

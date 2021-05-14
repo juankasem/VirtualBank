@@ -75,7 +75,7 @@ namespace VirtualBank.Data.Repositories
             var existingBranch = await _dbContext.Branches
                                                  .FirstOrDefaultAsync(b => b.Id == branch.Id && b.Disabled == false);
 
-            if (existingBranch is not null)
+            if (existingBranch != null)
             {
                 _dbContext.Entry(existingBranch).State = EntityState.Detached;
             }
@@ -92,7 +92,7 @@ namespace VirtualBank.Data.Repositories
             var existingBranch = await dbContext.Branches
                                                  .FirstOrDefaultAsync(b => b.Id == branch.Id && b.Disabled == false);
 
-            if (existingBranch is not null)
+            if (existingBranch != null)
             {
                 dbContext.Entry(existingBranch).State = EntityState.Detached;
             }
@@ -109,7 +109,7 @@ namespace VirtualBank.Data.Repositories
             var isDeleted = false;
             var branch = await _dbContext.Branches.FindAsync(id);
 
-            if (branch is not null)
+            if (branch != null)
             {
                 branch.Disabled = true;
                 await SaveAsync();
@@ -126,7 +126,7 @@ namespace VirtualBank.Data.Repositories
             var isDeleted = false;
             var branch = await dbContext.Branches.FindAsync(id);
 
-            if (branch is not null)
+            if (branch != null)
             {
                 branch.Disabled = true;
                 await SaveAsync(dbContext);
@@ -142,6 +142,7 @@ namespace VirtualBank.Data.Repositories
         {
             await _dbContext.SaveChangesAsync();
         }
+
 
         public async Task SaveAsync(VirtualBankDbContext dbContext)
         {

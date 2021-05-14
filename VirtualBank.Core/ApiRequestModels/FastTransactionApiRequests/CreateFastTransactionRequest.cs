@@ -23,15 +23,15 @@ namespace VirtualBank.Core.ApiRequestModels.FastTransactionApiRequests
 
         [Required]
         [MaxLength(150)]
-        public string IBAN { get; set; }
+        public string RecipientIBAN { get; set; }
 
         public CreateFastTransactionRequest(int accountId, int branchId,
-                                            string recipientName, string iban)
+                                            string recipientName, string recipientIBAN)
         {
             AccountId = Throw.ArgumentNullException.IfNull(accountId, nameof(accountId));
             BranchId = Throw.ArgumentNullException.IfNull(branchId, nameof(branchId));
             RecipientName = Throw.ArgumentNullException.IfNull(recipientName, nameof(recipientName));
-            IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
+            RecipientIBAN = Throw.ArgumentNullException.IfNull(recipientIBAN, nameof(recipientIBAN));
         }
     }
 }

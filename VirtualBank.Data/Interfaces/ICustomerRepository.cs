@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using VirtualBank.Core.Entities;
+
+namespace VirtualBank.Data.Interfaces
+{
+    public interface ICustomerRepository
+    {
+        Task<IEnumerable<Customer>> GetAllAsync();
+        Task<Customer> FindByIdAsync(int id);
+        Task<Customer> FindByAccountIdAsync(int accountId);
+        Task<Customer> FindByAccountNoAsync(string accountNo);
+        Task<Customer> FindByIBANAsync(string iban);
+        Task<Customer> FindByCreditCardIdAsync(int creditCardId);
+        Task<bool> CustomerExistsAsync(Customer customer);
+
+        Task<Customer> AddAsync(Customer customer);
+        Task<Customer> AddAsync(VirtualBankDbContext dbContext, Customer customer);
+        Task<Customer> UpdateAsync(Customer customer);
+        Task<Customer> UpdateAsync(VirtualBankDbContext dbContext, Customer customer);
+        Task<bool> RemoveAsync(int id);
+        Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id);
+        Task SaveAsync();
+        Task SaveAsync(VirtualBankDbContext dbContext);
+
+
+    }
+}

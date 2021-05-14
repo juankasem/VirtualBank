@@ -17,7 +17,7 @@ namespace VirtualBank.Data.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<Address>> GetAll()
+        public async Task<IEnumerable<Address>> GetAllAsync()
         {
             return await _dbContext.Addresses.Include(address => address.District)
                                              .Include(address => address.City)
@@ -63,7 +63,7 @@ namespace VirtualBank.Data.Repositories
                 var existingAddress = await dbContext.Addresses
                                               .FirstOrDefaultAsync(a => a.Id == address.Id && a.Disabled == false);
 
-                if (existingAddress is not null)
+                if (existingAddress != null)
                 {
                     dbContext.Entry(existingAddress).State = EntityState.Detached;
                 }
@@ -77,7 +77,7 @@ namespace VirtualBank.Data.Repositories
                 var existingAddress = await _dbContext.Addresses
                                               .FirstOrDefaultAsync(a => a.Id == address.Id && a.Disabled == false);
 
-                if (existingAddress is not null)
+                if (existingAddress != null)
                 {
                     _dbContext.Entry(existingAddress).State = EntityState.Detached;
                 }
@@ -99,7 +99,7 @@ namespace VirtualBank.Data.Repositories
             {
                 var address = await dbContext.Addresses.FindAsync(id);
 
-                if (address is not null)
+                if (address != null)
                 {
                     address.Disabled = true;
                     await SaveAsync(dbContext);
@@ -110,7 +110,7 @@ namespace VirtualBank.Data.Repositories
             {
                 var address = await _dbContext.Addresses.FindAsync(id);
 
-                if (address is not null)
+                if (address != null)
                 {
                     address.Disabled = true;
                     await SaveAsync();
@@ -129,6 +129,14 @@ namespace VirtualBank.Data.Repositories
                 await dbContext.SaveChangesAsync();
             else
                await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> AddressExistsAsync(int countryId, int cityId, int districtId, string street, string name)
+        {
+            return await _dbContext.Addresses.AnyAsync(a => a.CountryId == countryId && a.CityId == cityId
+                                                                                     &&  a.DistrictId == districtId
+                                                                                     && a.Street == street
+                                                                                     && a.Name == name);
         }
     }
 }

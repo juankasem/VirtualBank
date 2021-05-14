@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.FastTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.FastTransactionApiResponses;
@@ -37,6 +38,7 @@ namespace VirtualBank.Api.Services
             _fastTransactionsRepo = fastTransactionsRepo;
         }
 
+
         /// <summary>
         /// Retrieve all fast transactions
         /// </summary>
@@ -47,7 +49,6 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<FastTransactionListResponse>> GetAllFastTransactionsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<FastTransactionListResponse>();
-            var skip = (pageNumber - 1) * pageSize;
 
             var allFastTransactions = await _fastTransactionsRepo.GetAll();
 
@@ -56,8 +57,8 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var fastTransactions = allFastTransactions.OrderByDescending(c => c.CreatedAt)
-                                                      .Skip(skip).Take(pageSize);
+            var fastTransactions = allFastTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                          .Take(pageSize);
 
             var fastTransactionList = new List<FastTransactionResponse>();
 
@@ -70,6 +71,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         /// <summary>
         /// Retrieve fast transactions that are associated to the account
@@ -79,20 +81,19 @@ namespace VirtualBank.Api.Services
         /// <param name="pageSize"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<FastTransactionListResponse>> GetAccountFastTransactionsAsync(int accountId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<FastTransactionListResponse>> GetBankAccountFastTransactionsAsync(string iban, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<FastTransactionListResponse>();
-            var skip = (pageNumber - 1) * pageSize;
 
-            var accountFastTransactions = await _fastTransactionsRepo.GetByAccountId(accountId);
+            var accountFastTransactions = await _fastTransactionsRepo.GetByIBAN(iban);
 
             if (accountFastTransactions.Count() == 0)
             {
                 return responseModel;
             }
 
-            var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedAt)
-                                                          .Skip(skip).Take(pageSize);
+            var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                              .Take(pageSize);
 
             var fastTransactionList = new List<FastTransactionResponse>();
 
@@ -105,6 +106,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         /// <summary>
         /// Retrieve fast transaction by id
@@ -120,7 +122,7 @@ namespace VirtualBank.Api.Services
 
             if (transaction == null)
             {
-                responseModel.AddError("fast transaction not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(transaction)));
                 return responseModel;
             }
 
@@ -128,6 +130,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         /// <summary>
         /// Add or edit existing fast transaction
@@ -151,21 +154,21 @@ namespace VirtualBank.Api.Services
                     fastTransaction.AccountId = request.AccountId;
                     fastTransaction.BranchId = request.BranchId;
                     fastTransaction.RecipientName = request.RecipientName;
-                    fastTransaction.IBAN = request.IBAN;
+                    fastTransaction.RecipientIBAN = request.RecipientIBAN;
                     fastTransaction.LastModifiedBy = user.Identity.Name;
 
                     try
                     {
                         await _fastTransactionsRepo.UpdateAsync(fastTransaction);
                     }
-                    catch (Exception ex)
+                    catch 
                     {
-                        responseModel.AddError(ex.ToString());
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError());
                     }
                 }
                 else
                 {
-                    responseModel.AddError("fast transaction  not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(fastTransaction)));
                     return responseModel;
                 }
             }
@@ -175,7 +178,7 @@ namespace VirtualBank.Api.Services
 
                 if (newFastTransaction == null)
                 {
-                    responseModel.AddError("couldn't create fast transaction");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(newFastTransaction)));
                     return responseModel;
                 }
 
@@ -183,15 +186,13 @@ namespace VirtualBank.Api.Services
 
                 try
                 {
-                    await _dbContext.FastTransactions.AddAsync(newFastTransaction);
+                    await _fastTransactionsRepo.AddAsync(newFastTransaction);
                 }
-                catch (Exception ex)
+                catch 
                 {
-                    responseModel.AddError(ex.ToString());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
                 }
             }
-
-            await _dbContext.SaveChangesAsync();
 
             return responseModel;
         }
@@ -206,12 +207,19 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse();
 
-            var isRemoved = await _fastTransactionsRepo.RemoveAsync(id);
-
-            if (!isRemoved)
+            try
             {
-                responseModel.AddError("fast transaction  not found");
-                return responseModel;
+                var isRemoved = await _fastTransactionsRepo.RemoveAsync(id);
+
+                if (!isRemoved)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError("fastTransaction"));
+                    return responseModel;
+                }
+            }
+            catch 
+            {
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
             }
 
             return responseModel;
@@ -237,7 +245,7 @@ namespace VirtualBank.Api.Services
                     return null;
                 }
 
-                return new FastTransactionResponse(transaction.Id, bankAccount.IBAN, branch.Name, transaction.RecipientName, transaction.IBAN);
+                return new FastTransactionResponse(transaction.Id, bankAccount.IBAN, branch.Name, transaction.RecipientName, transaction.RecipientIBAN);
             }
 
             return null;
@@ -252,7 +260,7 @@ namespace VirtualBank.Api.Services
                     AccountId = request.AccountId,
                     BranchId = request.BranchId,
                     RecipientName = request.RecipientName,
-                    IBAN = request.IBAN
+                    RecipientIBAN = request.RecipientIBAN
                 };
             }
 

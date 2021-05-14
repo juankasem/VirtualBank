@@ -17,6 +17,6 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse> DeleteAddressAsync(int addressId, CancellationToken cancellationToken = default);
 
-        Task<bool> AddressExists(int countryId, int cityId, int districtId, string street);
+        Task<bool> AddressExistsAsync(int countryId, int cityId, int districtId, string street, string name);
     }
 }

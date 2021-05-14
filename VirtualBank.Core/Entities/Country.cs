@@ -11,7 +11,7 @@ namespace VirtualBank.Core.Entities
         public string Name { get; set; }
 
         [Required]
-        [MaxLength(8)]
+        [MaxLength(4)]
         public string Code { get; set; }
 
         public ICollection<City> Cities { get; set; }

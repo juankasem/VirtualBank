@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
@@ -47,12 +48,12 @@ namespace VirtualBank.Api.Services
 
             var bankAccounts = await _bankAccountRepo.GetByCustomerId(customerId);
 
-            var bankAccountList = new List<BankAccountResponse>();
-
             if (bankAccounts.Count() == 0)
             {
                 return responseModel;
             }
+
+            var bankAccountList = new List<BankAccountResponse>();   
 
             foreach (var bankAccount in bankAccounts)
             {
@@ -83,7 +84,8 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount == null)
             {
-                responseModel.AddError($"bank account Id: {accountId} Not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account Id: {accountId} Not found"));
+
                 return responseModel;
             }
 
@@ -110,7 +112,8 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount == null)
             {
-                responseModel.AddError($"bank account No: {accountNo} Not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account No: {accountNo} Not found"));
+
                 return responseModel;
             }
 
@@ -138,7 +141,7 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount == null)
             {
-                responseModel.AddError($"IBAN: {iban} Not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"IBAN: {iban} Not found"));
                 return responseModel;
             }
 
@@ -164,7 +167,7 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount == null)
             {
-                responseModel.AddError($"IBAN: {iban} Not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"IBAN: {iban} Not found"));
                 return responseModel;
             }
 
@@ -195,35 +198,36 @@ namespace VirtualBank.Api.Services
 
                 if (bankaccount != null)
                 {
-                    bankaccount.IBAN = request.Account.IBAN;
-                    bankaccount.Currency = request.Account.Currency;
-                    bankaccount.Balance = request.Account.Balance;
-                    bankaccount.Type = request.Account.Type;
-                    bankaccount.LastModifiedBy = user.Identity.Name;
+                    bankaccount.IBAN = request.IBAN;
+                    bankaccount.CurrencyId = request.CurrencyId;
+                    bankaccount.Balance = request.Balance;
+                    bankaccount.Type = request.Type;
+                    bankaccount.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     bankaccount.LastModifiedOn = DateTime.UtcNow;
 
-                    await _dbContext.SaveChangesAsync();
+                    await _bankAccountRepo.UpdateAsync(bankaccount);
                 }
                 else
                 {
-                    responseModel.AddError("bank account not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError("bankAccount", $"bank account Not found"));
                     return responseModel;
                 }
-
             }
             else
             {
-                var newBankAccount = CreateBankAccount(request);
-
-                if (newBankAccount == null)
+                try
                 {
-                    responseModel.AddError("couldn't create new bank account");
-                    return responseModel;
+                    var newBankAccount = CreateBankAccount(request);
+
+                  
+                    newBankAccount.CreatedBy = user.Identity.Name;
+
+                    await _bankAccountRepo.AddAsync(newBankAccount);
                 }
+                catch (Exception ex)
+                {
 
-                newBankAccount.CreatedBy = user.Identity.Name;
-
-                await _bankAccountRepo.AddAsync(newBankAccount);
+                }         
             }
             
 
@@ -249,7 +253,7 @@ namespace VirtualBank.Api.Services
             }
             else
             {
-                responseModel.AddError($"bank account Not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account id: {accountId} not found"));
             }
 
             return responseModel;
@@ -274,7 +278,7 @@ namespace VirtualBank.Api.Services
             }
             else
             {
-                responseModel.AddError($"bank account Not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount)));
             }
 
             return responseModel;
@@ -295,7 +299,7 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount == null)
             {
-               responseModel.AddError($"bank account Not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account not found"));
             }
 
             if (bankAccount.Type == AccountType.Savings)
@@ -324,9 +328,9 @@ namespace VirtualBank.Api.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                    responseModel.AddError(ex.ToString());
+                                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
 
-                                    return responseModel;
+                                return responseModel;
                                 }
 
                             break;
@@ -347,7 +351,7 @@ namespace VirtualBank.Api.Services
                             }
                                 catch (Exception ex)
                                 {
-                                responseModel.AddError(ex.ToString());
+                                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
 
                                 return responseModel;
                             }
@@ -369,9 +373,9 @@ namespace VirtualBank.Api.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                    responseModel.AddError(ex.ToString());
+                                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
 
-                                    return responseModel;
+                                return responseModel;
                                 }
 
                                 break;
@@ -418,30 +422,21 @@ namespace VirtualBank.Api.Services
 
         private BankAccount CreateBankAccount(CreateBankAccountRequest request)
         {
-            var bankAccount = request.Account;
-            var BANK_CODE= "820001000";
 
-            if (bankAccount != null)
+            var newBankAccount = new BankAccount()
             {
-                var newBankAccount = new BankAccount()
-                {
-                    AccountNo = Guid.NewGuid().ToString(),
-                    CustomerId = bankAccount.CustomerId,
-                    BranchId = bankAccount.BranchId,
-                    Balance = bankAccount.Balance,
-                    Currency = bankAccount.Currency,
-                    Type = bankAccount.Type,                    
-                };
+                AccountNo = Guid.NewGuid().ToString(),
+                IBAN = request.IBAN,
+                CustomerId = request.CustomerId,
+                BranchId = request.BranchId,
+                Balance = request.Balance,
+                CurrencyId = request.CurrencyId,
+                Type = request.Type,
+                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+            };
 
-                newBankAccount.IBAN = bankAccount.Branch.Address.Country.Code +
-                                      BANK_CODE +
-                                      bankAccount.Branch.Code +
-                                      newBankAccount.AccountNo;
 
                 return newBankAccount;
-            }
-
-            return null;
         }
 
         private string CreateBankAccountOwner(BankAccount bankAccount)

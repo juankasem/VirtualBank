@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.12" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="10.1.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
@@ -32,6 +33,9 @@
     <Folder Include="MappingProfiles\" />
     <Folder Include="ActionResults\" />
     <Folder Include="Exceptions\" />
+    <Folder Include="Validators\" />
+    <Folder Include="Filters\" />
+    <Folder Include="Helpers\ErrorsHelper\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VirtualBank.Data\VirtualBank.Data.csproj">

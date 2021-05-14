@@ -5,9 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses;
@@ -41,7 +40,48 @@ namespace VirtualBank.Api.Services
         }
 
         /// <summary>
-        /// retrieve all transactions that occured in the specified account(from or to)
+        /// Retrieve all cash transactions occured
+        /// </summary>
+        /// <param name="iban"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<CashTransactionListResponse>> GetAllCashTransactionsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CashTransactionListResponse>();
+
+            var ibanCashTransactions = await _cashTransactionsRepo.GetAll();
+
+            if (ibanCashTransactions.Count() == 0)
+            {
+                return responseModel;
+            }
+
+            var cashTransactions = ibanCashTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                           .Take(pageSize);
+
+            var cashTransactionList = new List<CashTransactionResponse>();
+
+            foreach (var cashTransaction in cashTransactions)
+            {
+                var senderResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.From, cancellationToken);
+                var sender = senderResponse?.Data?.FullName;
+                var recipientResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.To, cancellationToken);
+                var recipient = recipientResponse?.Data?.FullName;
+
+                cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, sender, recipient));
+
+            }
+
+            responseModel.Data = new CashTransactionListResponse(cashTransactionList.ToImmutableList(), cashTransactionList.Count);
+
+            return responseModel;
+        }
+
+
+        /// <summary>
+        /// Retrieve all cash transactions that occured in the specified account(from or to it)
         /// </summary>
         /// <param name="iban"></param>
         /// <param name="cancellationToken"></param>
@@ -51,15 +91,16 @@ namespace VirtualBank.Api.Services
                                                                                                    CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionListResponse>();
-            var skip = (pageNumber - 1) * pageSize;
 
             var ibanCashTransactions = await _cashTransactionsRepo.GetByIBAN(iban, lastDays);
 
-            if(ibanCashTransactions.Count() == 0) {
+            if (ibanCashTransactions.Count() == 0)
+            {
                 return responseModel;
             }
 
-            var cashTransactions = ibanCashTransactions.OrderByDescending(c => c.CreatedAt).Skip(skip).Take(pageSize);
+            var cashTransactions = ibanCashTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                           .Take(pageSize);
 
             var cashTransactionList = new List<CashTransactionResponse>();
 
@@ -73,7 +114,7 @@ namespace VirtualBank.Api.Services
                     cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, sender, iban, Direction.In));
                 }
 
-                else if(cashTransaction.To != iban && IsTransferTransaction(cashTransaction))
+                else if (cashTransaction.To != iban && IsTransferTransaction(cashTransaction))
                 {
                     var recipientResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.To, cancellationToken);
                     var recipient = recipientResponse?.Data?.FullName;
@@ -112,7 +153,7 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
             var lastTransaction = await _cashTransactionsRepo.FindByIBANAsync(iban);
-                                                                             
+
             if (lastTransaction == null)
             {
                 return responseModel;
@@ -135,8 +176,6 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
-            var user = _httpContextAccessor.HttpContext.User;
-            var username = user.Identity.Name;
             var amountToDeposit = request.CashTransaction.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
@@ -147,20 +186,18 @@ namespace VirtualBank.Api.Services
 
                 if (toAccount == null)
                 {
-                    responseModel.AddError("account not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(toAccount)));
                     return responseModel;
                 }
 
                 //Add amount to recipient balance
                 toAccount.Balance += amountToDeposit;
 
-
+                //Update bank account
                 await _bankAccountRepo.UpdateAsync(_dbContext, toAccount);
 
-                var cashTransaction = CreateCashTransaction(request, username, 0, toAccount.Balance);
-
                 //Add transaction to db & save changes 
-                await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+                await _cashTransactionsRepo.AddAsync(_dbContext, CreateCashTransaction(request, 0, toAccount.Balance));
 
                 await dbContextTransaction.CommitAsync();
 
@@ -170,7 +207,7 @@ namespace VirtualBank.Api.Services
             catch (Exception ex)
             {
                 await dbContextTransaction.RollbackAsync();
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
 
                 return responseModel;
             }
@@ -187,8 +224,6 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
-            var user = _httpContextAccessor.HttpContext.User;
-            var username = user.Identity.Name;
             var amountToWithdraw = request.CashTransaction.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
@@ -200,7 +235,7 @@ namespace VirtualBank.Api.Services
 
                 if (fromAccount == null)
                 {
-                    responseModel.AddError("account not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(fromAccount)));
                     return responseModel;
                 }
 
@@ -218,7 +253,8 @@ namespace VirtualBank.Api.Services
 
                     if (isBlocked)
                     {
-                        responseModel.AddError("Deposit is blocked");
+                        responseModel.AddError(ExceptionCreator.CreateUnprocessableEntityError(nameof(fromAccount), "deposit is blocked"));
+
                         return responseModel;
                     }
                 }
@@ -229,9 +265,7 @@ namespace VirtualBank.Api.Services
 
                     await _bankAccountRepo.UpdateAsync(_dbContext, fromAccount);
 
-                    var cashTransaction = CreateCashTransaction(request, username, fromAccount.Balance, 0);
-
-                    await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+                    await _cashTransactionsRepo.AddAsync(_dbContext, CreateCashTransaction(request, fromAccount.Balance, 0));
 
                     await dbContextTransaction.CommitAsync();
 
@@ -239,7 +273,7 @@ namespace VirtualBank.Api.Services
                 }
                 else
                 {
-                    responseModel.AddError("balance is not enough to complete withdrawal");
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(fromAccount), "balance is not enough to complete withdrawal"));
 
                     return responseModel;
                 }
@@ -248,7 +282,7 @@ namespace VirtualBank.Api.Services
             catch (Exception ex)
             {
                 await dbContextTransaction.RollbackAsync();
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
 
                 return responseModel;
             }
@@ -265,8 +299,6 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
-            var user = _httpContextAccessor.HttpContext.User;
-            var username = user.Identity.Name;
             var amountToTransfer = request.CashTransaction.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
@@ -278,13 +310,15 @@ namespace VirtualBank.Api.Services
 
                 if (senderAccount == null)
                 {
-                    responseModel.AddError("account not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount)));
+
                     return responseModel;
                 }
 
                 if (recipientAccount == null)
                 {
-                    responseModel.AddError("account not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount)));
+
                     return responseModel;
                 }
 
@@ -294,18 +328,18 @@ namespace VirtualBank.Api.Services
                     //Deduct from sender account
                     senderAccount.Balance -= amountToTransfer;
 
+                    //Update sender bank account
                     await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
 
                     //Deposit to recipient account
                     recipientAccount.Balance += amountToTransfer;
 
-                    await _bankAccountRepo.UpdateAsync(recipientAccount);
 
-                    //Create a transaction 
-                    var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
+                    //Update recipient bank account
+                    await _bankAccountRepo.UpdateAsync(_dbContext, recipientAccount);
 
-                    //Save transaction into db
-                    await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+                    //Create & Save transaction into db
+                    await _cashTransactionsRepo.AddAsync(_dbContext, CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance));
 
                     await dbContextTransaction.CommitAsync();
 
@@ -313,14 +347,15 @@ namespace VirtualBank.Api.Services
                 }
                 else
                 {
-                    responseModel.AddError("No enough balance to complete transfer");
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("transfer", "not enough balance to complete transfer"));
+
                     return responseModel;
                 }
             }
             catch (Exception ex)
             {
                 await dbContextTransaction.RollbackAsync();
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
 
                 return responseModel;
             }
@@ -336,9 +371,6 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-
-            var user = _httpContextAccessor.HttpContext.User;
-            var username = user.Identity.Name;
             var amountToTransfer = request.CashTransaction.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
@@ -350,22 +382,24 @@ namespace VirtualBank.Api.Services
 
                 if (senderAccount == null)
                 {
-                    responseModel.AddError("sender account not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount)));
+
                     return responseModel;
                 }
 
                 if (recipientAccount == null)
                 {
-                    responseModel.AddError("recipient account not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount)));
+
                     return responseModel;
                 }
 
                 if (recipientAccount.Owner.FirstName != request.RecipeintFirstName || recipientAccount.Owner.LastName != request.RecipeintLastName)
                 {
-                    responseModel.AddError("Name is not valid");
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(recipientAccount), "recipient name is not valid"));
+
                     return responseModel;
                 }
-
 
                 if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
                 {
@@ -382,11 +416,9 @@ namespace VirtualBank.Api.Services
 
                     await _bankAccountRepo.UpdateAsync(_dbContext, recipientAccount);
 
-                    //Create a transaction 
-                    var cashTransaction = CreateCashTransaction(request, username, senderAccount.Balance, recipientAccount.Balance);
 
-                    //Save transaction into db
-                    await _cashTransactionsRepo.AddAsync(_dbContext, cashTransaction);
+                    //Create & Save transaction into db
+                    await _cashTransactionsRepo.AddAsync(_dbContext, CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance));
 
                     //Deduct commission fees from sender account
                     senderAccount.Balance -= (decimal)fees;
@@ -398,11 +430,8 @@ namespace VirtualBank.Api.Services
                     request.CashTransaction.Type = CashTransactionType.CommissionFees;
                     request.CashTransaction.Amount = (decimal)fees;
 
-                    //Create a transaction for the comission fees
-                    var commissionFeeTransaction = CreateCashTransaction(request, username, senderAccount.Balance, 0);
-
-                    //Save transaction into db
-                    await _cashTransactionsRepo.AddAsync(_dbContext, commissionFeeTransaction);
+                    //Create & Save commission fees into db
+                    await _cashTransactionsRepo.AddAsync(_dbContext, CreateCashTransaction(request, senderAccount.Balance, 0));
 
                     await dbContextTransaction.CommitAsync();
 
@@ -410,14 +439,14 @@ namespace VirtualBank.Api.Services
                 }
                 else
                 {
-                    responseModel.AddError("No enough balance to complete transfer");
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("transfer", "not enough balance to complete transfer"));
                     return responseModel;
                 }
             }
             catch (Exception ex)
             {
                 await dbContextTransaction.RollbackAsync();
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
 
                 return responseModel;
             }
@@ -427,33 +456,34 @@ namespace VirtualBank.Api.Services
 
         #region private Helper methods
         [NonAction]
-        private CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, string username, decimal senderBalance, decimal recipientBalance)
+        private CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, decimal senderBalance, decimal recipientBalance)
         {
             const string BANKACCOUNTNO = "000100000";
             var cashTransaction = request.CashTransaction;
             var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
 
-          return  new CashTransaction()
-          {
-            Type = cashTransaction.Type,
-            From = cashTransaction.From,
-            To = !isTransferFees ? cashTransaction.To : BANKACCOUNTNO,
-            Amount = cashTransaction.Amount,
-            SenderRemainingBalance = senderBalance,
-            RecipientRemainingBalance = recipientBalance,
-            InitiatedBy = cashTransaction.InitiatedBy,
-            Description = cashTransaction.Description,                                          
-            PaymentType = !isTransferFees ? cashTransaction.PaymentType : PaymentType.ComissionFees,
-            CreatedBy = username,
-            TransactionDate = cashTransaction.TransactionDate, 
-            Status = cashTransaction.TransactionDate == DateTime.Today ? TransactionStatusType.Succeeded : TransactionStatusType.Pending
-          };
+            return new CashTransaction()
+            {
+                Type = cashTransaction.Type,
+                From = cashTransaction.From,
+                To = !isTransferFees ? cashTransaction.To : BANKACCOUNTNO,
+                Amount = cashTransaction.Amount,
+                SenderRemainingBalance = senderBalance,
+                RecipientRemainingBalance = recipientBalance,
+                InitiatedBy = cashTransaction.InitiatedBy,
+                Description = cashTransaction.Description,
+                PaymentType = !isTransferFees ? cashTransaction.PaymentType : PaymentType.ComissionFees,
+                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name,
+                TransactionDate = cashTransaction.TransactionDate,
+                Status = cashTransaction.TransactionDate == DateTime.Today ? TransactionStatusType.Succeeded : TransactionStatusType.Pending,
+
+            };
 
         }
 
         [NonAction]
         private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string sender,
-                                                                     string recipient, Direction direction)                        
+                                                                     string recipient, Direction direction = Direction.NoDirection)
         {
             var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
 
@@ -470,7 +500,7 @@ namespace VirtualBank.Api.Services
                                                 cashTransaction.InitiatedBy == BankAssetType.POS || cashTransaction.InitiatedBy == BankAssetType.ATM ?
                                                 $"{cashTransaction.InitiatedBy} purchase: {recipient}"
                                                 :
-                                                $"{cashTransaction.To}--{recipient}, {cashTransaction.Description}", 
+                                                $"{cashTransaction.To}--{recipient}, {cashTransaction.Description}",
                                                cashTransaction.InitiatedBy,
                                                direction == Direction.In ? cashTransaction.RecipientRemainingBalance : cashTransaction.SenderRemainingBalance,
                                                cashTransaction.CreatedAt,

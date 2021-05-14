@@ -54,7 +54,7 @@ namespace VirtualBank.Data.Repositories
             var existingCity = await _dbContext.Cities.FirstOrDefaultAsync(city => city.Id == city.Id
                                                                                    && city.Disabled == false);
 
-            if (existingCity is not null)
+            if (existingCity != null)
             {
                 _dbContext.Entry(existingCity).State = EntityState.Detached;
             }
@@ -70,7 +70,7 @@ namespace VirtualBank.Data.Repositories
             var isDeleted = false;
             var city = await _dbContext.Cities.FindAsync(id);
 
-            if (city is not null)
+            if (city != null)
             {
                 city.Disabled = true;
                 await SaveAsync();

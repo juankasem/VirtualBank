@@ -43,7 +43,7 @@ namespace VirtualBank.Core.Entities
 
         [ForeignKey(nameof(Currency))]
         [Required]
-        public string CurrencyId { get; set; }
+        public int CurrencyId { get; set; }
         public Currency Currency { get; set; }
 
         public ICollection<CashTransaction> CashTransactions { get; set; }

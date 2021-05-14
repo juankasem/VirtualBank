@@ -18,8 +18,8 @@ using VirtualBank.Core.Interfaces;
 
 namespace VirtualBank.Api.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [ApiController]
-    [Authorize]
     public class CountryController : Controller
     {
         private readonly ICountriesService _countriesService;
@@ -43,8 +43,6 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
@@ -69,11 +67,9 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
@@ -94,16 +90,13 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _countriesService.AddOrEditCountryAsync(countryId, request, cancellationToken);
+               var apiResponse = await _countriesService.AddOrEditCountryAsync(countryId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);

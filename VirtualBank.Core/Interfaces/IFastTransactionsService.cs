@@ -11,7 +11,7 @@ namespace VirtualBank.Core.Interfaces
     {
         Task<ApiResponse<FastTransactionListResponse>> GetAllFastTransactionsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<FastTransactionListResponse>> GetAccountFastTransactionsAsync(int accountId, int pageNumber, int pageSize,
+        Task<ApiResponse<FastTransactionListResponse>> GetBankAccountFastTransactionsAsync(string iban, int pageNumber, int pageSize,
                                                                                        CancellationToken cancellationToken = default);
 
         Task<ApiResponse<FastTransactionResponse>> GetFastTransactionByIdAsync(int id, CancellationToken cancellationToken = default);

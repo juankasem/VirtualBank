@@ -66,7 +66,7 @@ namespace VirtualBank.Data.Repositories
                                                      .Where(c => c.Id == creditCard.Id && c.Disabled == false)
                                                      .FirstOrDefaultAsync();
 
-            if (existingCreditCard is not null)
+            if (existingCreditCard != null)
             {
                 _dbContext.Entry(existingCreditCard).State = EntityState.Detached;
             }
@@ -83,7 +83,7 @@ namespace VirtualBank.Data.Repositories
             var isDeleted = false;
             var creditCard = await _dbContext.CreditCards.FindAsync(id);
 
-            if (creditCard is not null)
+            if (creditCard != null)
             {
                 creditCard.Disabled = true;
                 await SaveAsync();

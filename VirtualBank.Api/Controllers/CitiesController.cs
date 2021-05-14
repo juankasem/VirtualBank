@@ -4,9 +4,11 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -16,7 +18,9 @@ using VirtualBank.Core.Interfaces;
 
 namespace VirtualBank.Api.Controllers
 {
-    public class CitiesController : Controller
+    [Authorize(Roles = "Admin")]
+    [ApiController]
+    public class CitiesController : ControllerBase
     {
         private readonly ICountriesService _countriesService;
         private readonly ICitiesService _citiesService;
@@ -46,8 +50,6 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
@@ -65,20 +67,21 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCitiesByCountryId([FromRoute] int countryId, CancellationToken cancellationToken = default)
         {
+            var apiResponse = new ApiResponse();
+
             try
             {
                 if (! await _countriesService.CountryExists(countryId))
                 {
-                    return NotFound();
+                    apiResponse.AddError(ExceptionCreator.CreateNotFoundError("country"));
+
+                    return NotFound(apiResponse);
                 }
 
-                var apiResponse = await _citiesService.GetCitiesByCountryIdAsync(countryId, cancellationToken);
+                 apiResponse = await _citiesService.GetCitiesByCountryIdAsync(countryId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);
@@ -104,11 +107,9 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
@@ -130,16 +131,13 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _citiesService.AddOrEditCityAsync(cityId, request, cancellationToken);
+               var apiResponse = await _citiesService.AddOrEditCityAsync(cityId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);

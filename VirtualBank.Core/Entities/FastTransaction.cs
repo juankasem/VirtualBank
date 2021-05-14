@@ -25,6 +25,6 @@ namespace VirtualBank.Core.Entities
 
         [Required]
         [MaxLength(150)]
-        public string IBAN { get; set; }
+        public string RecipientIBAN { get; set; }
     }
 }

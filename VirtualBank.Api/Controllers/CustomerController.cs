@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -26,14 +27,18 @@ namespace VirtualBank.Api.Controllers
     {
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IActionResultMapper<CustomerController> _actionResultMapper;
 
-        public CustomerController(ICustomerService customerService, UserManager<AppUser> userManager)
+        public CustomerController(ICustomerService customerService, UserManager<AppUser> userManager,
+                                  IActionResultMapper<CustomerController> actionResultMapper)
         {
             _customerService = customerService;
             _userManager = userManager;
+            _actionResultMapper = actionResultMapper;
         }
 
         // GET api/customer
+
         [HttpGet(ApiRoutes.getAllCustomers)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -49,14 +54,12 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -76,17 +79,15 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
+     
 
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -105,17 +106,15 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
+            
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -135,18 +134,15 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
-
+            
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -154,31 +150,27 @@ namespace VirtualBank.Api.Controllers
         [HttpPut(ApiRoutes.postCustomer)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> AddOrEditCustomer([FromRoute] int customerId,[FromBody] CreateCustomerRequest request,
-                                                                   CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AddOrEditCustomer([FromRoute] int customerId,[FromBody] CreateCustomerRequest request,
+                                                                       CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _customerService.AddOrEditCustomerAsync(customerId, request, cancellationToken);
+               var apiResponse = await _customerService.AddOrEditCustomerAsync(customerId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
     }

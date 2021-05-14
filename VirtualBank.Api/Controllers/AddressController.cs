@@ -33,6 +33,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // GET: api/Address/getAlAddresses
+        [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.getAllAddresses)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -49,9 +50,6 @@ namespace VirtualBank.Api.Controllers
                     return Ok(apiResponse);
 
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
@@ -60,7 +58,7 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.getAddressById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
@@ -75,17 +73,16 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
 
@@ -98,24 +95,22 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditAddressAsync([FromRoute] int addressId, [FromBody] CreateAddressRequest request,
-                                                         CancellationToken cancellationToken = default)
+                                                               CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _addressService.AddOrEditAddressAsync(addressId, request, cancellationToken);
+               var apiResponse = await _addressService.AddOrEditAddressAsync(addressId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
@@ -139,14 +134,12 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Message.Contains("not found"))
                     return BadRequest(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);

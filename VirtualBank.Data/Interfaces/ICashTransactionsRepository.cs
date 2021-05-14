@@ -7,6 +7,7 @@ namespace VirtualBank.Data.Interfaces
 {
     public interface ICashTransactionsRepository
     {
+        Task<IEnumerable<CashTransaction>> GetAll();
         Task<IEnumerable<CashTransaction>> GetDepositsByIBAN(string iban);
         Task<IEnumerable<CashTransaction>> GetByIBAN(string iban, int lastDays);
         Task<CashTransaction> GetLastAsync(string iban);

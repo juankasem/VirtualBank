@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -23,8 +24,8 @@ namespace VirtualBank.Api.Controllers
     /// <summary>
     /// Manage bank accounts
     /// </summary>
-    [ApiController]
     [Authorize]
+    [ApiController]
     public class BankAccountController : ControllerBase
     {
         private readonly IBankAccountService _bankAccountService;
@@ -49,35 +50,67 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAccountsByCustomerId([FromRoute] int customerId,
-                                                                 [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
-                                                                 [FromQuery] int pageSize = PagingConstants.DefaultPageSize, 
-                                                                 CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetBankAccountsByCustomerId([FromRoute] int customerId,
+                                                                     CancellationToken cancellationToken = default)
         {
-            var user = _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
+
+            var apiResponse = new ApiResponse();
 
             if (customer == null)
             {
-                return NotFound();
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
+                return NotFound(apiResponse);
             }
 
-            if (user.Id != customer?.Data?.Id)
+            if (user.Id != customer?.Data?.UserId)
             {
-                return Unauthorized();
+                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+
+                return Unauthorized(apiResponse);
             }
 
             try
             {
-                var apiResponse = await _bankAccountService.GetBankAccountsByCustomerIdAsync(customerId, cancellationToken);
+                apiResponse = await _bankAccountService.GetBankAccountsByCustomerIdAsync(customerId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
+
+                return BadRequest(apiResponse);
+            }
+
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
+
+        [HttpGet(ApiRoutes.getAccountById)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetBankAccountById([FromRoute] int accountId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+               var apiResponse = await _bankAccountService.GetBankAccountByIdAsync(accountId, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
+
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status401Unauthorized)
                     return Unauthorized(apiResponse);
 
 
@@ -90,37 +123,6 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        [HttpGet(ApiRoutes.getAccountById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAccountById([FromRoute] int accountId, CancellationToken cancellationToken = default)
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            try
-            {
-                var apiResponse = await _bankAccountService.GetBankAccountByIdAsync(accountId, cancellationToken);
-
-                if (apiResponse.Success)
-                    return Ok(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
-
-                return BadRequest(apiResponse);
-            }
-
-            catch (Exception exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
-            }
-        }
 
         [HttpGet(ApiRoutes.getAccountByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
@@ -132,28 +134,31 @@ namespace VirtualBank.Api.Controllers
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
 
+            var apiResponse = new ApiResponse();
+
             if (customer == null)
             {
-                return NotFound();
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
+                return NotFound(apiResponse);
             }
 
             if (user.Id != customer?.Data?.UserId)
             {
-                return Unauthorized();
+                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+
+                return Unauthorized(apiResponse);
             }
 
             try
             {
-                var apiResponse = await _bankAccountService.GetBankAccountByAccountNoAsync(accountNo, cancellationToken);
+                apiResponse = await _bankAccountService.GetBankAccountByAccountNoAsync(accountNo, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);
@@ -173,20 +178,37 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAccountByIBAN([FromRoute] string iban, CancellationToken cancellationToken = default)
         {
+            var user = await _userManager.GetUserAsync(User);
+            var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
+
+            var apiResponse = new ApiResponse();
+
+            if (customer == null)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
+                return NotFound(apiResponse);
+            }
+
+            if (user.Id != customer?.Data?.UserId)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+
+                return Unauthorized(apiResponse);
+            }
+
             try
             {
-                var apiResponse = await _bankAccountService.GetBankAccountByIBANAsync(iban, cancellationToken);
+                apiResponse = await _bankAccountService.GetBankAccountByIBANAsync(iban, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return BadRequest(apiResponse);
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+                return BadRequest(apiResponse);
             }
 
             catch (Exception exception)
@@ -197,10 +219,12 @@ namespace VirtualBank.Api.Controllers
 
 
         [HttpGet(ApiRoutes.getRecipientAccountByIBAN)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetRecipientAccountByIBAN([FromRoute] string iban, CancellationToken cancellationToken = default)
         {
-            var user = _userManager.GetUserAsync(User);
-
             try
             {
                 var apiResponse = await _bankAccountService.GetRecipientBankAccountByIBANAsync(iban, cancellationToken);
@@ -208,19 +232,18 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return BadRequest(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                     return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
             }
         }
+
 
         // POST api/values
         [HttpPut(ApiRoutes.postBankAccount)]
@@ -230,47 +253,85 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditBankAccount([FromRoute] int accountId, [FromBody] CreateBankAccountRequest request,
-                                                         CancellationToken cancellationToken = default)
+                                                              CancellationToken cancellationToken = default)
         {
+            var apiResponse = new ApiResponse();
+
+            var user = await _userManager.GetUserAsync(User);
+            var customer = await _customerService.GetCustomerByIdAsync(request.CustomerId, cancellationToken);
+
+
+            if (customer == null)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
+                return NotFound(apiResponse);
+            }
+
+            if (user.Id != customer?.Data?.UserId)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+
+                return Unauthorized(apiResponse);
+            }
+
             try
             {
-                var apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
+                apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
-
+                return BadRequest(apiResponse);
             }
+
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
             }
         }
 
+
         [HttpPost(ApiRoutes.activateBankAccount)]
-        public async Task<IActionResult> ActivateBankAccount([FromRoute] int accountId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ActivateBankAccount([FromRoute] int accountId,
+                                                             [FromRoute] int customerId,
+                                                             CancellationToken cancellationToken = default)
         {
+            var user = await _userManager.GetUserAsync(User);
+            var customer = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
+
+            var apiResponse = new ApiResponse();
+
+            if (customer == null)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
+                return NotFound(apiResponse);
+            }
+
+            if (user.Id != customer?.Data?.UserId)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+
+                return Unauthorized(apiResponse);
+            }
+
             try
             {
-                var apiResponse = await _bankAccountService.ActivateBankAccountAsync(accountId, cancellationToken);
+                apiResponse = await _bankAccountService.ActivateBankAccountAsync(accountId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return BadRequest(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+                return BadRequest(apiResponse);
             }
 
             catch (Exception exception)
@@ -280,22 +341,41 @@ namespace VirtualBank.Api.Controllers
         }
 
         [HttpPost(ApiRoutes.deactivateBankAccount)]
-        public async Task<IActionResult> DeactivateBankAccount([FromRoute] int accountId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> DeactivateBankAccount([FromRoute] int accountId,
+                                                               [FromRoute] int customerId,
+                                                               CancellationToken cancellationToken = default)
         {
+            var user = await _userManager.GetUserAsync(User);
+            var customer = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
+
+            var apiResponse = new ApiResponse();
+
+            if (customer == null)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
+                return NotFound(apiResponse);
+            }
+
+            if (user.Id != customer?.Data?.UserId)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+
+                return Unauthorized(apiResponse);
+            }
+
             try
             {
-                var apiResponse = await _bankAccountService.DeactivateBankAccountAsync(accountId, cancellationToken);
+                apiResponse = await _bankAccountService.DeactivateBankAccountAsync(accountId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return BadRequest(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {

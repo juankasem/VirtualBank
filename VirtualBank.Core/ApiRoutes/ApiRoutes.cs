@@ -4,7 +4,7 @@ namespace VirtualBank.Core.ApiRoutes
     public static class ApiRoutes
     {
         #region Address
-        public const string getAllAddresses = "api/Address/getAlAddresses";
+        public const string getAllAddresses = "api/Address/getAl";
 
         public const string getAddressById = "api/Address/getById/{addressId:int}";
 
@@ -16,6 +16,7 @@ namespace VirtualBank.Core.ApiRoutes
 
 
         #region Auth
+
         public const string checkEmailExists = "api/Auth/checkEmailExists";
 
         public const string register = "api/Auth/register";
@@ -46,9 +47,9 @@ namespace VirtualBank.Core.ApiRoutes
 
 
         #region Branch
-        public const string getAllBranches = "api/Branch/getAllBranches";
+        public const string getAllBranches = "api/Branch/getAll";
 
-        public const string getBranchesByCityId = "api/Branch/getBranchesByCityId/{cityId:int}";
+        public const string getBranchesByCityId = "api/Branch/getByCityId/{cityId:int}";
 
         public const string getBranchById = "api/Branch/getById/{branchId:int}";
 
@@ -74,7 +75,7 @@ namespace VirtualBank.Core.ApiRoutes
 
 
         #region City
-        public const string getAllCities = "api/Cities/getAllCities";
+        public const string getAllCities = "api/Cities/getAll";
 
         public const string getCitiesByCountryId = "api/Cities/getByCountryId";
 
@@ -86,21 +87,35 @@ namespace VirtualBank.Core.ApiRoutes
 
 
         #region Country
-        public const string getAllCountries = "api/Country/getAllCountries";
+        public const string getAllCountries = "api/Countries/getAll";
 
-        public const string getCountryById = "api/Country/getById/{countryId:int}";
+        public const string getCountryById = "api/Countries/getById/{countryId:int}";
 
-        public const string postCountry = "api/Country/post/{countryId:int}";
+        public const string postCountry = "api/Countries/post/{countryId:int}";
 
         #endregion
 
 
         #region Cash Transactions
+
+        public const string getAllCashTransactions = "api/CashTransactions/getAll";
+
         public const string getCashTransactionsByAccountNo = "api/CashTransactions/getByAccountNo/{accountNo}";
 
         public const string getCashTransactionsByIBAN = "api/CashTransactions/getByIBAN/{iban}";
 
         public const string createCashTransaction = "api/CashTransactions/create";
+
+        #endregion
+
+        #region Credit Cards
+        public const string getAllCreditCards = "api/CreditCard/getAll";
+
+        public const string getCreditCardById = "api/CreditCard/getById/{creditCardId:int}";
+
+        public const string getCreditCardByAccountNo = "api/CreditCard/getByAccountNo/{accountNo}";
+
+        public const string postCreditCard = "api/CreditCard/post/{customerId:int}";
 
         #endregion
 
@@ -120,7 +135,7 @@ namespace VirtualBank.Core.ApiRoutes
         #region Fast Transactions
         public const string getAllFastTransactions = "api/FastTransactions/getAll";
 
-        public const string getAccountFastTransactions = "api/FastTransactions/getAccountFastTransactions/{accountId:int}";
+        public const string getBankAccountFastTransactions = "api/FastTransactions/getAccountFastTransactions/{accountId:int}";
 
         public const string getFastTransactionById = "api/FastTransactions/getById/{id:int}";
 

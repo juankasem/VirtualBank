@@ -17,6 +17,12 @@ namespace VirtualBank.Data.Repositories
             _dbContext = dbContext;
         }
 
+        public async Task<IEnumerable<CashTransaction>> GetAll()
+        {
+            return await _dbContext.CashTransactions.Where(c => c.Disabled == false)
+                                                    .AsNoTracking().ToListAsync();
+        }
+
 
         public async Task<IEnumerable<CashTransaction>> GetByIBAN(string iban, int lastDays)
         {
@@ -37,8 +43,8 @@ namespace VirtualBank.Data.Repositories
         public async Task<CashTransaction> GetLastAsync(string iban)
         {
            return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
-                                                                && c.Disabled == false)
-                                                   .OrderByDescending(c => c.CreatedOn)
+                                                          && c.Disabled == false)
+                                                   .OrderByDescending(c => c.CreatedAt)
                                                    .FirstOrDefaultAsync();
         }
 
@@ -82,7 +88,7 @@ namespace VirtualBank.Data.Repositories
             var existingCashTransaction = await _dbContext.CashTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
                                                                            .FirstOrDefaultAsync();
 
-            if (existingCashTransaction is not null)
+            if (existingCashTransaction != null)
             {
                 _dbContext.Entry(existingCashTransaction).State = EntityState.Detached;
             }
@@ -98,7 +104,7 @@ namespace VirtualBank.Data.Repositories
             var existingCashTransaction = await dbContext.CashTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
                                                                           .FirstOrDefaultAsync();
 
-            if (existingCashTransaction is not null)
+            if (existingCashTransaction != null)
             {
                 dbContext.Entry(existingCashTransaction).State = EntityState.Detached;
             }
@@ -114,7 +120,7 @@ namespace VirtualBank.Data.Repositories
             var transaction = await _dbContext.CashTransactions.FindAsync(id);
             var isDeleted = false;
 
-            if (transaction is not null)
+            if (transaction != null)
             {
                 transaction.Disabled = true;
                 await SaveAsync();
@@ -130,7 +136,7 @@ namespace VirtualBank.Data.Repositories
             var transaction = await dbContext.CashTransactions.FindAsync(id);
             var isDeleted = false;
 
-            if (transaction is not null)
+            if (transaction != null)
             {
                 transaction.Disabled = true;
                 await SaveAsync(dbContext);

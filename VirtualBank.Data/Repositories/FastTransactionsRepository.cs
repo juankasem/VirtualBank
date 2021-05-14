@@ -35,6 +35,14 @@ namespace VirtualBank.Data.Repositories
                                                     .AsNoTracking().ToListAsync();
         }
 
+        public async Task<IEnumerable<FastTransaction>> GetByIBAN(string iban)
+        {
+            return await _dbContext.FastTransactions.Include(c => c.Account)
+                                                             .Include(c => c.Branch)
+                                                             .Where(c => c.Account.IBAN == iban && c.Disabled == false)
+                                                             .AsNoTracking().ToListAsync();
+        }
+
 
         public async Task<FastTransaction> FindByIdAsync(int id)
         {
@@ -58,7 +66,7 @@ namespace VirtualBank.Data.Repositories
             var existingFastTransaction = await _dbContext.FastTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
                                                                            .FirstOrDefaultAsync();
 
-            if (existingFastTransaction is not null)
+            if (existingFastTransaction != null)
             {
                 _dbContext.Entry(existingFastTransaction).State = EntityState.Detached;
             }
@@ -75,7 +83,7 @@ namespace VirtualBank.Data.Repositories
             var transaction = await _dbContext.FastTransactions.FindAsync(id);
             var isDeleted = false;
 
-            if (transaction is not null)
+            if (transaction != null)
             {
                 transaction.Disabled = true;
                 await SaveAsync();

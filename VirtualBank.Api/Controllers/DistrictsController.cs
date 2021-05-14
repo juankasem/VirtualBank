@@ -46,8 +46,6 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
@@ -79,8 +77,6 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);
@@ -101,18 +97,23 @@ namespace VirtualBank.Api.Controllers
         public async Task<IActionResult> AddOrEditDistrict([FromRoute] int districtId, [FromBody] CreateDistrictRequest request,
                                                       CancellationToken cancellationToken = default)
         {
+            var apiResponse = new ApiResponse();
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(apiResponse);
+            }
+
             try
             {
-                var apiResponse = await _districtsService.AddOrEditDistrictAsync(districtId, request, cancellationToken);
+                apiResponse = await _districtsService.AddOrEditDistrictAsync(districtId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);

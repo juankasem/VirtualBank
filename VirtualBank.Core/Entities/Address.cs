@@ -23,7 +23,7 @@ namespace VirtualBank.Core.Entities
         public int CountryId { get; set; }
         public Country Country { get; set; }
 
-        [MaxLength(150)]
+        [MaxLength(50)]
         public string Street { get; set; }
 
         [MaxLength(50)]

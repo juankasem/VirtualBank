@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.AddressApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
@@ -19,15 +20,12 @@ namespace VirtualBank.Api.Services
     public class AddressService : IAddressService
     {
 
-        private readonly VirtualBankDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAddressRepository _addressRepository;
 
-        public AddressService(VirtualBankDbContext dbContext,
-                             IHttpContextAccessor httpContextAccessor,
-                             IAddressRepository addressRepository)
+        public AddressService(IHttpContextAccessor httpContextAccessor,
+                              IAddressRepository addressRepository)
         {
-            _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
             _addressRepository = addressRepository;
         }
@@ -43,10 +41,16 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<AddressListResponse>> GetAllAddressesAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<AddressListResponse>();
-            var skip = (pageNumber - 1) * pageSize;
 
-            var allAddresses = await _addressRepository.GetAll();
-            var addresses = allAddresses.OrderBy(a => a.CreatedAt).Skip(skip).Take(pageSize);
+            var allAddresses = await _addressRepository.GetAllAsync();
+
+            if (allAddresses.Count() == 0)
+            {
+                return responseModel;
+            }
+
+            var addresses = allAddresses.OrderBy(a => a.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                  .Take(pageSize);
 
             var addressList = new List<AddressResponse>();
 
@@ -75,7 +79,8 @@ namespace VirtualBank.Api.Services
 
             if (address == null)
             {
-                responseModel.AddError($"address {addressId} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(address), $"address id: {addressId} not found"));
+
                 return responseModel;
             }
 
@@ -97,14 +102,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse();
 
-            if (await AddressExists(request.CountryId, request.CityId, request.DistrictId, request.Street))
-            {
-                responseModel.AddError("address name does already exist");
-                return responseModel;
-            }
-
-            var user = _httpContextAccessor.HttpContext.User;
-
+           
             if (addressId != 0)
             {
                 var address = await _addressRepository.FindByIdAsync(addressId);
@@ -117,36 +115,34 @@ namespace VirtualBank.Api.Services
                     address.DistrictId = request.DistrictId;
                     address.Street = request.Street;
                     address.PostalCode = request.PostalCode;
-                    address.LastModifiedBy = user.Identity.Name;
+                    address.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     address.LastModifiedOn = DateTime.UtcNow;
 
-                    await _dbContext.SaveChangesAsync();
+                    await _addressRepository.UpdateAsync(address);
                 }
                 else
                 {
-                    responseModel.AddError("address not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(address), $"address id: {addressId} not found"));
+
                     return responseModel;
                 }
             }
             else
             {
-                var newAddress = CreateAddress(request);
-
-                if (newAddress == null)
+                if (await AddressExistsAsync(request.CountryId, request.CityId, request.DistrictId, request.Street, request.Name))
                 {
-                    responseModel.AddError("couldn't create new address");
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("address", "naddress name does already exist"));
+
                     return responseModel;
                 }
 
-                newAddress.CreatedBy = user.Identity.Name;
-      
                 try
                 {
-                    await _addressRepository.AddAsync(newAddress);
+                    await _addressRepository.AddAsync(CreateAddress(request));
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ex.ToString());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
                 }
             }
 
@@ -167,7 +163,8 @@ namespace VirtualBank.Api.Services
 
             if (address == null)
             {
-                responseModel.AddError($"address {addressId} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(address), $"address id: {addressId} not found"));
+
                 return responseModel;
             }
 
@@ -177,7 +174,7 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
             }
 
             return responseModel;
@@ -191,29 +188,27 @@ namespace VirtualBank.Api.Services
         /// <param name="districtId"></param>
         /// <param name="street"></param>
         /// <returns></returns>
-        public async Task<bool> AddressExists(int countryId, int cityId, int districtId, string street)
+        public async Task<bool> AddressExistsAsync(int countryId, int cityId, int districtId, string street, string name)
         {
-            return await _dbContext.Addresses.AnyAsync(a => a.CountryId == countryId && a.CityId == cityId &&
-                                                            a.DistrictId == districtId && a.Name.Equals(street) );
+            return await _addressRepository.AddressExistsAsync(countryId, cityId, districtId, street, name);
         }
+
+
 
         #region private helper methods
         private Address CreateAddress(CreateAddressRequest request)
         {
-            if (request != null)
+            return new Address()
             {
-                return new Address()
-                {
-                    Name = request.Name,
-                    DistrictId = request.DistrictId,
-                    CityId = request.CityId,
-                    CountryId = request.CountryId,
-                    Street = request.Street,
-                    PostalCode = request.PostalCode
+                Name = request.Name,
+                DistrictId = request.DistrictId,
+                CityId = request.CityId,
+                CountryId = request.CountryId,
+                Street = request.Street,
+                PostalCode = request.PostalCode,
+                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
                 };
-            }
-
-            return null;
+           
         }
 
         private AddressResponse CreateAddressResponse(Address address)

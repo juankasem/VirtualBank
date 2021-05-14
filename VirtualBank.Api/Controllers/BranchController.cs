@@ -21,7 +21,7 @@ using VirtualBank.Core.Interfaces;
 namespace VirtualBank.Api.Controllers
 {
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public class BranchController : ControllerBase
     {
         private readonly IBranchService _branchService;
@@ -43,6 +43,7 @@ namespace VirtualBank.Api.Controllers
             _actionResultMapper = actionResultMapper;
         }
 
+
         // GET: api/Branch
         [HttpGet(ApiRoutes.getAllBranches)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
@@ -60,9 +61,6 @@ namespace VirtualBank.Api.Controllers
                     return Ok(apiResponse);
 
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
-
                 return BadRequest(apiResponse);
             }
 
@@ -71,6 +69,7 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
+
 
         // GET: api/Branch/id
         [HttpGet(ApiRoutes.getBranchesByCityId)]
@@ -85,21 +84,17 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
+                var apiResponse = new ApiResponse();
+
                 if (!await _citiesService.CityExists(cityId))
                 {
-                    return NotFound();
+                    return NotFound(apiResponse);
                 }
 
-                var apiResponse = await _branchService.GetBranchesByCityIdAsync(cityId, pageNumber, pageSize, cancellationToken);
+                apiResponse = await _branchService.GetBranchesByCityIdAsync(cityId, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("not found"))
-                    return NotFound(apiResponse);
-
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
 
                 return BadRequest(apiResponse);
@@ -126,11 +121,9 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
@@ -140,6 +133,7 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
+
 
         [HttpGet(ApiRoutes.getBranchByCode)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
@@ -154,11 +148,9 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return BadRequest(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
             }
@@ -169,44 +161,42 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
+
         // POST api/values
         [HttpPut(ApiRoutes.postBranch)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> PostBranchAsync([FromRoute] int branchId, [FromBody] CreateBranchRequest request,
+        public async Task<IActionResult> AddOrEditBranchAsync([FromRoute] int branchId, [FromBody] CreateBranchRequest request,
                                                          CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _branchService.AddOrEditBranchAsync(branchId, request, cancellationToken);
+               var apiResponse = await _branchService.AddOrEditBranchAsync(branchId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
 
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
+
 
         // DELETE api/values/5
         [HttpDelete(ApiRoutes.deleteBranch)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteBranchAsync([FromRoute] int branchId, CancellationToken cancellationToken = default)
@@ -218,18 +208,16 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return BadRequest(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("unauthorized"))
-                    return Unauthorized(apiResponse);
 
                 return BadRequest(apiResponse);
             }
 
             catch (Exception exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+                return _actionResultMapper.Map(exception);
             }
         }
     }

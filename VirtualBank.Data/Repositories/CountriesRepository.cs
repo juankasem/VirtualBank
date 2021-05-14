@@ -54,7 +54,7 @@ namespace VirtualBank.Data.Repositories
             var existingCountry = await _dbContext.Countries.FirstOrDefaultAsync(country => country.Id == country.Id &&
                                                                                             country.Disabled == false);
 
-            if (existingCountry is not null)
+            if (existingCountry != null)
             {
                 _dbContext.Entry(existingCountry).State = EntityState.Detached;
             }
@@ -71,7 +71,7 @@ namespace VirtualBank.Data.Repositories
             var isDeleted = false;
             var country = await _dbContext.Countries.FindAsync(id);
 
-            if (country is not null)
+            if (country != null)
             {
                 country.Disabled = true;
                 await SaveAsync();

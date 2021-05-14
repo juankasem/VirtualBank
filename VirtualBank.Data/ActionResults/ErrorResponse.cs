@@ -1,6 +1,7 @@
 ﻿using System;
 namespace VirtualBank.Data.ActionResults
 {
+#nullable enable
     public class ErrorResponse
     {
         public Error Error { get; }

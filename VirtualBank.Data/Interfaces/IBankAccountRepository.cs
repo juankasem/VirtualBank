@@ -20,6 +20,5 @@ namespace VirtualBank.Data.Interfaces
         Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id);
         Task SaveAsync();
         Task SaveAsync(VirtualBankDbContext dbContext);
-
     }
 }

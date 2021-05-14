@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
@@ -46,7 +47,8 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<BranchListResponse>();
 
             var allBranches = await _branchRepo.GetAllAsync();
-            var branches = allBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var branches = allBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                          .Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
@@ -70,10 +72,10 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<BranchListResponse>> GetBranchesByCityIdAsync(int cityId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchListResponse>();
-            var skip = (pageNumber - 1) * pageSize;
 
             var cityBranches = await _branchRepo.GetByCityIdAsync(cityId);
-            var branches = cityBranches.OrderByDescending(b => b.CreatedAt).Skip(skip).Take(pageSize);
+            var branches = cityBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                           .Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
@@ -102,7 +104,7 @@ namespace VirtualBank.Api.Services
 
             if (branch == null)
             {
-                responseModel.AddError($"branch {branchId} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch), $"branch Id: {branchId} not found"));
                 return responseModel;
             }
 
@@ -127,7 +129,7 @@ namespace VirtualBank.Api.Services
 
             if (branch == null)
             {
-                responseModel.AddError($"branch of code: {code} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch), $"branch code: {code} not found"));
                 return responseModel;
             }
 
@@ -151,11 +153,9 @@ namespace VirtualBank.Api.Services
 
             if (await BranchExists(request.Address.CountryId, request.Address.CityId, request.Name))
             {
-                responseModel.AddError("branch name does already exist");
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("branch"));
                 return responseModel;
             }
-
-            var user = _httpContextAccessor.HttpContext.User;
 
             if (branchId != 0)
             {
@@ -166,14 +166,14 @@ namespace VirtualBank.Api.Services
                     branch.Name = request.Name;
                     branch.Code = request.Code;
                     branch.Address = request.Address;
-                    branch.LastModifiedBy = user.Identity.Name;
+                    branch.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     branch.LastModifiedOn = DateTime.UtcNow;
 
                     await _branchRepo.UpdateAsync(_dbContext, branch);
                 }
                 else
                 {
-                    responseModel.AddError("branch not found");
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError("branch"));
                     return responseModel;
                 }
             }
@@ -181,14 +181,6 @@ namespace VirtualBank.Api.Services
             {
                 var newAddress = CreateAddress(request);
                 var newBranch = CreateBranch(request);
-
-                if (newBranch == null)
-                {
-                    responseModel.AddError("couldn't create new branch");
-                    return responseModel;
-                }
-
-                newBranch.CreatedBy = user.Identity.Name;
 
                 var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
@@ -207,7 +199,7 @@ namespace VirtualBank.Api.Services
                     catch (Exception ex)
                     {
                         await dbContextTransaction.RollbackAsync();
-                        responseModel.AddError(ex.ToString());
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError());
                     }
                 }
             }
@@ -229,7 +221,7 @@ namespace VirtualBank.Api.Services
 
             if (branch == null)
             {
-                responseModel.AddError($"branch {branchId} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch)));
                 return responseModel;
             }
 
@@ -239,7 +231,7 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
             }
 
             return responseModel;
@@ -247,7 +239,7 @@ namespace VirtualBank.Api.Services
 
 
         /// <summary>
-        /// 
+        /// Check if branch exists
         /// </summary>
         /// <param name="branchName"></param>
         /// <param name="cancellationToken"></param>
@@ -269,6 +261,7 @@ namespace VirtualBank.Api.Services
                     Code = request.Code,
                     Phone = request.Phone,
                     Address = request.Address,
+                    CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
                 };
             }
 

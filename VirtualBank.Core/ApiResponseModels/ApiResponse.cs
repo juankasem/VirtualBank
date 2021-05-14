@@ -7,23 +7,22 @@ namespace VirtualBank.Core.ApiResponseModels
     {
         public bool Success => Errors == null;
 
-        public List<string> Errors { get; private set; }
+        public List<ErrorResponse> Errors { get; private set; }
 
-        public void AddError(string error)
+        public void AddError(ErrorResponse error)
         {
             if(Errors == null)
-                Errors = new List<string>();
+                Errors = new List<ErrorResponse>();
 
             Errors.Add(error);
         }
 
-        public void AddErrors(List<string> errors)
+        public void AddErrors(List<ErrorResponse> errors)
         {
             if (Errors == null)
-                Errors = new List<string>();
+                Errors = new List<ErrorResponse>();
 
             Errors.AddRange(errors);
-
         }
     }
 
