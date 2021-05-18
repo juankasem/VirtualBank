@@ -19,6 +19,5 @@ namespace VirtualBank.Core.Interfaces
 
         Task<bool> CityExists(int cityId);
 
-        Task<bool> CityNameExists(string cityName);
     }
 }

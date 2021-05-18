@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CityApiResponses;
@@ -35,7 +36,11 @@ namespace VirtualBank.Api.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-
+        /// <summary>
+        /// Retrieve all countries
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<CountriesResponse>> GetAllCountriesAsync(CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CountriesResponse>();
@@ -54,12 +59,18 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-       
-        public async Task<ApiResponse<CountryResponse>> GetCountryByIdAsync(int countryId, bool includeCities, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Retrieve country for the specified id
+        /// </summary>
+        /// <param name="countryId"></param>
+        /// <param name="includeCities"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<CountryResponse>> GetCountryByIdAsync(int countryId, bool includeCities = false, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CountryResponse>();
 
-            Country country= null;
+            Country country = null;
 
             if (includeCities)
                 country = await _countriesRepo.FindByIdWithCitiesAsync(countryId);
@@ -70,7 +81,7 @@ namespace VirtualBank.Api.Services
 
             if (country == null)
             {
-                responseModel.AddError("country not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(country), $"country of id {countryId}: not found"));
                 return responseModel;
             }
 
@@ -84,71 +95,85 @@ namespace VirtualBank.Api.Services
         }
 
 
+        /// <summary>
+        /// Add Or Edit country
+        /// </summary>
+        /// <param name="countryId"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
 
             if (await CountryNameExists(request.Name))
             {
-                responseModel.AddError("country name does already exist");
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("country", "country name does already exist"));
                 return responseModel;
             }
 
-            var user = _httpContextAccessor.HttpContext.User;
-            var country = await _countriesRepo.FindByIdAsync(countryId);
-
-            if (country != null)
+            if (countryId != 0)
             {
-                country.Name = request.Name;
-                country.Code = request.Code;
-                country.LastModifiedBy = user.Identity.Name;
-                country.LastModifiedOn = DateTime.UtcNow;
+                var country = await _countriesRepo.FindByIdAsync(countryId);
 
-                await _countriesRepo.UpdateAsync(country);
+                if (country != null)
+                {
+                    country.Name = request.Name;
+                    country.Code = request.Code;
+                    country.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
+                    country.LastModifiedOn = DateTime.UtcNow;
+
+                    await _countriesRepo.UpdateAsync(country);
+                }
+                else
+                {
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(country), $"country of id {countryId}: not found"));
+                    return responseModel;
+                }
             }
+         
             else
             {
                 var newCountry = CreateCountry(request);
 
-                if (newCountry == null)
-                {
-                    responseModel.AddError("couldn't create new country");
-                    return responseModel;
-                }
-
-                newCountry.CreatedBy = user.Identity.Name;
-
                 await _countriesRepo.AddAsync(newCountry);
             }
-
 
             return responseModel;
         }
 
 
+        /// <summary>
+        /// Check whetehr country exists or not
+        /// </summary>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
         public async Task<bool> CountryExists(int countryId)
         {
             return await _dbContext.Countries.AnyAsync(c => c.Id == countryId);
         }
 
+        /// <summary>
+        /// Check whetehr country's name is alraedy used or not
+        /// </summary>
+        /// <param name="countryName"></param>
+        /// <returns></returns>
         public async Task<bool> CountryNameExists(string countryName)
         {
             return await _dbContext.Countries.AnyAsync(c => c.Name == countryName);
         }
 
+
         #region private helper methods
         private Country CreateCountry(CreateCountryRequest request)
         {
-            if (request != null)
+            return new Country()
             {
-                return new Country()
-                {
-                    Name = request.Name,
-                    Code = request.Code,
-                }; 
-            }
+                Name = request.Name,
+                Code = request.Code,
+                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+            }; 
 
-            return null;
         }
 
         private CountryResponse CreateCountryResponse(Country country)

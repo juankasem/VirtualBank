@@ -104,7 +104,7 @@ namespace VirtualBank.Api.Services
 
             if (branch == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch), $"branch Id: {branchId} not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch), $"branch of Id: {branchId} not found"));
                 return responseModel;
             }
 
@@ -173,7 +173,7 @@ namespace VirtualBank.Api.Services
                 }
                 else
                 {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError("branch"));
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch), $"branch of Id: {branchId} not found"));
                     return responseModel;
                 }
             }
@@ -229,7 +229,7 @@ namespace VirtualBank.Api.Services
             {
                 await _branchRepo.RemoveAsync(branch.Id);
             }
-            catch (Exception ex)
+            catch 
             {
                 responseModel.AddError(ExceptionCreator.CreateInternalServerError());
             }

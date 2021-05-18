@@ -125,9 +125,9 @@ namespace VirtualBank.Api.Controllers
 
             if (user.Id != customer?.Data?.UserId)
             {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+                apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
 
-                return Unauthorized(apiResponse);
+                return BadRequest(apiResponse);
             }
 
             try
@@ -163,7 +163,6 @@ namespace VirtualBank.Api.Controllers
         {
             var apiResponse = new ApiResponse();
 
-       
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByCreditCardIdsync(creditCardId, cancellationToken);
 
@@ -177,9 +176,9 @@ namespace VirtualBank.Api.Controllers
 
             if (user.Id != customer?.Data?.UserId)
             {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+                apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
 
-                return Unauthorized(apiResponse);
+                return BadRequest(apiResponse);
             }
 
             try

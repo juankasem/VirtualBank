@@ -44,7 +44,6 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-
         // GET api/values/5
         [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.getAllCashTransactions)]
@@ -64,10 +63,8 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                 {
                     var pagedApiResponse = new PagedResponse<CashTransactionListResponse>(apiResponse.Data);
-
                     return Ok(pagedApiResponse);
                 }
-
 
                 return BadRequest(apiResponse);
             }
@@ -80,6 +77,7 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET api/values/5
+        [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.getCashTransactionsByIBAN)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -92,28 +90,9 @@ namespace VirtualBank.Api.Controllers
                                                                    [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
                                                                    CancellationToken cancellationToken = default)
         {
-            var user = await _userManager.GetUserAsync(User);
-            var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
-
-            var apiResponse = new ApiResponse<CashTransactionListResponse>();
-
-            if (customer == null)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
-
-                return NotFound(apiResponse);
-            }
-
-            if (user.Id != customer?.Data?.UserId)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
-
-                return Unauthorized(apiResponse);
-            }
-
             try
             {
-                 apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
+                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
@@ -146,7 +125,6 @@ namespace VirtualBank.Api.Controllers
             {
                 var apiResponse = new ApiResponse();
 
-
                 var user = await _userManager.GetUserAsync(User);
                 var customer = await _customerService.GetCustomerByIBANAsync(request.CashTransaction.From, cancellationToken);
 
@@ -159,9 +137,9 @@ namespace VirtualBank.Api.Controllers
 
                 if (user.Id != customer?.Data?.UserId)
                 {
-                    apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+                    apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to excecute transaction"));
 
-                    return Unauthorized(apiResponse);
+                    return BadRequest(apiResponse);
                 }
 
                 switch (request.CashTransaction.Type)

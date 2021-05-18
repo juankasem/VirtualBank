@@ -67,9 +67,9 @@ namespace VirtualBank.Api.Controllers
 
             if (user.Id != customer?.Data?.UserId)
             {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+                apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete transaction"));
 
-                return Unauthorized(apiResponse);
+                return BadRequest(apiResponse);
             }
 
             try
@@ -85,7 +85,6 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
-
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
@@ -110,9 +109,6 @@ namespace VirtualBank.Api.Controllers
                 else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
-                else if (apiResponse.Errors[0].Code == StatusCodes.Status401Unauthorized)
-                    return Unauthorized(apiResponse);
-
 
                 return BadRequest(apiResponse);
             }
@@ -129,7 +125,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAccountByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetBankAccountByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
@@ -145,9 +141,9 @@ namespace VirtualBank.Api.Controllers
 
             if (user.Id != customer?.Data?.UserId)
             {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+                apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
 
-                return Unauthorized(apiResponse);
+                return BadRequest(apiResponse);
             }
 
             try
@@ -163,7 +159,6 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
-
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
@@ -192,9 +187,9 @@ namespace VirtualBank.Api.Controllers
 
             if (user.Id != customer?.Data?.UserId)
             {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+                apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete transaction"));
 
-                return Unauthorized(apiResponse);
+                return BadRequest(apiResponse);
             }
 
             try
@@ -210,7 +205,6 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
-
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
@@ -246,6 +240,7 @@ namespace VirtualBank.Api.Controllers
 
 
         // POST api/values
+        [Authorize(Roles ="Admin")]
         [HttpPut(ApiRoutes.postBankAccount)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
@@ -255,29 +250,9 @@ namespace VirtualBank.Api.Controllers
         public async Task<IActionResult> AddOrEditBankAccount([FromRoute] int accountId, [FromBody] CreateBankAccountRequest request,
                                                               CancellationToken cancellationToken = default)
         {
-            var apiResponse = new ApiResponse();
-
-            var user = await _userManager.GetUserAsync(User);
-            var customer = await _customerService.GetCustomerByIdAsync(request.CustomerId, cancellationToken);
-
-
-            if (customer == null)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
-
-                return NotFound(apiResponse);
-            }
-
-            if (user.Id != customer?.Data?.UserId)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
-
-                return Unauthorized(apiResponse);
-            }
-
             try
             {
-                apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
+               var apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -288,7 +263,6 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
-
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
@@ -296,33 +270,20 @@ namespace VirtualBank.Api.Controllers
         }
 
 
+        [Authorize(Roles = "Admin")]
         [HttpPost(ApiRoutes.activateBankAccount)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> ActivateBankAccount([FromRoute] int accountId,
                                                              [FromRoute] int customerId,
                                                              CancellationToken cancellationToken = default)
         {
-            var user = await _userManager.GetUserAsync(User);
-            var customer = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
-
-            var apiResponse = new ApiResponse();
-
-            if (customer == null)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
-
-                return NotFound(apiResponse);
-            }
-
-            if (user.Id != customer?.Data?.UserId)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
-
-                return Unauthorized(apiResponse);
-            }
-
             try
             {
-                apiResponse = await _bankAccountService.ActivateBankAccountAsync(accountId, cancellationToken);
+                var apiResponse = await _bankAccountService.ActivateBankAccountAsync(accountId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -333,40 +294,27 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
-
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);
             }
         }
 
+
+        [Authorize(Roles = "Admin")]
         [HttpPost(ApiRoutes.deactivateBankAccount)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeactivateBankAccount([FromRoute] int accountId,
                                                                [FromRoute] int customerId,
                                                                CancellationToken cancellationToken = default)
         {
-            var user = await _userManager.GetUserAsync(User);
-            var customer = await _customerService.GetCustomerByIdAsync(customerId, cancellationToken);
-
-            var apiResponse = new ApiResponse();
-
-            if (customer == null)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
-
-                return NotFound(apiResponse);
-            }
-
-            if (user.Id != customer?.Data?.UserId)
-            {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
-
-                return Unauthorized(apiResponse);
-            }
-
             try
             {
-                apiResponse = await _bankAccountService.DeactivateBankAccountAsync(accountId, cancellationToken);
+                var apiResponse = await _bankAccountService.DeactivateBankAccountAsync(accountId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

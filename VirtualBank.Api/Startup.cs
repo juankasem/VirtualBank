@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using VirtualBank.Api.Factories;
+using VirtualBank.Api.Filters;
 using VirtualBank.Api.Services;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
@@ -50,7 +51,11 @@ namespace VirtualBank.Api
                     .ConfigureIdentityOptions()
                     .ConfigurePassword();
 
-            services.AddMvc()
+            services.AddMvc(options =>
+            {
+                options.EnableEndpointRouting = false;
+                options.Filters.Add<ValidationFilter>();
+            })
                     .AddFluentValidation(c => c.RegisterValidatorsFromAssemblyContaining<Startup>());
 
             services.AddJwtAuthentication(Configuration);

@@ -190,7 +190,6 @@ namespace VirtualBank.Api.Services
                                                                  CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
-            var user = _httpContextAccessor.HttpContext.User;
 
             if (accountId > 0)
             {
@@ -218,9 +217,6 @@ namespace VirtualBank.Api.Services
                 try
                 {
                     var newBankAccount = CreateBankAccount(request);
-
-                  
-                    newBankAccount.CreatedBy = user.Identity.Name;
 
                     await _bankAccountRepo.AddAsync(newBankAccount);
                 }

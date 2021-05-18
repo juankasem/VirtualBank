@@ -16,14 +16,17 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
             new(StatusCodes.Status401Unauthorized, fieldName, MessageCreator.AddUnauthorized(fieldName, message));
 
 
-
         public static ErrorResponse CreateBadRequestError(string fieldName, string message = null) =>
             new(StatusCodes.Status400BadRequest, fieldName, MessageCreator.AddBadRequest(fieldName, message));
 
 
-
         public static ErrorResponse CreateUnprocessableEntityError(string fieldName, string message = null) =>
-            new(StatusCodes.Status422UnprocessableEntity, fieldName, MessageCreator.AddUnprocessableEntity(fieldName, message));
+               new(StatusCodes.Status422UnprocessableEntity, fieldName, MessageCreator.AddUnprocessableEntity(fieldName, message));
+
+
+        public static ErrorResponse CreateForbiddenError() =>
+                new(StatusCodes.Status401Unauthorized, "forbidden", MessageCreator.AddForbidden());
+
 
         public static ErrorResponse CreateInternalServerError() =>
                 new(StatusCodes.Status500InternalServerError, "Server", MessageCreator.AddInternalServerError());

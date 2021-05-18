@@ -26,8 +26,6 @@ namespace VirtualBank.Api.Controllers
     {
         private readonly IBranchService _branchService;
         private readonly ICitiesService _citiesService;
-        private readonly ICustomerService _customerService;
-        private readonly UserManager<AppUser> _userManager;
         private readonly IActionResultMapper<BranchController> _actionResultMapper;
 
         public BranchController(IBranchService branchService,
@@ -38,8 +36,6 @@ namespace VirtualBank.Api.Controllers
         {
             _branchService = branchService;
             _citiesService = citiesService;
-            _customerService = customerService;
-            _userManager = userManager;
             _actionResultMapper = actionResultMapper;
         }
 

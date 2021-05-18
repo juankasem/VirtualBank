@@ -6,31 +6,49 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CityApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
+using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
     public class CitiesService : ICitiesService
     {
         private readonly VirtualBankDbContext _dbContext;
+        private readonly ICitiesRepository _citiesRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CitiesService(VirtualBankDbContext dbContext, IHttpContextAccessor httpContextAccessor)
+        public CitiesService(VirtualBankDbContext dbContext,
+                             ICitiesRepository citiesRepo,
+                             IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
+            _citiesRepo = citiesRepo;
             _httpContextAccessor = httpContextAccessor;
         }
-     
+
+        /// <summary>
+        /// Retrieve all cities
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<CityListResponse>> GetAllCitiesAsync(CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CityListResponse>();
 
-            var cities = await _dbContext.Cities.OrderBy(c => c.Name).ToListAsync();
+            var allCities = await _citiesRepo.GetAllAsync();
+
+            if (allCities.Count() == 0)
+            {
+                return responseModel;
+            }
+
+            var cities = allCities.OrderBy(c => c.Name);
 
             var cityList = new List<CityResponse>();
 
@@ -44,11 +62,25 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        ///  Retrieve cities for the country id
+        /// </summary>
+        /// <param name="countryId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<CityListResponse>> GetCitiesByCountryIdAsync(int countryId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CityListResponse>();
 
-            var cities = await _dbContext.Cities.Where(c => c.CountryId == countryId).OrderBy(c => c.Name).ToListAsync();
+            var countryCities = await _citiesRepo.GetByCountryIdAsync(countryId);
+
+            if (countryCities.Count() == 0)
+            {
+                return responseModel;
+            }
+
+            var cities = countryCities.OrderBy(c => c.Name);
 
             var cityList = new List<CityResponse>();
 
@@ -62,15 +94,24 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Retrieve city for the specified id
+        /// </summary>
+        /// <param name="cityId"></param>
+        /// <param name="includeDistricts"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<CityResponse>> GetCityByIdAsync(int cityId, bool includeDistricts = true, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CityResponse>();
 
-            var city = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == cityId);
+            var city = await _citiesRepo.FindByIdAsync(cityId);
 
             if (city == null)
             {
-                responseModel.AddError("city not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(city), $"city of id {cityId}: not found"));
+
                 return responseModel;
             }
 
@@ -79,71 +120,88 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Add or Edit an existing city
+        /// </summary>
+        /// <param name="cityId"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> AddOrEditCityAsync(int cityId, CreateCityRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
 
-            if (await CityNameExists(request.Name))
+            if (await _citiesRepo.CityNameExists(request.CountryId, request.Name))
             {
-                responseModel.AddError("city name does already exist");
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("city", "city name does already exist"));
                 return responseModel;
             }
 
-            var user = _httpContextAccessor.HttpContext.User;
-            var city = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == cityId);
-
-            if (city != null)
+            if (cityId != 0)
             {
-                city.CountryId = request.CountryId;
-                city.Name = request.Name;
-                city.LastModifiedBy = user.Identity.Name;
-                city.LastModifiedOn = DateTime.UtcNow;
+                var city = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == cityId);
 
-                _dbContext.Cities.Update(city);
+                try
+                {
+                    if (city != null)
+                    {
+                        city.CountryId = request.CountryId;
+                        city.Name = request.Name;
+                        city.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
+                        city.LastModifiedOn = DateTime.UtcNow;
+
+                        await _citiesRepo.UpdateAsync(city);
+                    }
+                    else
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(city), $"city of Id: { cityId} not found"));
+                        return responseModel;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                }
             }
+
             else
             {
-                var newCity = CreateCity(request);
-
-                if (newCity == null)
+                try
                 {
-                    responseModel.AddError("couldn't create new city");
-                    return responseModel;
+                    await _citiesRepo.AddAsync(CreateCity(request));
                 }
-
-                newCity.CreatedBy = user.Identity.Name;
-
-                await _dbContext.Cities.AddAsync(newCity);
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                }
             }
-
-            await _dbContext.SaveChangesAsync();
 
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Check if city name already 
+        /// </summary>
+        /// <param name="countryId"></param>
+        /// <param name="cityName"></param>
+        /// <returns></returns>
         public async Task<bool> CityExists(int cityId)
         {
-            return await _dbContext.Cities.AnyAsync(c => c.Id == cityId);
-        }
+            return await _citiesRepo.CityExists(cityId);
+        }   
 
-        public async Task<bool> CityNameExists(string cityName)
-        {
-            return await _dbContext.Cities.AnyAsync(c => c.Name == cityName);
-        }
 
         #region private helper methods
         private City CreateCity(CreateCityRequest request)
         {
-            if (request != null)
+            return new City()
             {
-                return new City()
-                {
-                    CountryId = request.CountryId,
-                    Name = request.Name,
-                };
-            }
-
-            return null;
+                CountryId = request.CountryId,
+                Name = request.Name,
+                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+            };
         }
 
         private CityResponse CreateCityResponse(City city)

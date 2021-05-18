@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
@@ -73,7 +74,7 @@ namespace VirtualBank.Api.Services
         }
 
         /// <summary>
-        /// etrieve customer by customer id
+        /// Retrieve customer by customer id
         /// </summary>
         /// <param name="customerId"></param>
         /// <param name="cancellationToken"></param>
@@ -86,7 +87,7 @@ namespace VirtualBank.Api.Services
 
             if (customer != null)
             {
-                responseModel.AddError("Account holder not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"customer of id: {customerId} not found"));
                 return responseModel;
             }
 
@@ -97,16 +98,22 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-     
+
+        /// <summary>
+        /// Retrieve customer by account number
+        /// </summary>
+        /// <param name="accountNo"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<CustomerResponse>> GetCustomerByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
             var bankAccount = await _bankAccountRepo.FindByAccountNoAsync(accountNo);
 
-            if(bankAccount == null)
+            if (bankAccount == null)
             {
-                responseModel.AddError($"Account Number {accountNo} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank Account of No: {accountNo} not found"));
                 return responseModel;
             }
 
@@ -114,7 +121,7 @@ namespace VirtualBank.Api.Services
 
             if (customer == null)
             {
-                responseModel.AddError("Account holder not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"bank Account's holder of account No: {accountNo} not found"));
                 return responseModel;
             }
 
@@ -126,7 +133,13 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-     
+
+        /// <summary>
+        /// Retrieve customer by IBAN
+        /// </summary>
+        /// <param name="iban"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<CustomerResponse>> GetCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CustomerResponse>();
@@ -135,15 +148,15 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount == null)
             {
-                responseModel.AddError($"IBAN {iban} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank Account of IBAN: {iban} not found"));
                 return responseModel;
             }
 
-            var customer = await _customerRepo.FindByAccountNoAsync(bankAccount.AccountNo);
+            var customer = await _customerRepo.FindByIBANAsync(iban);
 
             if (customer == null)
             {
-                responseModel.AddError("Account holder not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"bank Account's holder of IBAN: {iban} not found"));
                 return responseModel;
             }
 
@@ -155,6 +168,12 @@ namespace VirtualBank.Api.Services
         }
 
 
+        /// <summary>
+        /// Retrieve customer by credit card id
+        /// </summary>
+        /// <param name="creditCardId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<CustomerResponse>> GetCustomerByCreditCardIdsync(int creditCardId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CustomerResponse>();
@@ -163,7 +182,7 @@ namespace VirtualBank.Api.Services
 
             if (customer != null)
             {
-                responseModel.AddError("Account holder not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"Holder of credit card id: {creditCardId} not found"));
                 return responseModel;
             }
 
@@ -175,15 +194,21 @@ namespace VirtualBank.Api.Services
         }
 
 
+        /// <summary>
+        /// Retrieve recipient customer by credit card id
+        /// </summary>
+        /// <param name="iban"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<RecipientCustomerResponse>> GetRecipientCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<RecipientCustomerResponse>();
 
-            var account = await _bankAccountRepo.FindByIBANAsync(iban);
+            var bankAccount = await _bankAccountRepo.FindByIBANAsync(iban);
 
-            if (account == null)
+            if (bankAccount == null)
             {
-                responseModel.AddError($"Account with IBAN: {iban} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank Account of IBAN: {iban} not found"));
                 return responseModel;
             }
 
@@ -191,7 +216,7 @@ namespace VirtualBank.Api.Services
 
             if (customer == null)
             {
-                responseModel.AddError("Account holder not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"bank Account's holder of IBAN: {iban} not found"));
                 return responseModel;
             }
 
@@ -201,77 +226,92 @@ namespace VirtualBank.Api.Services
         }
 
 
+        /// <summary>
+        /// Add or Edit an existing customer
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
 
             if (await CustomerExistsAsync(request))
             {
-                responseModel.AddError("customer name does already exist");
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("customer", "customer name does already exist"));
                 return responseModel;
             }
-             
-            try
+
+            if (customerId != 0)
             {
-                var existingCustomer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
+                var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
 
-                if (existingCustomer != null)
+                try
                 {
-                    existingCustomer.IdentificationNo = request.IdentificationNo;
-                    existingCustomer.IdentificationType = request.IdentificationType;
-                    existingCustomer.FirstName = request.FirstName;
-                    existingCustomer.MiddleName = request.MiddleName;
-                    existingCustomer.LastName = request.LastName;
-                    existingCustomer.Gender = request.Gender;
-                    existingCustomer.Nationality = request.Nationality;
-                    existingCustomer.Address = request.Address;
-                    existingCustomer.BirthDate = request.BirthDate;
-                    existingCustomer.LastModifiedOn = DateTime.UtcNow;
-                    existingCustomer.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
-
-                    await _customerRepo.UpdateAsync(existingCustomer);
-
-                }
-                else
-                {
-                    var newCustomer = CreateCustomer(request);
-
-                    if (newCustomer == null)
+                    if (customer != null)
                     {
-                        responseModel.AddError("couldn't create new account");
+                        customer.IdentificationNo = request.IdentificationNo;
+                        customer.IdentificationType = request.IdentificationType;
+                        customer.FirstName = request.FirstName;
+                        customer.MiddleName = request.MiddleName;
+                        customer.LastName = request.LastName;
+                        customer.Gender = request.Gender;
+                        customer.Nationality = request.Nationality;
+                        customer.Address = request.Address;
+                        customer.BirthDate = request.BirthDate;
+                        customer.LastModifiedOn = DateTime.UtcNow;
+                        customer.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
+
+                        await _customerRepo.UpdateAsync(customer);
+
+                    }
+                    else
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"customer of id: {customerId} not found"));
                         return responseModel;
                     }
+                }
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                }
+            }
+            else
+            {
+                var newCustomer = CreateCustomer(request);
 
-                    var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
+                var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
-                    using (dbContextTransaction)
+                using (dbContextTransaction)
+                {
+                    try
                     {
-                        try
-                        {
-                           var newAddress = await _addressRepo.AddAsync(CreateAddress(request), _dbContext);
+                        var newAddress = await _addressRepo.AddAsync(CreateAddress(request), _dbContext);
 
-                            newCustomer.AddressId = newAddress.Id;
-                            await _customerRepo.AddAsync(_dbContext, newCustomer);
+                        newCustomer.AddressId = newAddress.Id;
+                        await _customerRepo.AddAsync(_dbContext, newCustomer);
 
-                            await dbContextTransaction.CommitAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            await dbContextTransaction.RollbackAsync();
-                            responseModel.AddError(ex.ToString());
-                        }
+                        await dbContextTransaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await dbContextTransaction.RollbackAsync();
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError());
                     }
                 }
-
-            }
-            catch (Exception ex)
-            {
-                responseModel.AddError(ex.ToString());
             }
 
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Activate customer of the specified id
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
@@ -287,12 +327,19 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
             }
 
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Deactivate customer of the specified id
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken)
         {
             var responseModel = new ApiResponse();
@@ -308,18 +355,25 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError(ex.ToString());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
             }
 
             return responseModel;
         }
 
-         public async Task<bool> CustomerExistsAsync(CreateCustomerRequest request)
+
+        /// <summary>
+        /// Check if customer exists
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<bool> CustomerExistsAsync(CreateCustomerRequest request)
         {
             return await _customerRepo.CustomerExistsAsync(CreateCustomer(request));
         }
 
-        #region Helper methods
+
+        #region private Helper methods
 
         private Customer CreateCustomer(CreateCustomerRequest request)
         {
@@ -339,7 +393,7 @@ namespace VirtualBank.Api.Services
                     BirthDate = request.BirthDate,
                     Address = request.Address,
                     CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
-            };
+                };
             }
 
             return null;     

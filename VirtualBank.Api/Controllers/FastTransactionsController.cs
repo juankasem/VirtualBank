@@ -102,9 +102,9 @@ namespace VirtualBank.Api.Controllers
 
             if (user.Id != customer?.Data?.UserId)
             {
-                apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError(nameof(user)));
+                apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
 
-                return Unauthorized(apiResponse);
+                return BadRequest(apiResponse);
             }
 
             try
@@ -214,7 +214,7 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Contains("not found"))
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
 

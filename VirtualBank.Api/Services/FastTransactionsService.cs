@@ -143,8 +143,6 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse();
 
-            var user = _httpContextAccessor.HttpContext.User;
-
             if (id != 0)
             {
                 var fastTransaction = await _fastTransactionsRepo.FindByIdAsync(id);
@@ -155,7 +153,8 @@ namespace VirtualBank.Api.Services
                     fastTransaction.BranchId = request.BranchId;
                     fastTransaction.RecipientName = request.RecipientName;
                     fastTransaction.RecipientIBAN = request.RecipientIBAN;
-                    fastTransaction.LastModifiedBy = user.Identity.Name;
+                    fastTransaction.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
+                    fastTransaction.LastModifiedOn = DateTime.UtcNow;
 
                     try
                     {
@@ -174,19 +173,9 @@ namespace VirtualBank.Api.Services
             }
             else
             {
-                var newFastTransaction = CreateFastTransaction(request);
-
-                if (newFastTransaction == null)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(newFastTransaction)));
-                    return responseModel;
-                }
-
-                newFastTransaction.CreatedBy = user.Identity.Name;
-
                 try
                 {
-                    await _fastTransactionsRepo.AddAsync(newFastTransaction);
+                    await _fastTransactionsRepo.AddAsync(CreateFastTransaction(request));
                 }
                 catch 
                 {
@@ -252,19 +241,15 @@ namespace VirtualBank.Api.Services
         }
 
         private FastTransaction CreateFastTransaction(CreateFastTransactionRequest request)
-        {
-            if (request != null)
+        {  
+            return new FastTransaction()
             {
-                return new FastTransaction()
-                {
-                    AccountId = request.AccountId,
-                    BranchId = request.BranchId,
-                    RecipientName = request.RecipientName,
-                    RecipientIBAN = request.RecipientIBAN
-                };
-            }
-
-            return null;
+                AccountId = request.AccountId,
+                BranchId = request.BranchId,
+                RecipientName = request.RecipientName,
+                RecipientIBAN = request.RecipientIBAN,
+                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+            }; 
         }
 
         #endregion

@@ -311,17 +311,14 @@ namespace VirtualBank.Api.Services
                 if (senderAccount == null)
                 {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount)));
-
                     return responseModel;
                 }
 
                 if (recipientAccount == null)
                 {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount)));
-
                     return responseModel;
                 }
-
 
                 if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
                 {
@@ -333,7 +330,6 @@ namespace VirtualBank.Api.Services
 
                     //Deposit to recipient account
                     recipientAccount.Balance += amountToTransfer;
-
 
                     //Update recipient bank account
                     await _bankAccountRepo.UpdateAsync(_dbContext, recipientAccount);
@@ -382,14 +378,14 @@ namespace VirtualBank.Api.Services
 
                 if (senderAccount == null)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount)));
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount), "sender account not found"));
 
                     return responseModel;
                 }
 
                 if (recipientAccount == null)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount)));
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount), "recipient account not found"));
 
                     return responseModel;
                 }

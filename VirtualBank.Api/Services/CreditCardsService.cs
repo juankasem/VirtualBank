@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CreditCardApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CreditCardApiResponses;
@@ -47,7 +48,8 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var creditCards = allCreditCards.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var creditCards = allCreditCards.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                .Take(pageSize);
 
             var creditCardList = new List<CreditCardResponse>();
 
@@ -78,7 +80,7 @@ namespace VirtualBank.Api.Services
 
             if (creditCard == null)
             {
-                responseModel.AddError($"credit card {creditCardId} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(creditCard), $"credit card of id {creditCardId}: not found"));
                 return responseModel;
             }
 
@@ -102,7 +104,7 @@ namespace VirtualBank.Api.Services
 
             if (creditCard == null)
             {
-                responseModel.AddError($"credit card of {accountNo} not found");
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(creditCard), $"credit card of account No: {accountNo} not found"));
                 return responseModel;
             }
 
@@ -122,7 +124,6 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse> AddOrEditCreditCardAsync(int creditCardId, CreateCreditCardRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse();
-            var user = _httpContextAccessor.HttpContext.User;
 
             if (creditCardId != 0)
             {
@@ -135,42 +136,31 @@ namespace VirtualBank.Api.Services
                         creditCard.CreditCardNo = request.CreditCardNo;
                         creditCard.ExpirationDate = request.ExpirationDate;
                         creditCard.AccountId = request.AccountId;
-                        creditCard.LastModifiedBy = user.Identity.Name;
+                        creditCard.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         creditCard.LastModifiedOn = DateTime.UtcNow;
 
                         await _creditCardsRepo.UpdateAsync(creditCard);
                     }
                     else
                     {
-                        responseModel.AddError("credit card not found");
+                        responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(creditCard), $"credit card of id: {creditCardId} not found"));
                         return responseModel;
                     }
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ex.ToString());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
                 }
             }
             else
             {
                 try
                 {
-
-                    var newCreditCard = CreateCreditCard(request);
-
-                    if (newCreditCard == null)
-                    {
-                        responseModel.AddError("couldn't create new branch");
-                        return responseModel;
-                    }
-
-                    newCreditCard.CreatedBy = user.Identity.Name;
-
-                    await _creditCardsRepo.AddAsync(newCreditCard);
+                    await _creditCardsRepo.AddAsync(CreateCreditCard(request));
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ex.ToString());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
                 }
             }
 
@@ -189,6 +179,7 @@ namespace VirtualBank.Api.Services
                     PIN = request.PIN,
                     ExpirationDate = request.ExpirationDate,
                     AccountId = request.AccountId,
+                    CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
                 };
             }
 
@@ -205,7 +196,6 @@ namespace VirtualBank.Api.Services
             }
 
             return null;
-
         }
         #endregion
     }
