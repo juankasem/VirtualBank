@@ -11,27 +11,45 @@ namespace VirtualBank.Api.Validators
             RuleFor(x => x.AccountNo)
                     .NotNull()
                     .NotEmpty()
-                    .Matches("^[a-zA-Z0-9]*$");
+                    .WithMessage("Account number is required")
+                    .Matches("^[a-zA-Z0-9]*$")
+                    .WithMessage("Account No should contain only alphanumeric values");
+
 
             RuleFor(x => x.IBAN)
                     .NotNull()
                     .NotEmpty()
-                    .Matches("^[a-zA-Z0-9]*$");
+                    .WithMessage("IBAN is required")
+                    .Matches("^[a-zA-Z0-9]*$")
+                    .WithMessage("IBAN should contain only alpha numeric values");
+
 
             RuleFor(x => x.Type)
-                    .NotNull();
+                    .NotNull()
+                    .WithMessage("Account type is required");
+
 
             RuleFor(x => x.CustomerId)
-                    .NotEqual(0);
+                    .NotNull()
+                    .GreaterThan(0)
+                    .WithMessage("Customer is required");
+
 
             RuleFor(x => x.BranchId)
-                    .NotEqual(0);
+                    .NotNull()
+                    .GreaterThan(0)
+                    .WithMessage("Branch is required");
+
 
             RuleFor(x => x.CurrencyId)
-                    .NotEqual(0);
+                    .NotNull()
+                    .GreaterThan(0)
+                    .WithMessage("Currency is required");
+
 
             RuleFor(x => x.MinimumAllowedBalance)
-                    .GreaterThanOrEqualTo(1);
+                    .GreaterThanOrEqualTo(1)
+                    .WithMessage("Minimum allowed balance should be equal or greater than 1");
         }
     }
 }

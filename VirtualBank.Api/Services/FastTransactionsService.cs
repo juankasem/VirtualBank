@@ -149,7 +149,7 @@ namespace VirtualBank.Api.Services
 
                 if (fastTransaction != null)
                 {
-                    fastTransaction.AccountId = request.AccountId;
+                    fastTransaction.AccountId = request.BankAccountId;
                     fastTransaction.BranchId = request.BranchId;
                     fastTransaction.RecipientName = request.RecipientName;
                     fastTransaction.RecipientIBAN = request.RecipientIBAN;
@@ -244,7 +244,7 @@ namespace VirtualBank.Api.Services
         {  
             return new FastTransaction()
             {
-                AccountId = request.AccountId,
+                AccountId = request.BankAccountId,
                 BranchId = request.BranchId,
                 RecipientName = request.RecipientName,
                 RecipientIBAN = request.RecipientIBAN,

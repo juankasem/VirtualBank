@@ -12,14 +12,14 @@ namespace VirtualBank.Core.Entities
 
         [Required]
         [MinLength(4)]
-        [MaxLength(8)]
+        [MaxLength(4)]
         public string PIN { get; set; }
 
         [Required]
         public DateTime ExpirationDate { get; set; }
 
         [ForeignKey(nameof(BankAccount))]
-        public int AccountId { get; set; }
+        public int BankAccountId { get; set; }
         public BankAccount BankAccount { get; set; }
     }
 }

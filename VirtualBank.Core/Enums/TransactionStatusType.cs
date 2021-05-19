@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace VirtualBank.Core.Enums
 {
     public enum TransactionStatusType

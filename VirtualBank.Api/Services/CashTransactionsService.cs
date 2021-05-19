@@ -176,13 +176,13 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
-            var amountToDeposit = request.CashTransaction.Amount;
+            var amountToDeposit = request.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var toAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
+                var toAccount = await _bankAccountRepo.FindByIBANAsync(request.To);
 
                 if (toAccount == null)
                 {
@@ -224,13 +224,13 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
-            var amountToWithdraw = request.CashTransaction.Amount;
+            var amountToWithdraw = request.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var fromAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
+                var fromAccount = await _bankAccountRepo.FindByIBANAsync(request.From);
                 bool isBlocked = true;
 
                 if (fromAccount == null)
@@ -299,14 +299,14 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
 
-            var amountToTransfer = request.CashTransaction.Amount;
+            var amountToTransfer = request.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
-                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
+                var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.From);
+                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.To);
 
                 if (senderAccount == null)
                 {
@@ -367,14 +367,14 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-            var amountToTransfer = request.CashTransaction.Amount;
+            var amountToTransfer = request.Amount;
 
             var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.From);
-                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.CashTransaction.To);
+                var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.From);
+                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.To);
 
                 if (senderAccount == null)
                 {
@@ -423,8 +423,8 @@ namespace VirtualBank.Api.Services
                     await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
 
                     //Modify request for commission fees transaction
-                    request.CashTransaction.Type = CashTransactionType.CommissionFees;
-                    request.CashTransaction.Amount = (decimal)fees;
+                    request.Type = CashTransactionType.CommissionFees;
+                    request.Amount = (decimal)fees;
 
                     //Create & Save commission fees into db
                     await _cashTransactionsRepo.AddAsync(_dbContext, CreateCashTransaction(request, senderAccount.Balance, 0));
@@ -455,24 +455,21 @@ namespace VirtualBank.Api.Services
         private CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, decimal senderBalance, decimal recipientBalance)
         {
             const string BANKACCOUNTNO = "000100000";
-            var cashTransaction = request.CashTransaction;
-            var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
+            var isTransferFees = request.Type == CashTransactionType.CommissionFees;
 
             return new CashTransaction()
             {
-                Type = cashTransaction.Type,
-                From = cashTransaction.From,
-                To = !isTransferFees ? cashTransaction.To : BANKACCOUNTNO,
-                Amount = cashTransaction.Amount,
+                Type = request.Type,
+                From = request.From,
+                To = !isTransferFees ? request.To : BANKACCOUNTNO,
+                Amount = request.Amount,
                 SenderRemainingBalance = senderBalance,
                 RecipientRemainingBalance = recipientBalance,
-                InitiatedBy = cashTransaction.InitiatedBy,
-                Description = cashTransaction.Description,
-                PaymentType = !isTransferFees ? cashTransaction.PaymentType : PaymentType.ComissionFees,
+                InitiatedBy = request.InitiatedBy,
+                Description = request.Description,
+                PaymentType = !isTransferFees ? request.PaymentType : PaymentType.ComissionFees,
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name,
-                TransactionDate = cashTransaction.TransactionDate,
-                Status = cashTransaction.TransactionDate == DateTime.Today ? TransactionStatusType.Succeeded : TransactionStatusType.Pending,
-
+                TransactionDate = request.TransactionDate,
             };
 
         }

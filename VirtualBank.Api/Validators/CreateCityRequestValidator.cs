@@ -17,7 +17,7 @@ namespace VirtualBank.Api.Validators
 
             RuleFor(x => x.CountryId)
                     .NotNull()
-                    .NotEqual(0);
+                    .GreaterThan(0);
         }
     }
 }

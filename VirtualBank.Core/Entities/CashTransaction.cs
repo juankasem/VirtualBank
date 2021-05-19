@@ -74,12 +74,6 @@ namespace VirtualBank.Core.Entities
         [Required]
         public DateTime TransactionDate { get; set; }
 
-        /// <summary>
-        /// status of transaction
-        /// </summary>
-        [Required]
-        public TransactionStatusType Status { get; set; }
-
 
         public CashTransaction()
         {
