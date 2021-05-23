@@ -13,7 +13,7 @@ namespace VirtualBank.Core.Interfaces
         Task<ApiResponse<CashTransactionListResponse>> GetAllCashTransactionsAsync(int pageNumber, int pageSize,
                                                                                    CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<CashTransactionListResponse>> GetCashTransactionsByIBANAsync(string iban, int lastDays,
+        Task<ApiResponse<CashTransactionListResponse>> GetAccountCashTransactionsAsync(string iban, int lastDays,
                                                                                       int pageNumber, int pageSize,
                                                                                       CancellationToken cancellationToken = default);
 

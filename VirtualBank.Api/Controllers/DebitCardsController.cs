@@ -202,7 +202,7 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // PUT api/values/5
+
         // PUT api/debitCards/activateDebitCard/5
         [Authorize(Roles = "Admin")]
         [HttpPut(ApiRoutes.activateDebitCard)]
@@ -242,7 +242,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeactivateDebitCardsCard([FromRoute] int debitCardId,
+        public async Task<IActionResult> DeactivateDebitCard([FromRoute] int debitCardId,
                                                             CancellationToken cancellationToken = default)
         {
             try

@@ -77,17 +77,17 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET api/values/5
-        [HttpGet(ApiRoutes.getCashTransactionsByIBAN)]
+        [HttpGet(ApiRoutes.getAccountCashTransactions)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCashTransactionsByIBAN([FromRoute] string iban,
-                                                                   [FromQuery] int lastDays,
-                                                                   [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,                                                                                                                                                             
-                                                                   [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
-                                                                   CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAccountCashTransactions([FromRoute] string iban,
+                                                                    [FromQuery] int lastDays,
+                                                                    [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,                                                                                                                                                             
+                                                                    [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                                    CancellationToken cancellationToken = default)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace VirtualBank.Api.Controllers
                     return BadRequest(apiResponse);
                 }
 
-                apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
+                apiResponse = await _cashTransactionsService.GetAccountCashTransactionsAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
@@ -128,7 +128,7 @@ namespace VirtualBank.Api.Controllers
 
 
         // POST api/values
-        [HttpPost(ApiRoutes.createCashTransaction)]
+        [HttpPost(ApiRoutes.postCashTransaction)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.UnprocessableEntity)]

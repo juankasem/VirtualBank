@@ -86,9 +86,9 @@ namespace VirtualBank.Api.Services
         /// <param name="iban"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionListResponse>> GetCashTransactionsByIBANAsync(string iban, int lastDays,
-                                                                                                   int pageNumber, int pageSize,
-                                                                                                   CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CashTransactionListResponse>> GetAccountCashTransactionsAsync(string iban, int lastDays,
+                                                                                                        int pageNumber, int pageSize,
+                                                                                                        CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionListResponse>();
 
