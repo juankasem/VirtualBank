@@ -21,19 +21,19 @@ namespace VirtualBank.Api.Services
     public class CashTransactionsService : ICashTransactionsService
     {
         private readonly VirtualBankDbContext _dbContext;
-        private readonly ICustomerService _customerService;
+        private readonly ICustomerRepository _customerRepo;
         private readonly IBankAccountRepository _bankAccountRepo;
         private readonly ICashTransactionsRepository _cashTransactionsRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CashTransactionsService(VirtualBankDbContext dbContext,
-                                       ICustomerService customersService,
+                                       ICustomerRepository customersRepo,
                                        IBankAccountRepository bankAccountRepo,
                                        ICashTransactionsRepository cashTransactionsRepo,
                                        IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
-            _customerService = customersService;
+            _customerRepo = customersRepo;
             _bankAccountRepo = bankAccountRepo;
             _cashTransactionsRepo = cashTransactionsRepo;
             _httpContextAccessor = httpContextAccessor;
@@ -51,7 +51,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionListResponse>();
 
-            var ibanCashTransactions = await _cashTransactionsRepo.GetAll();
+            var ibanCashTransactions = await _cashTransactionsRepo.GetAllAsync();
 
             if (ibanCashTransactions.Count() == 0)
             {
@@ -65,12 +65,12 @@ namespace VirtualBank.Api.Services
 
             foreach (var cashTransaction in cashTransactions)
             {
-                var senderResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.From, cancellationToken);
-                var sender = senderResponse?.Data?.FullName;
-                var recipientResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.To, cancellationToken);
-                var recipient = recipientResponse?.Data?.FullName;
+                var sender = await _customerRepo.FindByIBANAsync(cashTransaction.From);
+                var senderFullName = sender.FirstName + " " + sender.LastName;
+                var recipient = await _customerRepo.FindByIBANAsync(cashTransaction.To);
+                var recipientFullName = recipient.FirstName + " " + recipient.LastName;
 
-                cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, sender, recipient));
+                cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, senderFullName, recipientFullName));
 
             }
 
@@ -92,15 +92,19 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CashTransactionListResponse>();
 
-            var ibanCashTransactions = await _cashTransactionsRepo.GetByIBAN(iban, lastDays);
+            var accountHolder = await _customerRepo.FindByIBANAsync(iban);
+            var accountHolderlName =  accountHolder.FirstName + " " + accountHolder.LastName;
 
-            if (ibanCashTransactions.Count() == 0)
+
+            var accountCashTransactions = await _cashTransactionsRepo.GetByIBANAsync(iban, lastDays);
+
+            if (accountCashTransactions.Count() == 0)
             {
                 return responseModel;
             }
 
-            var cashTransactions = ibanCashTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                                           .Take(pageSize);
+            var cashTransactions = accountCashTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                              .Take(pageSize);
 
             var cashTransactionList = new List<CashTransactionResponse>();
 
@@ -108,31 +112,31 @@ namespace VirtualBank.Api.Services
             {
                 if (cashTransaction.From != iban && IsTransferTransaction(cashTransaction))
                 {
-                    var senderResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.From, cancellationToken);
-                    var sender = senderResponse?.Data?.FullName;
+                    var sender = await _customerRepo.FindByIBANAsync(cashTransaction.From);
+                    var senderFullName = sender.FirstName + " " + sender.LastName;
 
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, sender, iban, Direction.In));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, senderFullName, accountHolderlName));
                 }
 
                 else if (cashTransaction.To != iban && IsTransferTransaction(cashTransaction))
                 {
-                    var recipientResponse = await _customerService.GetCustomerByIBANAsync(cashTransaction.To, cancellationToken);
-                    var recipient = recipientResponse?.Data?.FullName;
+                    var recipient = await _customerRepo.FindByIBANAsync(cashTransaction.To);
+                    var recipientFullName = recipient.FirstName + " " + recipient.LastName;
 
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, recipient, Direction.Out));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderlName, recipientFullName));
                 }
 
                 else if (cashTransaction.Type == CashTransactionType.Deposit)
                 {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, "", cashTransaction.To, Direction.In));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, "ATM", accountHolderlName));
                 }
                 else if (cashTransaction.Type == CashTransactionType.Withdrawal)
                 {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, "", Direction.Out));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderlName, "ATM"));
                 }
                 else if (cashTransaction.Type == CashTransactionType.CommissionFees)
                 {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, "", Direction.Out));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderlName, "commission fees"));
                 }
             }
 
@@ -160,7 +164,7 @@ namespace VirtualBank.Api.Services
             }
 
 
-            responseModel.Data = CreateCashTransactionResponse(lastTransaction, lastTransaction.From, lastTransaction.To, Direction.In);
+            responseModel.Data = CreateCashTransactionResponse(lastTransaction, iban, "", "");
 
             return responseModel;
         }
@@ -241,7 +245,7 @@ namespace VirtualBank.Api.Services
 
                 if (fromAccount.Type == AccountType.Savings)
                 {
-                    var deposits = await _cashTransactionsRepo.GetDepositsByIBAN(fromAccount.IBAN);
+                    var deposits = await _cashTransactionsRepo.GetDepositsByIBANAsync(fromAccount.IBAN);
 
                     foreach (var deposit in deposits)
                     {
@@ -475,19 +479,18 @@ namespace VirtualBank.Api.Services
         }
 
         [NonAction]
-        private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string sender,
-                                                                     string recipient, Direction direction = Direction.NoDirection)
+        private CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string iban, string sender, string recipient)
         {
             var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
 
             return new CashTransactionResponse(cashTransaction.From,
                                                cashTransaction.To,
-                                               direction == Direction.In ? cashTransaction.Amount : -cashTransaction.Amount,
+                                               cashTransaction.From != iban ? cashTransaction.Amount : -cashTransaction.Amount,
                                                sender,
                                                recipient,
                                                cashTransaction.PaymentType,
                                                isTransferFees ? "Transafer comission Fees" :
-                                               direction == Direction.In ?
+                                                cashTransaction.From != iban ?
                                                 $"From: {sender}, Account No: {cashTransaction.From} "
                                                 :
                                                 cashTransaction.InitiatedBy == BankAssetType.POS || cashTransaction.InitiatedBy == BankAssetType.ATM ?
@@ -495,7 +498,7 @@ namespace VirtualBank.Api.Services
                                                 :
                                                 $"{cashTransaction.To}--{recipient}, {cashTransaction.Description}",
                                                cashTransaction.InitiatedBy,
-                                               direction == Direction.In ? cashTransaction.RecipientRemainingBalance : cashTransaction.SenderRemainingBalance,
+                                               cashTransaction.From != iban ? cashTransaction.RecipientRemainingBalance : cashTransaction.SenderRemainingBalance,
                                                cashTransaction.CreatedAt,
                                                cashTransaction.CreatedBy);
         }

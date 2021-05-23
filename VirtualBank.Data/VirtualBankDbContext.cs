@@ -15,7 +15,7 @@ namespace VirtualBank.Data
 
         public DbSet<Address> Addresses { get; set; }
         public DbSet<BankAccount> BankAccounts { get; set; }
-        public DbSet<Branch>  Branches { get; set; }
+        public DbSet<Branch> Branches { get; set; }
         public DbSet<CashTransaction> CashTransactions { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<Country> Countries { get; set; }
@@ -26,5 +26,17 @@ namespace VirtualBank.Data
         public DbSet<FastTransaction> FastTransactions { get; set; }
         public DbSet<Recipient> Recipients { get; set; }
 
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<BankAccount>().HasIndex(c => c.AccountNo).IsUnique();
+            builder.Entity<BankAccount>().HasIndex(c => c.IBAN).IsUnique();
+            builder.Entity<Country>().HasIndex(c => c.Name).IsUnique();
+            builder.Entity<Customer>().HasIndex(c => c.IdentificationNo).IsUnique();
+            builder.Entity<CreditCard>().HasIndex(c => c.CreditCardNo).IsUnique();
+            builder.Entity<DebitCard>().HasIndex(c => c.DebitCardNo).IsUnique();
+        }
     }
 }

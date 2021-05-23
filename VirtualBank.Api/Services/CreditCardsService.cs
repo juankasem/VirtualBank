@@ -48,7 +48,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var creditCards = allCreditCards.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+            var creditCards = allCreditCards.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
                                                                                 .Take(pageSize);
 
             var creditCardList = new List<CreditCardResponse>();
@@ -63,7 +63,6 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
        
 
         /// <summary>
@@ -135,7 +134,7 @@ namespace VirtualBank.Api.Services
                     {
                         creditCard.CreditCardNo = request.CreditCardNo;
                         creditCard.ExpirationDate = request.ExpirationDate;
-                        creditCard.AccountId = request.AccountId;
+                        creditCard.BankAccountId = request.BankAccountId;
                         creditCard.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         creditCard.LastModifiedOn = DateTime.UtcNow;
 
@@ -168,6 +167,57 @@ namespace VirtualBank.Api.Services
         }
 
 
+        /// <summary>
+        /// Activate credit card
+        /// </summary>
+        /// <param name="creditCardId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse> ActivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CreditCardResponse>();
+
+            var creditCard = await _creditCardsRepo.FindByIdAsync(creditCardId);
+
+            if (creditCard != null)
+            {
+                creditCard.Disabled = false;
+            }
+            else
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(creditCard), $"credit card id: {creditCard} not found"));
+            }
+
+            return responseModel;
+        }
+
+
+
+        /// <summary>
+        /// Deactivate credit card
+        /// </summary>
+        /// <param name="creditCardId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse> DeactivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CreditCardResponse>();
+
+            var creditCard = await _creditCardsRepo.FindByIdAsync(creditCardId);
+
+            if (creditCard != null)
+            {
+                creditCard.Disabled = true;
+            }
+            else
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(creditCard), $"credit card id: {creditCard} not found"));
+            }
+
+            return responseModel;
+        }
+
+
         #region private helper methods
         private CreditCard CreateCreditCard(CreateCreditCardRequest request)
         {
@@ -178,7 +228,7 @@ namespace VirtualBank.Api.Services
                     CreditCardNo = request.CreditCardNo,
                     PIN = request.PIN,
                     ExpirationDate = request.ExpirationDate,
-                    AccountId = request.AccountId,
+                    BankAccountId = request.BankAccountId,
                     CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
                 };
             }
@@ -192,11 +242,12 @@ namespace VirtualBank.Api.Services
             if (creditCard != null)
             {
                 return new CreditCardResponse(creditCard.Id, creditCard.CreditCardNo,
-                                              creditCard.ExpirationDate, creditCard.AccountId);
+                                              creditCard.ExpirationDate, creditCard.BankAccountId);
             }
 
             return null;
         }
+
         #endregion
     }
 }

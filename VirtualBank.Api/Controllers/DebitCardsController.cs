@@ -10,58 +10,61 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Helpers.ErrorsHelper;
-using VirtualBank.Core.ApiRequestModels.CreditCardApiRequests;
+using VirtualBank.Core.ApiRequestModels.DebitCardApiRequests;
 using VirtualBank.Core.ApiResponseModels;
-using VirtualBank.Core.ApiResponseModels.CreditCardApiResponses;
+using VirtualBank.Core.ApiResponseModels.DebitCardApiResponses;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace VirtualBank.Api.Controllers
 {
+
+
     [ApiController]
     [Authorize]
-    public class CreditCardsController : ControllerBase
+    public class DebitCardsController : ControllerBase
     {
-        private readonly ICreditCardsService _creditCardsService;
+
+        private readonly IDebitCardsService _debitCardsService;
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
-        private readonly IActionResultMapper<CreditCardsController> _actionResultMapper;
+        private readonly IActionResultMapper<DebitCardsController> _actionResultMapper;
 
-        public CreditCardsController(ICreditCardsService creditCardsService,
+        public DebitCardsController(IDebitCardsService debitCardsService,
                                     ICustomerService customerService,
                                     UserManager<AppUser> userManager,
-                                    IActionResultMapper<CreditCardsController> actionResultMapper)
+                                    IActionResultMapper<DebitCardsController> actionResultMapper)
         {
-            _creditCardsService = creditCardsService;
+            _debitCardsService = debitCardsService;
             _customerService = customerService;
             _userManager = userManager;
             _actionResultMapper = actionResultMapper;
         }
 
 
-        // GET: api/creditCards/getAll
+        // GET: api/debitCards/getAll
         [Authorize(Roles = "Admin")]
-        [HttpGet(ApiRoutes.getAllCreditCards)]
-        [ProducesResponseType(typeof(PagedResponse<CreditCardListResponse>), (int)HttpStatusCode.OK)]
+        [HttpGet(ApiRoutes.getAllDebitCards)]
+        [ProducesResponseType(typeof(PagedResponse<DebitCardListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllCreditCards([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+        public async Task<IActionResult> GetAllDebitCards([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
                                                            [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
                                                            CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _creditCardsService.GetAllCreditCardsAsync(pageNumber, pageSize, cancellationToken);
+                var apiResponse = await _debitCardsService.GetAllDebitCardsAsync(pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
-                    var pagedApiResponse = new PagedResponse<CreditCardListResponse>(apiResponse.Data);
+                    var pagedApiResponse = new PagedResponse<DebitCardListResponse>(apiResponse.Data);
 
                     return Ok(pagedApiResponse);
                 }
@@ -76,18 +79,17 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
-        // GET api/debitCards/getCreditCardById/5
-        [HttpGet(ApiRoutes.getCreditCardById)]
+        // GET api/debitCards/getDebitCardById/5
+        [HttpGet(ApiRoutes.getDebitCardById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCreditCardById([FromRoute] int creditCardId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetDebitCardById([FromRoute] int debitCardId, CancellationToken cancellationToken = default)
         {
             try
             {
-               var apiResponse = await _creditCardsService.GetCreditCardByIdAsync(creditCardId, cancellationToken);
+                var apiResponse = await _debitCardsService.GetDebitCardByIdAsync(debitCardId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -105,14 +107,13 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
-        // GET api/debitCards/getCreditCardByAccountNo/acctNo
+        // GET api/debitCards/getDebitCardByAccountNo/acctNo
         [HttpGet(ApiRoutes.getCreditCardByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCreditCardByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetDebitCardByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
@@ -122,18 +123,20 @@ namespace VirtualBank.Api.Controllers
             if (customer == null)
             {
                 apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
                 return NotFound(apiResponse);
             }
 
             if (user.Id != customer?.Data?.UserId)
             {
                 apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
+
                 return BadRequest(apiResponse);
             }
 
             try
             {
-                apiResponse = await _creditCardsService.GetCreditCardByAccountNoAsync(accountNo, cancellationToken);
+                apiResponse = await _debitCardsService.GetDebitCardByAccountNoAsync(accountNo, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -152,40 +155,37 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-
-        // PUT api/creditCards/postCreditCard/5
+        // PUT api/debitCards/postDebitCard/5
         [HttpPut(ApiRoutes.postCreditCard)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> AddOrEditCreditCard([FromRoute] int creditCardId, [FromBody] CreateCreditCardRequest request,
+        public async Task<IActionResult> AddOrEditDebitCard([FromRoute] int debitCardId, [FromBody] CreateDebitCardRequest request,
                                                               CancellationToken cancellationToken = default)
         {
             var apiResponse = new ApiResponse();
 
             var user = await _userManager.GetUserAsync(User);
-            var customer = await _customerService.GetCustomerByCreditCardIdsync(creditCardId, cancellationToken);
+            var customer = await _customerService.GetCustomerByCreditCardIdsync(debitCardId, cancellationToken);
 
 
             if (customer == null)
             {
                 apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
-
                 return NotFound(apiResponse);
             }
 
             if (user.Id != customer?.Data?.UserId)
             {
                 apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
-
                 return BadRequest(apiResponse);
             }
 
             try
             {
-                apiResponse = await _creditCardsService.AddOrEditCreditCardAsync(creditCardId, request, cancellationToken);
+                apiResponse = await _debitCardsService.AddOrEditDebitCardAsync(debitCardId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -202,20 +202,21 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // PUT api/creditCards/activateCreditCard/5
+        // PUT api/values/5
+        // PUT api/debitCards/activateDebitCard/5
         [Authorize(Roles = "Admin")]
-        [HttpPut(ApiRoutes.activateCreditCard)]
+        [HttpPut(ApiRoutes.activateDebitCard)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ActivateCreditCard([FromRoute] int creditCardId,
+        public async Task<IActionResult> ActivateDebitCard([FromRoute] int debitCardId,
                                                             CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _creditCardsService.ActivateCreditCardAsync(creditCardId, cancellationToken);
+                var apiResponse = await _debitCardsService.ActivateDebitCardAsync(debitCardId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -233,20 +234,20 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // PUT api/creditCards/deactivateCreditCard/5
+        // PUT api/debitCards/deactivateCreditCard/5
         [Authorize(Roles = "Admin")]
-        [HttpPut(ApiRoutes.deactivateCreditCard)]
+        [HttpPut(ApiRoutes.deactivateDebitCard)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeactivateCreditCard([FromRoute] int creditCardId,
+        public async Task<IActionResult> DeactivateDebitCardsCard([FromRoute] int debitCardId,
                                                             CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _creditCardsService.DeactivateCreditCardAsync(creditCardId, cancellationToken);
+                var apiResponse = await _debitCardsService.DeactivateDebitCardAsync(debitCardId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

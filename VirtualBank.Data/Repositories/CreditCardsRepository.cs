@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -30,9 +29,9 @@ namespace VirtualBank.Data.Repositories
         public async Task<IEnumerable<CreditCard>> GetByCustomerIdAsync(int customerId)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                            .ThenInclude(c => c.Owner.Id == customerId)
-                                            .Where(c => c.Disabled == false)
-                                            .AsNoTracking().ToListAsync();
+                                               .ThenInclude(c => c.Owner.Id == customerId)
+                                               .Where(c => c.Disabled == false)
+                                               .AsNoTracking().ToListAsync();
         }
 
 
@@ -47,8 +46,8 @@ namespace VirtualBank.Data.Repositories
         public async Task<CreditCard> FindByAccountNoAsync(string accountNo)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                                          .Where(c => c.BankAccount.AccountNo == accountNo && c.Disabled == false)
-                                                          .FirstOrDefaultAsync();
+                                               .Where(c => c.BankAccount.AccountNo == accountNo && c.Disabled == false)
+                                               .FirstOrDefaultAsync();
         }
 
 
@@ -62,9 +61,8 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<CreditCard> UpdateAsync(CreditCard creditCard)
         {
-            var existingCreditCard = await _dbContext.CreditCards
-                                                     .Where(c => c.Id == creditCard.Id && c.Disabled == false)
-                                                     .FirstOrDefaultAsync();
+            var existingCreditCard = await _dbContext.CreditCards.Where(c => c.Id == creditCard.Id && c.Disabled == false)
+                                                                 .FirstOrDefaultAsync();
 
             if (existingCreditCard != null)
             {

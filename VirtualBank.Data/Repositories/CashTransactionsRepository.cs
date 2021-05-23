@@ -17,23 +17,23 @@ namespace VirtualBank.Data.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<CashTransaction>> GetAll()
+        public async Task<IEnumerable<CashTransaction>> GetAllAsync()
         {
             return await _dbContext.CashTransactions.Where(c => c.Disabled == false)
                                                     .AsNoTracking().ToListAsync();
         }
 
 
-        public async Task<IEnumerable<CashTransaction>> GetByIBAN(string iban, int lastDays)
+        public async Task<IEnumerable<CashTransaction>> GetByIBANAsync(string iban, int lastDays)
         {
             return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
                                                                 && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays
                                                                 && c.Disabled == false)
-                                                    .AsNoTracking().ToListAsync();
+                                                                .AsNoTracking().ToListAsync();
         }
 
 
-        public async Task<IEnumerable<CashTransaction>> GetDepositsByIBAN(string iban)
+        public async Task<IEnumerable<CashTransaction>> GetDepositsByIBANAsync(string iban)
         {
             return await _dbContext.CashTransactions.Where(c => c.To == iban && c.Disabled == false)
                                                     .AsNoTracking().ToListAsync();

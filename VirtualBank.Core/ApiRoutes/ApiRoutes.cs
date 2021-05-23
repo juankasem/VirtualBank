@@ -117,6 +117,10 @@ namespace VirtualBank.Core.ApiRoutes
 
         public const string postCreditCard = "api/CreditCard/post/{customerId:int}";
 
+        public const string activateCreditCard = "api/CreditCard/activate/{creditCardId:int}";
+
+        public const string deactivateCreditCard = "api/CreditCard/deactivate/{creditCardId:int}";
+
         #endregion
 
         #region Customers
@@ -129,6 +133,22 @@ namespace VirtualBank.Core.ApiRoutes
         public const string getCustomerByIBAN = "api/Customer/getByIBAN/{iban}";
 
         public const string postCustomer= "api/Customer/post/{customerId:int}";
+
+        #endregion
+
+
+        #region Debit Cards
+        public const string getAllDebitCards = "api/DebitCard/getAll";
+
+        public const string getDebitCardById = "api/DebitCard/getById/{debitCardId:int}";
+
+        public const string getDebitCardByAccountNo = "api/DebitCard/getByAccountNo/{accountNo}";
+
+        public const string postDebitCard = "api/DebitCard/post/{customerId:int}";
+
+        public const string activateDebitCard = "api/DebitCard/activate/{debitCardId:int}";
+
+        public const string deactivateDebitCard = "api/DebitCard/deactivate/{debitCardId:int}";
 
         #endregion
 

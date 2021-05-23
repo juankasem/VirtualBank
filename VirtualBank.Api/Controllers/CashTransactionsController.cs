@@ -77,7 +77,6 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET api/values/5
-        [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.getCashTransactionsByIBAN)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -92,7 +91,24 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
+                var apiResponse = new ApiResponse<CashTransactionListResponse>();
+
+                var user = await _userManager.GetUserAsync(User);
+                var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
+
+                if (customer == null)
+                {
+                    apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+                    return NotFound(apiResponse);
+                }
+
+                if (user.Id != customer?.Data?.UserId)
+                {
+                    apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to perform operation"));
+                    return BadRequest(apiResponse);
+                }
+
+                apiResponse = await _cashTransactionsService.GetCashTransactionsByIBANAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
@@ -110,6 +126,7 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
+
         // POST api/values
         [HttpPost(ApiRoutes.createCashTransaction)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
@@ -126,23 +143,21 @@ namespace VirtualBank.Api.Controllers
                 var apiResponse = new ApiResponse();
 
                 var user = await _userManager.GetUserAsync(User);
-                var customer = await _customerService.GetCustomerByIBANAsync(request.CashTransaction.From, cancellationToken);
+                var customer = await _customerService.GetCustomerByIBANAsync(request.From, cancellationToken);
 
                 if (customer == null)
                 {
                     apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
-
                     return NotFound(apiResponse);
                 }
 
                 if (user.Id != customer?.Data?.UserId)
                 {
                     apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to excecute transaction"));
-
                     return BadRequest(apiResponse);
                 }
 
-                switch (request.CashTransaction.Type)
+                switch (request.Type)
                 {
                     case CashTransactionType.Deposit:
                         apiResponse = await _cashTransactionsService.MakeDepositAsync(request, cancellationToken);

@@ -20,7 +20,7 @@ namespace VirtualBank.Api.Controllers
 {
     [Authorize(Roles = "Admin")]
     [ApiController]
-    public class CountryController : Controller
+    public class CountryController : ControllerBase
     {
         private readonly ICountriesService _countriesService;
 

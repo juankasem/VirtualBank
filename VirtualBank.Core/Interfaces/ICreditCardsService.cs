@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using VirtualBank.Core.ApiRequestModels.CreditCardApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -17,5 +16,8 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse> AddOrEditCreditCardAsync(int creditCardId, CreateCreditCardRequest request, CancellationToken cancellationToken = default);
 
+        Task<ApiResponse> ActivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default);
+
+        Task<ApiResponse> DeactivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default);
     }
 }
