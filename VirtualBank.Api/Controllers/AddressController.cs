@@ -34,7 +34,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/Address/getAlAddresses
         [Authorize(Roles = "Admin")]
-        [HttpGet(ApiRoutes.getAllAddresses)]
+        [HttpGet(ApiRoutes.Addresses.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -59,7 +59,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpGet(ApiRoutes.getAddressById)]
+        [HttpGet(ApiRoutes.Addresses.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -88,7 +88,7 @@ namespace VirtualBank.Api.Controllers
 
 
         // POST api/values
-        [HttpPut(ApiRoutes.postAddress)]
+        [HttpPut(ApiRoutes.Addresses.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -119,7 +119,7 @@ namespace VirtualBank.Api.Controllers
 
 
         // DELETE api/values/5
-        [HttpDelete(ApiRoutes.deleteAddress)]
+        [HttpDelete(ApiRoutes.Addresses.Delete)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]

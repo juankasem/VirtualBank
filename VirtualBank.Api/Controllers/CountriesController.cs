@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
-using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -20,17 +16,18 @@ namespace VirtualBank.Api.Controllers
 {
     [Authorize(Roles = "Admin")]
     [ApiController]
-    public class CountryController : ControllerBase
+    public class CountriesController : ControllerBase
     {
         private readonly ICountriesService _countriesService;
 
-        public CountryController(ICountriesService countriesService)
+        public CountriesController(ICountriesService countriesService)
         {
             _countriesService = countriesService;
         }
 
-        // GET: /<controller>/
-        [HttpGet(ApiRoutes.getAllCountries)]
+
+        // GET: api/v1/countries/all
+        [HttpGet(ApiRoutes.Countries.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -52,8 +49,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // GET api/values/5
-        [HttpGet(ApiRoutes.getCountryById)]
+
+        // GET: api/v1/countries/5
+        [HttpGet(ApiRoutes.Countries.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -79,8 +77,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // POST api/values
-        [HttpPut(ApiRoutes.postCountry)]
+
+        // PUT: api/v1/countries/5
+        [HttpPut(ApiRoutes.Countries.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -106,6 +105,5 @@ namespace VirtualBank.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
             }
         }
-
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,8 +34,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: /<controller>/
-        [HttpGet(ApiRoutes.getAllCities)]
+        // GET: api/v1/cities/all
+        [HttpGet(ApiRoutes.Cities.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -59,8 +57,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // GET: /<controller>/
-        [HttpGet(ApiRoutes.getCitiesByCountryId)]
+
+        // GET: api/v1/cities/country/5
+        [HttpGet(ApiRoutes.Cities.GetByCountryId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -92,8 +91,8 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // GET api/values/5
-        [HttpGet(ApiRoutes.getCityById)]
+        // GET: api/v1/cities/5
+        [HttpGet(ApiRoutes.Cities.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -119,15 +118,15 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // POST api/values
-        [HttpPut(ApiRoutes.postCity)]
+        // PUT api/v1/cities/5
+        [HttpPut(ApiRoutes.Cities.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditCity([FromRoute] int cityId, [FromBody] CreateCityRequest request,
-                                                   CancellationToken cancellationToken = default)
+                                                       CancellationToken cancellationToken = default)
         {
             try
             {
@@ -147,6 +146,5 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
-
     }
 }

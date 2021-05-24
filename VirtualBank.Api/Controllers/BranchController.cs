@@ -40,8 +40,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: api/Branch
-        [HttpGet(ApiRoutes.getAllBranches)]
+        // GET: api/v1/branch/all
+        [HttpGet(ApiRoutes.Branches.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -67,8 +67,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: api/Branch/id
-        [HttpGet(ApiRoutes.getBranchesByCityId)]
+        // GET: api/v1/branch/city/5
+        [HttpGet(ApiRoutes.Branches.GetByCityId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -103,7 +103,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        [HttpGet(ApiRoutes.getBranchById)]
+        // GET: api/v1/branch/5
+        [HttpGet(ApiRoutes.Branches.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -130,8 +131,8 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
-        [HttpGet(ApiRoutes.getBranchByCode)]
+        // GET: api/v1/branch/code/5
+        [HttpGet(ApiRoutes.Branches.GetByCode)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
@@ -158,8 +159,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // POST api/values
-        [HttpPut(ApiRoutes.postBranch)]
+        // PUT api/v1/branch/5
+        [HttpPut(ApiRoutes.Branches.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -189,8 +190,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // DELETE api/values/5
-        [HttpDelete(ApiRoutes.deleteBranch)]
+        // DELETE api/v1/branch/5
+        [HttpDelete(ApiRoutes.Branches.Delete)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]

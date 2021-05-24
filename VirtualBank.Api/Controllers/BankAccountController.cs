@@ -44,8 +44,8 @@ namespace VirtualBank.Api.Controllers
             _actionResultMapper = actionResultMapper;
         }
 
-        // GET api/values/5
-        [HttpGet(ApiRoutes.getAccountsByCustomerId)]
+        // GET api/v1/bank-account/customer/5
+        [HttpGet(ApiRoutes.BankAccounts.GetByCustomerId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
@@ -92,7 +92,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        [HttpGet(ApiRoutes.getAccountById)]
+        // GET api/v1/bank-account/5
+        [HttpGet(ApiRoutes.BankAccounts.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -120,7 +121,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        [HttpGet(ApiRoutes.getAccountByAccountNo)]
+        // GET api/v1/bank-account/account-no/123
+        [HttpGet(ApiRoutes.BankAccounts.GetByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -165,8 +167,8 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
-        [HttpGet(ApiRoutes.getAccountByIBAN)]
+        // GET api/v1/bank-account/iban/TR123
+        [HttpGet(ApiRoutes.BankAccounts.GetByIBAN)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -212,7 +214,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        [HttpGet(ApiRoutes.getRecipientAccountByIBAN)]
+        // GET api/v1/bank-account/recipient-iban/TR123
+        [HttpGet(ApiRoutes.BankAccounts.GetRecipientByIBAN)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -238,10 +241,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
-        // POST api/values
+        // PUT api/v1/bank-account/5
         [Authorize(Roles ="Admin")]
-        [HttpPut(ApiRoutes.postBankAccount)]
+        [HttpPut(ApiRoutes.BankAccounts.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -269,9 +271,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
+        // PUT api/v1/bank-account/activate/5
         [Authorize(Roles = "Admin")]
-        [HttpPost(ApiRoutes.activateBankAccount)]
+        [HttpPost(ApiRoutes.BankAccounts.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -300,9 +302,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-
+        // PUT api/v1/bank-account/deactivate/5
         [Authorize(Roles = "Admin")]
-        [HttpPost(ApiRoutes.deactivateBankAccount)]
+        [HttpPost(ApiRoutes.BankAccounts.Deactivate)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]

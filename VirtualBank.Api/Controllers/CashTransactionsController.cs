@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,9 +42,9 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET api/values/5
+        // GET api/v1/cash-transactions/all
         [Authorize(Roles = "Admin")]
-        [HttpGet(ApiRoutes.getAllCashTransactions)]
+        [HttpGet(ApiRoutes.CashTransactions.GetAll)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -76,18 +74,18 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET api/values/5
-        [HttpGet(ApiRoutes.getAccountCashTransactions)]
+        // GET api/v1/cash-transactions/iban/TR123
+        [HttpGet(ApiRoutes.CashTransactions.GetByIBAN)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAccountCashTransactions([FromRoute] string iban,
-                                                                    [FromQuery] int lastDays,
-                                                                    [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,                                                                                                                                                             
-                                                                    [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
-                                                                    CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetBankAccountCashTransactions([FromRoute] string iban,
+                                                                        [FromQuery] int lastDays,
+                                                                        [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,                                                                                                                                                             
+                                                                        [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                                        CancellationToken cancellationToken = default)
         {
             try
             {
@@ -108,7 +106,7 @@ namespace VirtualBank.Api.Controllers
                     return BadRequest(apiResponse);
                 }
 
-                apiResponse = await _cashTransactionsService.GetAccountCashTransactionsAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
+                apiResponse = await _cashTransactionsService.GetBankAccountCashTransactionsAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
@@ -127,8 +125,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // POST api/values
-        [HttpPost(ApiRoutes.postCashTransaction)]
+        // POST api/v1/cash-transactions
+        [HttpPost(ApiRoutes.CashTransactions.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.UnprocessableEntity)]

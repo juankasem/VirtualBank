@@ -14,6 +14,7 @@ using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.ApiRoutes;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -38,7 +39,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost(ApiRoutes.checkEmailExists)]
+        [HttpPost(ApiRoutes.Auth.CheckEmailExists)]
         public async Task<ActionResult<ApiResponse<CheckEmailResponse>>> CheckEmailExists(CheckEmailRequest request)
         {
             var response = new ApiResponse<CheckEmailResponse>
@@ -56,14 +57,14 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost(ApiRoutes.register)]
+        [HttpPost(ApiRoutes.Auth.Register)]
         public async Task<ActionResult<ApiResponse<SignupResponse>>> Register(SignupRequest request)
         {
             var response = new ApiResponse<SignupResponse>();
 
             if (await CheckEmailExists(request.Email))
             {
-                response.AddError("email already exists");
+                response.AddError(ExceptionCreator.CreateBadRequestError("email already exists"));
 
                 return response;
             }
@@ -99,7 +100,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost(ApiRoutes.login)]
+        [HttpPost(ApiRoutes.Auth.Login)]
         public async Task<ActionResult<ApiResponse<LoginResponse>>> Login(LoginRequest request)
         {
             var response = new ApiResponse<LoginResponse>();
@@ -108,7 +109,7 @@ namespace VirtualBank.Api.Controllers
 
             if (user == null)
             {
-                response.AddError("Invalid login credentials");
+                response.AddError(ExceptionCreator.CreateUnauthorizedError("Invalid login credentials"));
                 return Unauthorized(response);
             }
 
@@ -128,7 +129,7 @@ namespace VirtualBank.Api.Controllers
             }
             else
             {
-                response.AddError("Invalid login attempt");
+                response.AddError(ExceptionCreator.CreateUnauthorizedError("Invalid login attempt"));
                 return Unauthorized(response);
             }
 
