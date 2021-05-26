@@ -40,6 +40,8 @@
     <Folder Include="ApiResponseModels\CreditCardApiResponses\" />
     <Folder Include="ApiRequestModels\DebitCardApiRequests\" />
     <Folder Include="ApiResponseModels\DebitCardApiResponses\" />
+    <Folder Include="ApiRequestModels\RoleApiRequests \" />
+    <Folder Include="ApiResponseModels\RolesApiResponses\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.3" />

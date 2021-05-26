@@ -84,6 +84,8 @@ namespace VirtualBank.Api.Controllers
                 {
                     Email = request.Email
                 };
+
+                return Ok(response);
             }
             else
             {
@@ -92,7 +94,6 @@ namespace VirtualBank.Api.Controllers
                 return BadRequest();
             }
 
-            return Ok(response);
         }
 
         /// <summary>
@@ -155,7 +156,6 @@ namespace VirtualBank.Api.Controllers
                 return true;
             }
         }
-
 
         #endregion
     }

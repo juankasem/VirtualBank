@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
-using VirtualBank.Core.ApiRequestModels.RecipientApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
 

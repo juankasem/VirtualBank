@@ -34,7 +34,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost(ApiRoutes.refresh)]
+        [HttpPost(ApiRoutes.Token.Refresh)]
         public async Task<ActionResult<ApiResponse<TokenResponse>>> Refresh(TokenRequest tokenRequest)
         {
             var principal = _tokenService.GetClaimsFromExpiredToken(tokenRequest.AccessToken);
@@ -75,7 +75,7 @@ namespace VirtualBank.Api.Controllers
         /// delete the current refresh token of current user
         /// </summary>
         /// <returns></returns>
-        [HttpPost(ApiRoutes.revoke)]
+        [HttpPost(ApiRoutes.Token.Revoke)]
         [Authorize]
         public async Task<ApiResponse> Revoke()
         {

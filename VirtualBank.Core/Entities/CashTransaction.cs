@@ -74,6 +74,10 @@ namespace VirtualBank.Core.Entities
         [Required]
         public DateTime TransactionDate { get; set; }
 
+        /// <summary>
+        /// debit card number
+        /// </summary>
+        public object DebitCardNo { get; set; }
 
         public CashTransaction()
         {

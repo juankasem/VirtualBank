@@ -46,9 +46,9 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: api/debitCards/getAll
+        // GET: api/v1/debit-cards/all
         [Authorize(Roles = "Admin")]
-        [HttpGet(ApiRoutes.getAllDebitCards)]
+        [HttpGet(ApiRoutes.DebitCards.GetAll)]
         [ProducesResponseType(typeof(PagedResponse<DebitCardListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -79,8 +79,8 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // GET api/debitCards/getDebitCardById/5
-        [HttpGet(ApiRoutes.getDebitCardById)]
+        // GET: api/v1/debit-cards/5
+        [HttpGet(ApiRoutes.DebitCards.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -107,8 +107,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // GET api/debitCards/getDebitCardByAccountNo/acctNo
-        [HttpGet(ApiRoutes.getCreditCardByAccountNo)]
+
+        // GET: api/v1/debit-cards/account/5
+        [HttpGet(ApiRoutes.DebitCards.GetByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
@@ -155,8 +156,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // PUT api/debitCards/postDebitCard/5
-        [HttpPut(ApiRoutes.postCreditCard)]
+        // PUT api/v1/debit-cards/account/5
+        [HttpPut(ApiRoutes.DebitCards.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -203,9 +204,9 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // PUT api/debitCards/activateDebitCard/5
+        // PUT api/v1/debit-cards/activate/5
         [Authorize(Roles = "Admin")]
-        [HttpPut(ApiRoutes.activateDebitCard)]
+        [HttpPut(ApiRoutes.DebitCards.Activate)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
@@ -234,9 +235,9 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // PUT api/debitCards/deactivateCreditCard/5
+        // PUT api/v1/debit-cards/deactivate/5
         [Authorize(Roles = "Admin")]
-        [HttpPut(ApiRoutes.deactivateDebitCard)]
+        [HttpPut(ApiRoutes.DebitCards.Deactivate)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]

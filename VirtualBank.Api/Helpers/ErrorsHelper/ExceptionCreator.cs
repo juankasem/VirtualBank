@@ -7,12 +7,8 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
     public static class ExceptionCreator
     {
 
-       public static ErrorResponse CreateNotFoundError(string fieldName, string message = null)
-        {
-           return new(StatusCodes.Status400BadRequest, fieldName, MessageCreator.AddNotFound(fieldName, message));
-
-        }
-
+       public static ErrorResponse CreateNotFoundError(string fieldName, string message = null) =>
+           new(StatusCodes.Status400BadRequest, fieldName, MessageCreator.AddNotFound(fieldName, message));
 
 
         public static ErrorResponse CreateUnauthorizedError(string fieldName, string message = null) =>
@@ -33,5 +29,9 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
 
         public static ErrorResponse CreateInternalServerError() =>
                 new(StatusCodes.Status500InternalServerError, "Server", MessageCreator.AddInternalServerError());
+
+
+        public static ErrorResponse CreateUnexpectedError(int errorStatusCode, string description) =>
+                new(errorStatusCode, "unexpected", MessageCreator.AddInternalServerError());
     }
 }

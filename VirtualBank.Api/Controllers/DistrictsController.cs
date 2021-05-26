@@ -32,8 +32,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: /<controller>/
-        [HttpGet(ApiRoutes.getAllDistricts)]
+        // GET: api/v1/districts/all
+        [HttpGet(ApiRoutes.Districts.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -56,9 +56,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-
-        // GET: /<controller>/
-        [HttpGet(ApiRoutes.getDistrictsByCityId)]
+        // GET: api/v1/districts/city/5
+        [HttpGet(ApiRoutes.Districts.GetByCityId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -87,8 +86,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // POST api/values
-        [HttpPut(ApiRoutes.postDistrict)]
+
+        // PUT: api/v1/districts/city/5
+        [HttpGet(ApiRoutes.Districts.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]

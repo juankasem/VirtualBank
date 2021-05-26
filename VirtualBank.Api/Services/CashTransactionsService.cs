@@ -24,18 +24,21 @@ namespace VirtualBank.Api.Services
         private readonly ICustomerRepository _customerRepo;
         private readonly IBankAccountRepository _bankAccountRepo;
         private readonly ICashTransactionsRepository _cashTransactionsRepo;
+        private readonly IDebitCardsRepository _debitCardsRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CashTransactionsService(VirtualBankDbContext dbContext,
                                        ICustomerRepository customersRepo,
                                        IBankAccountRepository bankAccountRepo,
                                        ICashTransactionsRepository cashTransactionsRepo,
+                                       IDebitCardsRepository debitCardsRepo,
                                        IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _customerRepo = customersRepo;
             _bankAccountRepo = bankAccountRepo;
             _cashTransactionsRepo = cashTransactionsRepo;
+            _debitCardsRepo = debitCardsRepo;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -324,6 +327,12 @@ namespace VirtualBank.Api.Services
                     return responseModel;
                 }
 
+                if (request.InitiatedBy == BankAssetType.POS)
+                {
+                    var debitCard = await _debitCardsRepo.f
+                }
+
+
                 if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
                 {
                     //Deduct from sender account
@@ -474,6 +483,7 @@ namespace VirtualBank.Api.Services
                 PaymentType = !isTransferFees ? request.PaymentType : PaymentType.ComissionFees,
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name,
                 TransactionDate = request.TransactionDate,
+                DebitCardNo = request.InitiatedBy == BankAssetType.POS ? request.DebitCardNo : null
             };
 
         }
@@ -493,8 +503,8 @@ namespace VirtualBank.Api.Services
                                                 cashTransaction.From != iban ?
                                                 $"From: {sender}, Account No: {cashTransaction.From} "
                                                 :
-                                                cashTransaction.InitiatedBy == BankAssetType.POS || cashTransaction.InitiatedBy == BankAssetType.ATM ?
-                                                $"{cashTransaction.InitiatedBy} purchase: {recipient}"
+                                                cashTransaction.InitiatedBy == BankAssetType.POS ?
+                                                $"{cashTransaction.InitiatedBy} purchase: card No: {cashTransaction.DebitCardNo}, {recipient}"
                                                 :
                                                 $"{cashTransaction.To}--{recipient}, {cashTransaction.Description}",
                                                cashTransaction.InitiatedBy,

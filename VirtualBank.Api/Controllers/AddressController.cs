@@ -32,7 +32,7 @@ namespace VirtualBank.Api.Controllers
             _actionResultMapper = actionResultMapper;
         }
 
-        // GET: api/Address/getAlAddresses
+        // GET: api/Address/all
         [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.Addresses.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
@@ -58,6 +58,8 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
+
+        // GET: api/Address/5
         [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.Addresses.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
@@ -87,7 +89,7 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // POST api/values
+        // PUT api/Address/5
         [HttpPut(ApiRoutes.Addresses.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
@@ -118,7 +120,7 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // DELETE api/values/5
+        // DELETE api/Address/5
         [HttpDelete(ApiRoutes.Addresses.Delete)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]

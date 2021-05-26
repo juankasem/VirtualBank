@@ -37,9 +37,9 @@ namespace VirtualBank.Api.Controllers
             _actionResultMapper = actionResultMapper;
         }
 
-        // GET api/customer
 
-        [HttpGet(ApiRoutes.getAllCustomers)]
+        // GET api/v1/customers/all
+        [HttpGet(ApiRoutes.Customers.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -64,8 +64,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET api/values/5
-        [HttpGet(ApiRoutes.getCustomerById)]
+        // GET api/v1/customers/5
+        [HttpGet(ApiRoutes.Customers.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -92,7 +92,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        [HttpGet(ApiRoutes.getCustomerByAccountNo)]
+        // GET api/v1/customers/account/5
+        [HttpGet(ApiRoutes.Customers.GetByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -118,7 +119,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        [HttpGet(ApiRoutes.getCustomerByIBAN)]
+
+        // GET api/v1/customers/iban/5
+        [HttpGet(ApiRoutes.Customers.GetByIBAN)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -147,7 +150,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        [HttpPut(ApiRoutes.postCustomer)]
+        // PUT api/v1/customers/5
+        [HttpPut(ApiRoutes.Customers.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]

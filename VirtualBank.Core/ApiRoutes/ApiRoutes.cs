@@ -22,6 +22,19 @@ namespace VirtualBank.Core.ApiRoutes
         }
 
 
+        public static class Administration
+        {
+            public const string ListRoles = Base + "/administration/roles/list";
+
+            public const string GetUsersInRoles = Base + "/administration/roles/users";
+
+            public const string EditUsersInRoles = Base + "/administration/roles/users";
+
+            public const string CreateRole = Base + "/administration/roles";
+
+        }
+
+
         public static class Auth
         {
             public const string CheckEmailExists = Base + "/auth/checkEmailExists";
@@ -65,7 +78,7 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string Post = Base + "/branch/{branchId:int}";
 
-            public const string Delete= Base + "/branch/{branchId:int}";
+            public const string Delete = Base + "/branch/{branchId:int}";
         }
 
 
@@ -78,7 +91,7 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string GetById = Base + "/districts/{districtId:int}";
 
-            public const string Post= Base + "/districts/{districtId:int}";
+            public const string Post = Base + "/districts/{districtId:int}";
         }
 
 
@@ -115,76 +128,81 @@ namespace VirtualBank.Core.ApiRoutes
             public const string Post = Base + "/cash-transactions";
         }
 
-        
+
+        public static class CreditCards
+        {
+            public const string GetAll = Base + "/credit-cards/all";
+
+            public const string GetById = Base + "/credit-cards/{creditCardId:int}";
+
+            public const string GetByAccountNo = Base + "/credit-cards/account/{accountNo}";
+
+            public const string Post = Base + "/credit-cards/{customerId:int}";
+
+            public const string Activate = Base + "/credit-cards/activate/{creditCardId:int}";
+
+            public const string Deactivate = Base + "/credit-cards/deactivate/{creditCardId:int}";
+        }
 
 
-        #region Credit Cards
-        public const string getAllCreditCards = "api/v1/CreditCard/getAll";
-
-        public const string getCreditCardById = "api/v1/CreditCard/getById/{creditCardId:int}";
-
-        public const string getCreditCardByAccountNo = "api/v1/CreditCard/getByAccountNo/{accountNo}";
-
-        public const string postCreditCard = "api/v1/CreditCard/post/{customerId:int}";
-
-        public const string activateCreditCard = "api/v1/CreditCard/activate/{creditCardId:int}";
-
-        public const string deactivateCreditCard = "api/v1/CreditCard/deactivate/{creditCardId:int}";
-
-        #endregion
-
-        #region Customers
-        public const string getAllCustomers = "api/v1/Customer/getAll";
-
-        public const string getCustomerById = "api/v1/Customer/getById/{customerId:int}";
-
-        public const string getCustomerByAccountNo = "api/v1/Customer/getByAccountNo/{accountNo}";
-
-        public const string getCustomerByIBAN = "api/v1/Customer/getByIBAN/{iban}";
-
-        public const string postCustomer= "api/v1/Customer/post/{customerId:int}";
-
-        #endregion
 
 
-        #region Debit Cards
-        public const string getAllDebitCards = "api/v1/DebitCard/getAll";
+        public static class Customers
+        {
+            public const string GetAll = Base + "/customers/all";
 
-        public const string getDebitCardById = "api/v1/DebitCard/getById/{debitCardId:int}";
+            public const string GetById = Base + "/customers/{customerId:int}";
 
-        public const string getDebitCardByAccountNo = "api/v1/DebitCard/getByAccountNo/{accountNo}";
+            public const string GetByAccountNo = Base + "/customers/account/{accountNo}";
 
-        public const string postDebitCard = "api/v1/DebitCard/post/{customerId:int}";
+            public const string GetByIBAN = Base + "/customers/iban/{iban}";
 
-        public const string activateDebitCard = "api/v1/DebitCard/activate/{debitCardId:int}";
-
-        public const string deactivateDebitCard = "api/v1/DebitCard/deactivate/{debitCardId:int}";
-
-        #endregion
-
-        #region Fast Transactions
-        public const string getAllFastTransactions = "api/v1/FastTransactions/getAll";
-
-        public const string getBankAccountFastTransactions = "api/v1/FastTransactions/getAccountFastTransactions/{accountId:int}";
-
-        public const string getFastTransactionById = "api/v1/FastTransactions/getById/{id:int}";
-
-        public const string postFastTransaction = "api/v1/FastTransactions/post/{id}";
-
-        public const string deleteFastTransaction = "api/v1/FastTransactions/delete/{id}";
+            public const string Post = Base + "/customers/{customerId:int}";
+        }
 
 
-        #endregion
 
 
-        #region Token
-        public const string refresh = "api/v1/Token/refresh";
+        public static class DebitCards
+        {
+            public const string GetAll = Base + "/debit-cards/all";
 
-        public const string revoke = "api/v1/Token/revoke";
+            public const string GetById = Base + "/debit-cards/{debitCardId:int}";
+
+            public const string GetByAccountNo = Base + "/debit-cards/account/{accountNo}";
+
+            public const string Post = Base + "/debit-cards/{customerId:int}";
+
+            public const string Activate = Base + "/debit-cards/activate/{debitCardId:int}";
+
+            public const string Deactivate = Base + "/debit-cards/deactivate/{debitCardId:int}";
+        }
 
 
-        #endregion
 
+        public static class FastTransactions
+        {
+            public const string GetAll = Base + "/fast-transactions/all";
+
+            public const string GetByIBAN = Base + "/fast-transactions/iban/{iban}";
+
+            public const string GetById = Base + "/fast-transactions/{id:int}";
+
+            public const string Post = Base + "/fast-transactions/{id:int}";
+
+            public const string Delete = Base + "/fast-transactions/{id:int}";
+
+        }
+
+
+
+        public static class Token
+        {
+            public const string Refresh = "/token/refresh";
+
+            public const string Revoke = "/token/revoke";
+        }
+  
 
     }
 }

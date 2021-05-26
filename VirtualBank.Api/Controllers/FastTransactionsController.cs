@@ -46,9 +46,9 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: /<controller>/
+        // GET: api/v1/cash-transactions/all
         [Authorize("Admin")]
-        [HttpGet(ApiRoutes.getAllFastTransactions)]
+        [HttpGet(ApiRoutes.FastTransactions.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
@@ -77,8 +77,8 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: /<controller>/accountId
-        [HttpGet(ApiRoutes.getBankAccountFastTransactions)]
+        // GET: api/v1/cash-transactions/iban/TR5
+        [HttpGet(ApiRoutes.FastTransactions.GetByIBAN)]
         [ProducesResponseType(typeof(PagedResponse<FastTransactionListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -134,8 +134,9 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // GET: /<controller>/id
-        [HttpGet(ApiRoutes.getFastTransactionById)]
+
+        // GET: api/v1/cash-transactions/5
+        [HttpGet(ApiRoutes.FastTransactions.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -162,20 +163,33 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // POST api/values
-        [HttpPost(ApiRoutes.postFastTransaction)]
+        // PUT api/v1/cash-transactions/5
+        [HttpGet(ApiRoutes.FastTransactions.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditFastTransaction([FromRoute] int id,
-                                                             [FromBody] CreateFastTransactionRequest request,
-                                                              CancellationToken cancellationToken = default)
+                                                                  [FromRoute] string iban,
+                                                                  [FromBody] CreateFastTransactionRequest request,
+                                                                  CancellationToken cancellationToken = default)
         {
+            var user = await _userManager.GetUserAsync(User);
+            var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
+
             var apiResponse = new ApiResponse();
 
-            if (!ModelState.IsValid)
+            if (customer == null)
             {
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+
+                return NotFound(apiResponse);
+            }
+
+            if (user.Id != customer?.Data?.UserId)
+            {
+                apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
+
                 return BadRequest(apiResponse);
             }
 
@@ -198,14 +212,15 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
-        // POST api/values
-        [HttpPost(ApiRoutes.deleteFastTransaction)]
+
+        // DELETE /cash-transactions/5
+        [HttpDelete(ApiRoutes.FastTransactions.Delete)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteFastTransaction([FromRoute] int id,
-                                                              CancellationToken cancellationToken = default)
+                                                                CancellationToken cancellationToken = default)
         {
             try
             {
