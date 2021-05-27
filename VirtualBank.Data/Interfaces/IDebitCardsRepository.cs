@@ -11,6 +11,8 @@ namespace VirtualBank.Data.Interfaces
         Task<IEnumerable<DebitCard>> GetByCustomerIdAsync(int customerId);
         Task<DebitCard> FindByIdAsync(int id);
         Task<DebitCard> FindByAccountNoAsync(string accountNo);
+        Task<DebitCard> FindByDebitCardNoAsync(string debitCardNo);
+        Task<bool> ValidatePINAsync(string debitCardNo, string pin);
         Task<DebitCard> AddAsync(DebitCard debitCard);
         Task<DebitCard> UpdateAsync(DebitCard debitCard);
         Task<bool> RemoveAsync(int id);

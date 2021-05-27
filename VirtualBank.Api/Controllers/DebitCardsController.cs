@@ -108,6 +108,35 @@ namespace VirtualBank.Api.Controllers
         }
 
 
+        // GET: api/v1/debit-cards/5
+        [HttpGet(ApiRoutes.DebitCards.GetById)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetDebitCardByDebitCardNo([FromRoute] string debitCardNo, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _debitCardsService.GetDebitCardByDebitCardNoAsync(debitCardNo, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
+
+
+                return BadRequest(apiResponse);
+            }
+
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
+
         // GET: api/v1/debit-cards/account/5
         [HttpGet(ApiRoutes.DebitCards.GetByAccountNo)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]

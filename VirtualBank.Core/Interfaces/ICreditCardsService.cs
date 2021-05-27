@@ -14,6 +14,8 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<CreditCardResponse>> GetCreditCardByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);
 
+        Task<bool> ValidateCreditCardPINAsync(string creditCardNo, string pin, CancellationToken cancellationToken = default);
+
         Task<ApiResponse> AddOrEditCreditCardAsync(int creditCardId, CreateCreditCardRequest request, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> ActivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default);

@@ -43,6 +43,14 @@ namespace VirtualBank.Data.Repositories
         }
 
 
+        public async Task<CreditCard> FindByCreditCardNoAsync(string creditCardNo)
+        {
+            return await _dbContext.CreditCards.Include(c => c.BankAccount)
+                                                          .Where(c => c.CreditCardNo == creditCardNo && c.Disabled == false)
+                                                          .FirstOrDefaultAsync();
+        }
+
+
         public async Task<CreditCard> FindByAccountNoAsync(string accountNo)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
@@ -50,6 +58,21 @@ namespace VirtualBank.Data.Repositories
                                                .FirstOrDefaultAsync();
         }
 
+      
+        public async Task<bool> ValidatePINAsync(string creditCardNo, string pin)
+        {
+            var isValid = false;
+
+            var creditCard = await _dbContext.CreditCards.Include(c => c.BankAccount)
+                                            .Where(c => c.PIN == pin && c.Disabled == false)
+                                            .FirstOrDefaultAsync();
+            if (creditCard.PIN == pin)
+            {
+                isValid = true;
+            }
+
+            return isValid;
+        }
 
         public async Task<CreditCard> AddAsync(CreditCard creditCard)
         {
@@ -96,5 +119,6 @@ namespace VirtualBank.Data.Repositories
         {
             await _dbContext.SaveChangesAsync();
         }
+
     }
 }

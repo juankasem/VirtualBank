@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.RoleApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -15,18 +16,21 @@ using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Api.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     [ApiController]
     public class AdministrationController : ControllerBase
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IActionResultMapper<AdministrationController> _actionResultMapper;
 
         public AdministrationController(RoleManager<IdentityRole> roleManager,
-                                        UserManager<AppUser> userManager)
+                                        UserManager<AppUser> userManager,
+                                        IActionResultMapper<AdministrationController> actionResultMapper)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _actionResultMapper = actionResultMapper;
         }
 
 
@@ -115,27 +119,35 @@ namespace VirtualBank.Api.Controllers
 
             var userRoleList = new List<UserRoleResponse>();
 
-            foreach (var user in _userManager.Users)
+            try
             {
-                var userRole = new UserRoleResponse()
+                foreach (var user in _userManager.Users)
                 {
-                    UserId = user.Id,
-                    UserName = user.UserName
-                };
+                    var userRole = new UserRoleResponse()
+                    {
+                        UserId = user.Id,
+                        UserName = user.UserName
+                    };
 
-                if (await _userManager.IsInRoleAsync(user, role.Name))
-                {
-                    userRole.HasRole = true;
-                }
-                else
-                {
-                    userRole.HasRole = false;
+                    if (await _userManager.IsInRoleAsync(user, role.Name))
+                    {
+                        userRole.HasRole = true;
+                    }
+                    else
+                    {
+                        userRole.HasRole = false;
+                    }
+
+                    userRoleList.Add(userRole);
                 }
 
-                userRoleList.Add(userRole);
+                return Ok(userRoleList);
+
             }
-
-            return Ok(userRoleList);
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
         }
 
 
@@ -159,29 +171,32 @@ namespace VirtualBank.Api.Controllers
                 return NotFound(apiResponse);
             }
 
-            var userRoleList = new List<UserRoleResponse>();
+            var user = await _userManager.FindByIdAsync(request.UserId);
 
-            foreach (var user in _userManager.Users)
+            IdentityResult result = null;
+
+            try
             {
-                var userRole = new UserRoleResponse()
+                if (request.IsSelected && !(await _userManager.IsInRoleAsync(user, role.Name)))
                 {
-                    UserId = user.Id,
-                    UserName = user.UserName
-                };
-
-                if (await _userManager.IsInRoleAsync(user, role.Name))
-                {
-                    userRole.HasRole = true;
+                    result = await _userManager.AddToRoleAsync(user, role.Name);
                 }
-                else
+                else if (!request.IsSelected && await _userManager.IsInRoleAsync(user, role.Name))
                 {
-                    userRole.HasRole = false;
+                    result = await _userManager.RemoveFromRoleAsync(user, role.Name);
                 }
 
-                userRoleList.Add(userRole);
+                if (result.Succeeded)
+                {
+                    return Ok();
+                }
+
+                return BadRequest(apiResponse);
             }
-
-            return Ok(userRoleList);
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
         }
 
 

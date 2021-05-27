@@ -7,13 +7,13 @@ namespace VirtualBank.Core.ApiRequestModels.RoleApiRequests
     {
         public string UserId { get; set; }
         public string UserName { get; set; }
-        public bool HasRole { get; set; }
+        public bool IsSelected { get; set; }
 
-        public EditUserRoleRequest(string userId, string userName, bool hasRole)
+        public EditUserRoleRequest(string userId, string userName, bool isSelected)
         {
             UserId = Throw.ArgumentNullException.IfNull(userId, nameof(userId));
             UserName = Throw.ArgumentNullException.IfNull(userName, nameof(userName));
-            HasRole = hasRole;
+            IsSelected = isSelected;
         }
     }
 }

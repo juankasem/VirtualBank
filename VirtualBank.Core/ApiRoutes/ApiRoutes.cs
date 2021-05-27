@@ -135,6 +135,8 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string GetById = Base + "/credit-cards/{creditCardId:int}";
 
+            public const string GetByCreditCardNo = Base + "/credit-cards/card-no/{creditCardNo";
+
             public const string GetByAccountNo = Base + "/credit-cards/account/{accountNo}";
 
             public const string Post = Base + "/credit-cards/{customerId:int}";
@@ -168,6 +170,8 @@ namespace VirtualBank.Core.ApiRoutes
             public const string GetAll = Base + "/debit-cards/all";
 
             public const string GetById = Base + "/debit-cards/{debitCardId:int}";
+
+            public const string GetByDebitCardNo = Base + "debit-cards/card-no/{debitCardNo";
 
             public const string GetByAccountNo = Base + "/debit-cards/account/{accountNo}";
 

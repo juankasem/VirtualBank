@@ -29,7 +29,8 @@ namespace VirtualBank.Api.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IActionResultMapper<CustomerController> _actionResultMapper;
 
-        public CustomerController(ICustomerService customerService, UserManager<AppUser> userManager,
+        public CustomerController(ICustomerService customerService,
+                                  UserManager<AppUser> userManager,
                                   IActionResultMapper<CustomerController> actionResultMapper)
         {
             _customerService = customerService;

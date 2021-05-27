@@ -114,6 +114,21 @@ namespace VirtualBank.Api.Services
 
 
         /// <summary>
+        /// Validate creit card PIN
+        /// </summary>
+        /// <param name="debitCardNo"></param>
+        /// <param name="pin"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<bool> ValidateCreditCardPINAsync(string creditCardNo, string pin, CancellationToken cancellationToken = default)
+        {
+            var isValid = await _creditCardsRepo.ValidatePINAsync(creditCardNo, pin);
+
+            return isValid;
+        }
+
+
+        /// <summary>
         /// Add or Edit an existing credit card
         /// </summary>
         /// <param name="creditCardId"></param>

@@ -51,6 +51,30 @@ namespace VirtualBank.Data.Repositories
         }
 
 
+        public async Task<DebitCard> FindByDebitCardNoAsync(string debitCardNo)
+        {
+            return await _dbContext.DebitCards.Include(c => c.BankAccount)
+                                              .Where(c => c.DebitCardNo == debitCardNo && c.Disabled == false)
+                                              .FirstOrDefaultAsync();
+        }
+
+
+        public async Task<bool> ValidatePINAsync(string debitCardNo, string pin)
+        {
+            var isValid = false;
+
+            var debitCard = await _dbContext.DebitCards.Include(c => c.BankAccount)
+                                            .Where(c => c.PIN == pin && c.Disabled == false)
+                                            .FirstOrDefaultAsync();
+            if (debitCard.PIN == pin)
+            {
+                isValid = true;
+            }
+
+            return isValid;
+        }
+
+
         public async Task<DebitCard> AddAsync(DebitCard debitCard)
         {
             await _dbContext.DebitCards.AddAsync(debitCard);

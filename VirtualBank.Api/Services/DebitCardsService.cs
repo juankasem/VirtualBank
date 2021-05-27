@@ -82,20 +82,41 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<DebitCardResponse>();
 
-            var DebitCard = await _debitCardsRepo.FindByIdAsync(debitCardId);
+            var debitCard = await _debitCardsRepo.FindByIdAsync(debitCardId);
 
-            if (DebitCard == null)
+            if (debitCard == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(DebitCard), $"Debit card of id {debitCardId}: not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(DebitCard), $"Debit card of id: {debitCardId}: is not found"));
                 return responseModel;
             }
 
-            responseModel.Data = CreateDebitCardResponse(DebitCard);
+            responseModel.Data = CreateDebitCardResponse(debitCard);
 
             return responseModel;
         }
 
+        /// <summary>
+        /// Retrieve debit card by debit card no
+        /// </summary>
+        /// <param name="debitCardNo"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<DebitCardResponse>> GetDebitCardByDebitCardNoAsync(string debitCardNo, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<DebitCardResponse>();
 
+            var debitCard = await _debitCardsRepo.FindByDebitCardNoAsync(debitCardNo);
+
+            if (debitCard == null)
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(debitCard), $"Debit card of number: {debitCardNo} is not found"));
+                return responseModel;
+            }
+
+            responseModel.Data = CreateDebitCardResponse(debitCard);
+
+            return responseModel;
+        }
 
         /// <summary>
         /// Retrieve debit card by account number
@@ -120,6 +141,20 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Validate debit card PIN
+        /// </summary>
+        /// <param name="debitCardNo"></param>
+        /// <param name="pin"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<bool> ValidateDebitCardPINAsync(string debitCardNo, string pin, CancellationToken cancellationToken = default)
+        {
+            var isValid = await _debitCardsRepo.ValidatePINAsync(debitCardNo, pin);
+
+            return isValid;
+        }
 
 
         /// <summary>
@@ -248,6 +283,7 @@ namespace VirtualBank.Api.Services
                                          debitCard.ExpirationDate, debitCard.BankAccount.AccountNo);
         }
 
+       
         #endregion
     }
 }

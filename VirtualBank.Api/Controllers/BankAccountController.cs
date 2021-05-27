@@ -242,7 +242,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // PUT api/v1/bank-account/5
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Administrator")]
         [HttpPut(ApiRoutes.BankAccounts.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
@@ -272,7 +272,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // PUT api/v1/bank-account/activate/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         [HttpPost(ApiRoutes.BankAccounts.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
@@ -303,7 +303,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // PUT api/v1/bank-account/deactivate/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         [HttpPost(ApiRoutes.BankAccounts.Deactivate)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]

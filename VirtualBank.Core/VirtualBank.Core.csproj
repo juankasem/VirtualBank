@@ -42,6 +42,7 @@
     <Folder Include="ApiResponseModels\DebitCardApiResponses\" />
     <Folder Include="ApiRequestModels\RoleApiRequests \" />
     <Folder Include="ApiResponseModels\RolesApiResponses\" />
+    <Folder Include="ApiResponseModels\ClaimsApiResponses\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.3" />

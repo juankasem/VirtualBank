@@ -13,7 +13,11 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<DebitCardResponse>> GetDebitCardByIdAsync(int debitCardId, CancellationToken cancellationToken = default);
 
+        Task<ApiResponse<DebitCardResponse>> GetDebitCardByDebitCardNoAsync(string debitCardNo, CancellationToken cancellationToken = default);
+
         Task<ApiResponse<DebitCardResponse>> GetDebitCardByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);
+
+        Task<bool> ValidateDebitCardPINAsync(string debitCardNo, string pin, CancellationToken cancellationToken = default);
 
         Task<ApiResponse> AddOrEditDebitCardAsync(int debitCardId, CreateDebitCardRequest request, CancellationToken cancellationToken = default);
 
