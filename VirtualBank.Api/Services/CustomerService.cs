@@ -52,7 +52,7 @@ namespace VirtualBank.Api.Services
 
             var allCustomers = await _customerRepo.GetAllAsync();
 
-            if (allCustomers.Count() == 0)
+            if (!allCustomers.Any())
             {
                 return responseModel;
             }

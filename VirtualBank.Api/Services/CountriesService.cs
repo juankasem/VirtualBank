@@ -47,6 +47,11 @@ namespace VirtualBank.Api.Services
 
             var countries = await _countriesRepo.GetAllAsync();
 
+            if (!countries.Any())
+            {
+                return responseModel;
+            }
+
             var countryList = new List<CountryResponse>();
 
             foreach (var country in countries)

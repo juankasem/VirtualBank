@@ -25,7 +25,7 @@ namespace VirtualBank.Api.Controllers
 
 
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Adminisgtrator")]
     public class DebitCardsController : ControllerBase
     {
 

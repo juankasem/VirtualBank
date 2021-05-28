@@ -43,7 +43,7 @@ namespace VirtualBank.Api.Services
 
             var allCreditCards = await _creditCardsRepo.GetAllAsync();
 
-            if (allCreditCards.Count() == 0)
+            if (!allCreditCards.Any())
             {
                 return responseModel;
             }

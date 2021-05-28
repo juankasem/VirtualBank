@@ -33,7 +33,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // GET: api/Address/all
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Administrator")]
         [HttpGet(ApiRoutes.Addresses.GetAll)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -60,7 +60,6 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET: api/Address/5
-        [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.Addresses.GetById)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
@@ -136,8 +135,8 @@ namespace VirtualBank.Api.Controllers
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Message.Contains("not found"))
-                    return BadRequest(apiResponse);
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
 
                 return BadRequest(apiResponse);
             }

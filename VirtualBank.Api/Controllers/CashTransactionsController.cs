@@ -180,11 +180,10 @@ namespace VirtualBank.Api.Controllers
                         break;
                 }
 
-
                 if (apiResponse.Success)
                     return Ok(apiResponse);
 
-                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
 
                 else if (apiResponse.Errors[0].Code == StatusCodes.Status422UnprocessableEntity)
@@ -214,7 +213,6 @@ namespace VirtualBank.Api.Controllers
             try
             {
                 var apiResponse = new ApiResponse();
-
 
                 if (!string.IsNullOrEmpty(request.CreditCardNo))
                 {
@@ -255,7 +253,7 @@ namespace VirtualBank.Api.Controllers
                         return BadRequest(apiResponse);
                     }
 
-                    if (!await _debitCardsService.ValidateDebitCardPINAsync(request.DebitCardNo, request.PIN))
+                    if (!await _debitCardsService.ValidateDebitCardPINAsync(request.DebitCardNo, request.PIN, cancellationToken))
                     {
                         apiResponse.AddError(ExceptionCreator.CreateBadRequestError($"Invalid PIN for Debit card of no: {request.DebitCardNo}"));
                         return BadRequest(apiResponse);

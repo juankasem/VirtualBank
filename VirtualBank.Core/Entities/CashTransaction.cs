@@ -77,7 +77,12 @@ namespace VirtualBank.Core.Entities
         /// <summary>
         /// debit card number
         /// </summary>
-        public object DebitCardNo { get; set; }
+        public string? CreditCardNo { get; set; }
+        
+        /// <summary>
+        /// debit card number
+        /// </summary>
+        public string? DebitCardNo { get; set; }
 
         public CashTransaction()
         {

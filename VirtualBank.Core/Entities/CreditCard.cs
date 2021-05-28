@@ -19,7 +19,7 @@ namespace VirtualBank.Core.Entities
         public DateTime ExpirationDate { get; set; }
 
         [ForeignKey(nameof(BankAccount))]
-        public int BankAccountId { get; set; }
+        public int BankAccountId  { get; set; }
         public BankAccount BankAccount { get; set; }
     }
 }

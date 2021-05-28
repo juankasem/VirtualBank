@@ -36,6 +36,7 @@ namespace VirtualBank.Api.Services
             _cashTransactionsRepo = cashTransactionsRepo;
         }
 
+
         /// <summary>
         /// Retrieve bank accounts for the specified customer
         /// </summary>
@@ -48,7 +49,7 @@ namespace VirtualBank.Api.Services
 
             var bankAccounts = await _bankAccountRepo.GetByCustomerId(customerId);
 
-            if (bankAccounts.Count() == 0)
+            if (!bankAccounts.Any())
             {
                 return responseModel;
             }
@@ -66,7 +67,6 @@ namespace VirtualBank.Api.Services
             responseModel.Data = new BankAccountListResponse(bankAccountList.ToImmutableList(), bankAccountList.Count);
 
             return responseModel;
- 
         }
 
 
@@ -85,7 +85,6 @@ namespace VirtualBank.Api.Services
             if (bankAccount == null)
             {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account Id: {accountId} Not found"));
-
                 return responseModel;
             }
 
@@ -152,6 +151,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         /// <summary>
         /// Retrieve recipient bank account for the specified iban
@@ -222,10 +222,9 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-
-                }         
-            }
-            
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                }
+            } 
 
             return responseModel;
         }
@@ -295,12 +294,13 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account od id: {accountId} not found"));
+                return responseModel;
             }
 
             if (bankAccount.Type == AccountType.Savings)
             {
-                var deposits = await _cashTransactionsRepo.GetDepositsByIBAN(bankAccount.IBAN);
+                var deposits = await _cashTransactionsRepo.GetDepositsByIBANAsync(bankAccount.IBAN);
 
                 foreach (var deposit in deposits)
                 {
@@ -310,7 +310,6 @@ namespace VirtualBank.Api.Services
                     switch (bankAccount.Currency.Code)
                     {
                         case "TL":
-                            
                                 try
                                 {
                                     if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
@@ -324,18 +323,15 @@ namespace VirtualBank.Api.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
-
-                                return responseModel;
+                                   responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                                   return responseModel;
                                 }
-
-                            break;
+                                break;
                             
 
                          case "USD":
-
-                                try
-                                {
+                             try
+                             {
                                 if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                 {
                                     interestRate = 0.0085;
@@ -351,8 +347,8 @@ namespace VirtualBank.Api.Services
 
                                 return responseModel;
                             }
-
                                 break;
+
 
                         case "EUR":
 
@@ -381,7 +377,6 @@ namespace VirtualBank.Api.Services
 
                     }
 
-                   
                     profit = deposit.Amount * (decimal)interestRate;
                     bankAccount.Balance += deposit.Amount + profit;                   
                 }
@@ -431,7 +426,6 @@ namespace VirtualBank.Api.Services
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
             };
 
-
                 return newBankAccount;
         }
 
@@ -442,6 +436,5 @@ namespace VirtualBank.Api.Services
 
       
         #endregion
-
     }
 }

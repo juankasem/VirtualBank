@@ -44,6 +44,7 @@ namespace VirtualBank.Api.Controllers
             _actionResultMapper = actionResultMapper;
         }
 
+
         // GET api/v1/bank-account/customer/5
         [HttpGet(ApiRoutes.BankAccounts.GetByCustomerId)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]

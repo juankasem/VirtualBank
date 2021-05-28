@@ -11,15 +11,15 @@ namespace VirtualBank.Core.ApiResponseModels.CreditCardApiResponses
 
         public DateTime ExpirationDate { get;  }
 
-        public int AccountId { get; }
+        public string IBAN { get; }
 
 
-        public CreditCardResponse(int id, string creditCardNo, DateTime expirationDate, int accountId)
+        public CreditCardResponse(int id, string creditCardNo, DateTime expirationDate, string iban)
         {
             Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             CreditCardNo = Throw.ArgumentNullException.IfNull(creditCardNo, nameof(creditCardNo));
             ExpirationDate = Throw.ArgumentNullException.IfNull(expirationDate, nameof(expirationDate));
-            AccountId = Throw.ArgumentNullException.IfNull(accountId, nameof(accountId));
+            IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
         }
     }
 }

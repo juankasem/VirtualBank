@@ -49,7 +49,7 @@ namespace VirtualBank.Api.Services
 
             var allDebitCards = await _debitCardsRepo.GetAllAsync();
 
-            if (allDebitCards.Count() == 0)
+            if (!allDebitCards.Any())
             {
                 return responseModel;
             }
@@ -69,7 +69,6 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
 
 
         /// <summary>

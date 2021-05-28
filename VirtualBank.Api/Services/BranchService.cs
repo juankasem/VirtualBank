@@ -37,6 +37,7 @@ namespace VirtualBank.Api.Services
             _addressRepo = addressRepo;
         }
 
+
         /// <summary>
         /// Retrieve all branches
         /// </summary>
@@ -47,6 +48,12 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<BranchListResponse>();
 
             var allBranches = await _branchRepo.GetAllAsync();
+
+            if (!allBranches.Any())
+            {
+                return responseModel;
+            }
+
             var branches = allBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
                                                                           .Take(pageSize);
 
@@ -63,6 +70,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
         /// <summary>
         /// Retrieve the branches of the specified city
         /// </summary>
@@ -74,6 +82,12 @@ namespace VirtualBank.Api.Services
             var responseModel = new ApiResponse<BranchListResponse>();
 
             var cityBranches = await _branchRepo.GetByCityIdAsync(cityId);
+
+            if (!cityBranches.Any())
+            {
+                return responseModel;
+            }
+
             var branches = cityBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
                                                                            .Take(pageSize);
 
@@ -153,7 +167,7 @@ namespace VirtualBank.Api.Services
 
             if (await BranchExists(request.Address.CountryId, request.Address.CityId, request.Name))
             {
-                responseModel.AddError(ExceptionCreator.CreateBadRequestError("branch"));
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("branch", $"branch name: {request.Name} already exists"));
                 return responseModel;
             }
 
@@ -182,7 +196,7 @@ namespace VirtualBank.Api.Services
                 var newAddress = CreateAddress(request);
                 var newBranch = CreateBranch(request);
 
-                var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
+                var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
                 using (dbContextTransaction)
                 {
@@ -194,7 +208,7 @@ namespace VirtualBank.Api.Services
 
                         await _branchRepo.AddAsync(_dbContext, newBranch);
 
-                        await dbContextTransaction.CommitAsync();
+                        await dbContextTransaction.CommitAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {

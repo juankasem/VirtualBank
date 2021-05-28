@@ -52,7 +52,7 @@ namespace VirtualBank.Api.Services
 
             var allFastTransactions = await _fastTransactionsRepo.GetAll();
 
-            if (allFastTransactions.Count() == 0)
+            if (!allFastTransactions.Any())
             {
                 return responseModel;
             }
@@ -87,7 +87,7 @@ namespace VirtualBank.Api.Services
 
             var accountFastTransactions = await _fastTransactionsRepo.GetByIBAN(iban);
 
-            if (accountFastTransactions.Count() == 0)
+            if (!accountFastTransactions.Any())
             {
                 return responseModel;
             }

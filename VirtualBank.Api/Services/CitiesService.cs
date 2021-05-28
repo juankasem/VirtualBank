@@ -43,7 +43,7 @@ namespace VirtualBank.Api.Services
 
             var allCities = await _citiesRepo.GetAllAsync();
 
-            if (allCities.Count() == 0)
+            if (!allCities.Any())
             {
                 return responseModel;
             }
@@ -75,7 +75,7 @@ namespace VirtualBank.Api.Services
 
             var countryCities = await _citiesRepo.GetByCountryIdAsync(countryId);
 
-            if (countryCities.Count() == 0)
+            if (!countryCities.Any())
             {
                 return responseModel;
             }
