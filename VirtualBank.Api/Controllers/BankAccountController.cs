@@ -231,7 +231,7 @@ namespace VirtualBank.Api.Controllers
                     return Ok(apiResponse);
 
                 else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
-                    return BadRequest(apiResponse);
+                    return NotFound(apiResponse);
 
 
                 return BadRequest(apiResponse);

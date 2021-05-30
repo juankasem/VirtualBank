@@ -5,6 +5,7 @@ using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.Entities
 {
+#nullable enable
     public class CashTransaction : BaseClass
     {
         /// <summary>

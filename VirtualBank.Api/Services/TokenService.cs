@@ -23,7 +23,11 @@ namespace VirtualBank.Api.Services
 
         }
 
-
+        /// <summary>
+        /// Generate access token for authenticated users
+        /// </summary>
+        /// <param name="claims"></param>
+        /// <returns></returns>
         public string GenerateAccessToken(IEnumerable<Claim> claims)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
@@ -42,6 +46,10 @@ namespace VirtualBank.Api.Services
             return tokenString;
         }
 
+        /// <summary>
+        ///  Generate refresh token
+        /// </summary>
+        /// <returns></returns>
         public string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
@@ -73,11 +81,11 @@ namespace VirtualBank.Api.Services
             var jwtSecurityToken = securityToken as JwtSecurityToken;
 
             if (jwtSecurityToken == null || jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCulture))
+
                 //throw new SecurityTokenException("Invalid token");
                 return null;
 
             return principal;
-
         }
     }
 }

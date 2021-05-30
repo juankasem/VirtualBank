@@ -116,17 +116,14 @@ namespace VirtualBank.Api.Controllers
                     return NotFound();
                 }
 
-                 apiResponse = await _fastTransactionsService.GetBankAccountFastTransactionsAsync(iban, pageNumber, pageSize, cancellationToken);
+                apiResponse = await _fastTransactionsService.GetBankAccountFastTransactionsAsync(iban, pageNumber, pageSize, cancellationToken);
 
-                if (apiResponse.Success)
-                {
-                    var pagedResponse = new PagedResponse<FastTransactionListResponse>(apiResponse.Data);
+                if (!apiResponse.Success) return BadRequest(apiResponse);
+                var pagedResponse = new PagedResponse<FastTransactionListResponse>(apiResponse.Data);
 
-                    return Ok(pagedResponse);
-                }
+                return Ok(pagedResponse);
 
 
-                return BadRequest(apiResponse);
             }
             catch (Exception exception)
             {

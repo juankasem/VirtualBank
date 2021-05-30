@@ -10,6 +10,7 @@ namespace VirtualBank.Data.Interfaces
         Task<IEnumerable<CashTransaction>> GetAllAsync();
         Task<IEnumerable<CashTransaction>> GetDepositsByIBANAsync(string iban);
         Task<IEnumerable<CashTransaction>> GetByIBANAsync(string iban, int lastDays);
+        Task<IEnumerable<CashTransaction>> GetLastByIBANAsync(string iban);
         Task<CashTransaction> GetLastAsync(string iban);
         Task<CashTransaction> FindByIdAsync(int id);
         Task<CashTransaction> FindByIBANAsync(string iban);

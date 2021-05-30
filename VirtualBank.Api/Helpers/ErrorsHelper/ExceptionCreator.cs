@@ -27,11 +27,11 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
                 new(StatusCodes.Status401Unauthorized, "forbidden", MessageCreator.AddForbidden());
 
 
-        public static ErrorResponse CreateInternalServerError() =>
-                new(StatusCodes.Status500InternalServerError, "Server", MessageCreator.AddInternalServerError());
+        public static ErrorResponse CreateInternalServerError(string message) =>
+                new(StatusCodes.Status500InternalServerError, "Server", MessageCreator.AddInternalServerError(message));
 
 
         public static ErrorResponse CreateUnexpectedError(int errorStatusCode, string description) =>
-                new(errorStatusCode, "unexpected", MessageCreator.AddInternalServerError());
+                new(errorStatusCode, "unexpected", MessageCreator.AddInternalServerError(description));
     }
 }

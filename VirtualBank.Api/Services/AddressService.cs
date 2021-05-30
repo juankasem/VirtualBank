@@ -142,7 +142,7 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
 
@@ -174,7 +174,7 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
             }
 
             return responseModel;

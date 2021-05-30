@@ -160,9 +160,9 @@ namespace VirtualBank.Api.Services
                     {
                         await _fastTransactionsRepo.UpdateAsync(fastTransaction);
                     }
-                    catch 
+                    catch (Exception ex)
                     {
-                        responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                     }
                 }
                 else
@@ -177,9 +177,9 @@ namespace VirtualBank.Api.Services
                 {
                     await _fastTransactionsRepo.AddAsync(CreateFastTransaction(request));
                 }
-                catch 
+                catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
 
@@ -206,9 +206,9 @@ namespace VirtualBank.Api.Services
                     return responseModel;
                 }
             }
-            catch 
+            catch (Exception ex)
             {
-                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
             }
 
             return responseModel;

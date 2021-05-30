@@ -131,6 +131,54 @@ namespace VirtualBank.Api.Controllers
         }
 
 
+
+
+        // GET api/v1/cash-transactions/last-transactions/iban/TR123
+        [HttpGet(ApiRoutes.CashTransactions.GetLastByIBAN)]
+        [ProducesResponseType(typeof(CashTransactionListResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetLastCashTransactions([FromRoute] string iban,
+                                                                 CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = new ApiResponse<LastCashTransactionListResponse>();
+
+                var user = await _userManager.GetUserAsync(User);
+                var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
+
+                if (customer == null)
+                {
+                    apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer)));
+                    return NotFound(apiResponse);
+                }
+
+                if (user.Id != customer?.Data?.UserId)
+                {
+                    apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to perform operation"));
+                    return BadRequest(apiResponse);
+                }
+
+                apiResponse = await _cashTransactionsService.GetLastCashTransactionsAsync(iban, cancellationToken);
+
+                if (apiResponse.Success)
+                {
+                    return Ok(apiResponse);
+                }
+
+                return BadRequest(apiResponse);
+            }
+
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
+
         // POST api/v1/cash-transactions
         [HttpPost(ApiRoutes.CashTransactions.Post)]
         [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]

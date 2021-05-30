@@ -163,7 +163,7 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
             else
@@ -174,7 +174,7 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
 
@@ -252,12 +252,12 @@ namespace VirtualBank.Api.Services
         }
 
 
-        private CreditCardResponse CreateCreditCardResponse(CreditCard creditCard)
+        private static CreditCardResponse CreateCreditCardResponse(CreditCard creditCard)
         {
             if (creditCard != null)
             {
                 return new CreditCardResponse(creditCard.Id, creditCard.CreditCardNo,
-                                              creditCard.ExpirationDate, creditCard.BankAccountId);
+                                              creditCard.ExpirationDate, creditCard.BankAccount.IBAN);
             }
 
             return null;

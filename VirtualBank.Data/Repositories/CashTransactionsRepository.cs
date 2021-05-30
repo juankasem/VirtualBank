@@ -33,6 +33,13 @@ namespace VirtualBank.Data.Repositories
         }
 
 
+        public async Task<IEnumerable<CashTransaction>> GetLastByIBANAsync(string iban)
+        {
+            return await _dbContext.CashTransactions.Where(c => c.From == iban && c.Disabled == false)
+                                                    .AsNoTracking().ToListAsync();
+        }
+
+
         public async Task<IEnumerable<CashTransaction>> GetDepositsByIBANAsync(string iban)
         {
             return await _dbContext.CashTransactions.Where(c => c.To == iban && c.Disabled == false)

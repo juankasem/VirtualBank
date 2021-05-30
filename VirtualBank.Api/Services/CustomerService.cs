@@ -274,7 +274,7 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
             else
@@ -297,7 +297,7 @@ namespace VirtualBank.Api.Services
                     catch (Exception ex)
                     {
                         await dbContextTransaction.RollbackAsync();
-                        responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                     }
                 }
             }
@@ -327,7 +327,7 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
             }
 
             return responseModel;
@@ -355,7 +355,7 @@ namespace VirtualBank.Api.Services
             }
             catch (Exception ex)
             {
-                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
             }
 
             return responseModel;

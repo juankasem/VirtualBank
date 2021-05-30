@@ -139,9 +139,17 @@ namespace VirtualBank.Api.Services
          
             else
             {
-                var newCountry = CreateCountry(request);
+                try
+                {
+                    var newCountry = CreateCountry(request);
 
-                await _countriesRepo.AddAsync(newCountry);
+                    await _countriesRepo.AddAsync(newCountry);
+                }
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                }
             }
 
             return responseModel;

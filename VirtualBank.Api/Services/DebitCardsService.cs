@@ -191,7 +191,7 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
             else
@@ -202,7 +202,7 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
 
@@ -279,7 +279,7 @@ namespace VirtualBank.Api.Services
         private DebitCardResponse CreateDebitCardResponse(DebitCard debitCard)
         {        
             return new DebitCardResponse(debitCard.Id, debitCard.DebitCardNo,
-                                         debitCard.ExpirationDate, debitCard.BankAccount.AccountNo);
+                                         debitCard.ExpirationDate, debitCard.BankAccount.IBAN);
         }
 
        

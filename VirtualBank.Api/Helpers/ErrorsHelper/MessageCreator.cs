@@ -7,11 +7,8 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
            !string.IsNullOrEmpty(message) ? $"{fieldName} {message}" : $"{fieldName} not found";
 
 
-
         public static string AddUnauthorized(string fieldName, string message) =>
            !string.IsNullOrEmpty(message) ? $"{fieldName} {message}" : $"{fieldName} unauthorized";
-
-
 
 
         public static string AddBadRequest(string fieldName, string message) =>
@@ -23,7 +20,7 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
 
         public static string AddForbidden() => "Forbidden";
 
-        public static string AddInternalServerError() => "Internal Server Error";
+        public static string AddInternalServerError(string message) => !string.IsNullOrEmpty(message) ? message : "Internal Server Error";
 
        public MessageCreator()
         {

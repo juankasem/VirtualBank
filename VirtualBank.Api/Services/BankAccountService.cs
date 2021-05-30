@@ -222,7 +222,7 @@ namespace VirtualBank.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             } 
 
@@ -323,7 +323,7 @@ namespace VirtualBank.Api.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                   responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                                   responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                                    return responseModel;
                                 }
                                 break;
@@ -343,7 +343,7 @@ namespace VirtualBank.Api.Services
                             }
                                 catch (Exception ex)
                                 {
-                                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
                                 return responseModel;
                             }
@@ -365,7 +365,7 @@ namespace VirtualBank.Api.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                responseModel.AddError(ExceptionCreator.CreateInternalServerError());
+                                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
                                 return responseModel;
                                 }
@@ -421,6 +421,7 @@ namespace VirtualBank.Api.Services
                 CustomerId = request.CustomerId,
                 BranchId = request.BranchId,
                 Balance = request.Balance,
+                AllowedBalanceToUse = request.Balance,
                 CurrencyId = request.CurrencyId,
                 Type = request.Type,
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
