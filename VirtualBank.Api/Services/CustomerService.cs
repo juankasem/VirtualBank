@@ -233,9 +233,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken)
+        public async Task<Response> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
             if (await CustomerExistsAsync(request))
             {
@@ -312,9 +312,9 @@ namespace VirtualBank.Api.Services
         /// <param name="customerId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default)
+        public async Task<Response> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
             var customer = await _customerRepo.FindByIdAsync(customerId);
 
             try
@@ -340,9 +340,9 @@ namespace VirtualBank.Api.Services
         /// <param name="customerId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken)
+        public async Task<Response> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
             var customer = await _customerRepo.FindByIdAsync(customerId);
 
             try

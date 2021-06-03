@@ -52,8 +52,8 @@ namespace VirtualBank.Api.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.CashTransactions.GetAll)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCashTransactions([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -83,9 +83,9 @@ namespace VirtualBank.Api.Controllers
         // GET api/v1/cash-transactions/iban/TR123
         [HttpGet(ApiRoutes.CashTransactions.GetByIBAN)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBankAccountCashTransactions([FromRoute] string iban,
                                                                         [FromQuery] int lastDays,
@@ -132,13 +132,12 @@ namespace VirtualBank.Api.Controllers
 
 
 
-
         // GET api/v1/cash-transactions/last-transactions/iban/TR123
         [HttpGet(ApiRoutes.CashTransactions.GetLastByIBAN)]
         [ProducesResponseType(typeof(CashTransactionListResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetLastCashTransactions([FromRoute] string iban,
                                                                  CancellationToken cancellationToken = default)
@@ -181,18 +180,18 @@ namespace VirtualBank.Api.Controllers
 
         // POST api/v1/cash-transactions
         [HttpPost(ApiRoutes.CashTransactions.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.UnprocessableEntity)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddCashTransaction([FromBody] CreateCashTransactionRequest request,
                                                             CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = new ApiResponse();
+                var apiResponse = new Response();
 
                 var user = await _userManager.GetUserAsync(User);
                 var customer = await _customerService.GetCustomerByIBANAsync(request.From, cancellationToken);
@@ -249,18 +248,18 @@ namespace VirtualBank.Api.Controllers
 
 
         [HttpPost(ApiRoutes.CashTransactions.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.UnprocessableEntity)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddCashTransactionWithCreditOrDebitCard([FromBody] CreateCashTransactionRequest request,
                                                                                  CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = new ApiResponse();
+                var apiResponse = new Response();
 
                 if (!string.IsNullOrEmpty(request.CreditCardNo))
                 {

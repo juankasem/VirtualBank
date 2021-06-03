@@ -135,9 +135,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> AddOrEditCreditCardAsync(int creditCardId, CreateCreditCardRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> AddOrEditCreditCardAsync(int creditCardId, CreateCreditCardRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
             if (creditCardId != 0)
             {
@@ -188,7 +188,7 @@ namespace VirtualBank.Api.Services
         /// <param name="creditCardId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> ActivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default)
+        public async Task<Response> ActivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CreditCardResponse>();
 
@@ -214,7 +214,7 @@ namespace VirtualBank.Api.Services
         /// <param name="creditCardId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> DeactivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default)
+        public async Task<Response> DeactivateCreditCardAsync(int creditCardId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CreditCardResponse>();
 

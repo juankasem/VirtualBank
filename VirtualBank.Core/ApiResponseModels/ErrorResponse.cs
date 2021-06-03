@@ -15,6 +15,11 @@ namespace VirtualBank.Core.ApiResponseModels
 
         }
 
+        public ErrorResponse(string message)
+        {
+            Message = message;
+        }
+
         public ErrorResponse(int code, string fieldName, string message)
         {
             Code = code;

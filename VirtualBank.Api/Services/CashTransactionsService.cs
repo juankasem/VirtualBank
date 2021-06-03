@@ -216,7 +216,7 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
             var amountToDeposit = request.Amount;
@@ -264,7 +264,7 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
             var amountToWithdraw = request.Amount;
@@ -337,7 +337,7 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
             var amountToTransfer = request.Amount;
@@ -407,7 +407,7 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
             var amountToTransfer = request.Amount;
@@ -442,7 +442,7 @@ namespace VirtualBank.Api.Services
                     var fees = (double)amountToTransfer * feesRate;
 
                     //Deduct from sender account
-                    senderAccount.Balance = amountToTransfer;
+                    senderAccount.Balance -= amountToTransfer;
                     senderAccount.AllowedBalanceToUse = senderAccount.Balance;
 
                     await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
@@ -516,7 +516,6 @@ namespace VirtualBank.Api.Services
                 CreditCardNo = request.CreditCardNo ?? null,
                 DebitCardNo = request.DebitCardNo ?? null
             };
-
         }
 
         [NonAction]

@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using VirtualBank.Api.Helpers;
 using VirtualBank.Core.ApiModels;
 using VirtualBank.Core.ApiRequestModels;
 using VirtualBank.Core.ApiResponseModels;
@@ -15,6 +9,10 @@ using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using System.Threading;
+using VirtualBank.Core.ApiRequestModels.AuthApiRequests;
+using VirtualBank.Api.ActionResults;
+using Microsoft.AspNetCore.Http;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -25,13 +23,20 @@ namespace VirtualBank.Api.Controllers
     {
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
-        private readonly ITokenService _tokenService;
+        private readonly IAuthService _authService;
+        private readonly IMailService _mailService;
+        private readonly IActionResultMapper<AuthController> _actionResultMapper;
 
-        public AuthController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, ITokenService tokenService)
+        public AuthController(UserManager<AppUser> userManager,
+                              SignInManager<AppUser> signInManager,
+                              IAuthService authService,
+                              IMailService mailService,
+                              IActionResultMapper<AuthController> actionResultMapper)
         {
             _signInManager = signInManager;
             _userManager = userManager;
-            _tokenService = tokenService;
+            _authService = authService;
+            _mailService = mailService;
         }
 
         /// <summary>
@@ -58,43 +63,31 @@ namespace VirtualBank.Api.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost(ApiRoutes.Auth.Register)]
-        public async Task<ActionResult<ApiResponse<SignupResponse>>> Register(SignupRequest request)
+        public async Task<IActionResult> Register(SignupRequest request, CancellationToken cancellationToken)
         {
-            var response = new ApiResponse<SignupResponse>();
-
-            if (await CheckEmailExists(request.Email))
+            try
             {
-                response.AddError(ExceptionCreator.CreateBadRequestError("email already exists"));
+                var apiResponse = await _authService.RegisterAsync(request, cancellationToken);
 
-                return response;
-            }
-
-            var appUser = new AppUser()
-            {
-                UserName = request.CustomerNo,
-                Email = request.Email,
-                PhoneNumber = request.PhoneNumber
-            };
-
-            var result = await _userManager.CreateAsync(appUser,request.Password);
-
-            if (result.Succeeded)
-            {
-                response.Data = new SignupResponse()
+                if (apiResponse.Success)
                 {
-                    Email = request.Email
-                };
+                    await _mailService.SendEmailAsync(request.Email, "New user registration", "<p>New user" + DateTime.Now + "</p>", cancellationToken);
+                    return Ok(apiResponse);
+                }
 
-                return Ok(response);
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
+
+
+                return BadRequest(apiResponse);
+
             }
-            else
+            catch (Exception exception)
             {
-                //ToDo : check api status code
-
-                return BadRequest();
+                return _actionResultMapper.Map(exception);
             }
-
         }
+
 
         /// <summary>
         /// login to account and accquire token
@@ -102,42 +95,132 @@ namespace VirtualBank.Api.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost(ApiRoutes.Auth.Login)]
-        public async Task<ActionResult<ApiResponse<LoginResponse>>> Login(LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
         {
-            var response = new ApiResponse<LoginResponse>();
+            try
+            {
+                var apiResponse = await _authService.LoginAsync(request, cancellationToken);
 
-            var user = await _userManager.FindByNameAsync(request.CustomerNo);
+                if (apiResponse.Success)
+                   return Ok(apiResponse);
+              
+
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                   return NotFound(apiResponse);
+
+
+                return BadRequest(apiResponse);
+
+            }
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
+
+        /// <summary>
+        /// forgot password
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPost(ApiRoutes.Auth.ForgotPassword)]
+        public async Task<IActionResult> ForgotPassword(string email, CancellationToken cancellationToken)
+        {
+            var apiResponse = new Response();
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return NotFound(apiResponse);
+            }
+
+            try
+            {
+               apiResponse = await _authService.ForgotPasswordAsync(email, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
+
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
+
+        /// <summary>
+        /// reset password
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPost(ApiRoutes.Auth.ResetPassword)]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request, CancellationToken cancellationToken)
+        {
+
+            try
+            {
+               var apiResponse = await _authService.ResetPasswordAsync(request, cancellationToken);
+
+                if (apiResponse.Success)
+                    return Ok(apiResponse);
+
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
+
+                return BadRequest(apiResponse);
+            }
+
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
+
+        /// <summary>
+        /// Confirm password
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPost(ApiRoutes.Auth.ConfirmEmail)]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token, CancellationToken cancellationToken)
+        {
+            var apiResponse = new Response();
+
+            var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {
-                response.AddError(ExceptionCreator.CreateUnauthorizedError("Invalid login credentials"));
-                return Unauthorized(response);
+                apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(user), $"user not found"));
+                return NotFound(apiResponse);
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user, request.Password, false, true);
-
-            if (result.Succeeded)
+            try
             {
-                response.Data = new LoginResponse()
+                apiResponse = await _authService.ConfirmEmailAsync(userId, token, cancellationToken);
+
+                if (apiResponse.Success)
                 {
-                    AccessToken = _tokenService.GenerateAccessToken(await user.GetClaimsAsync(_userManager)),
-                    RefreshToken = _tokenService.GenerateRefreshToken()
-                };
+                    return Ok(apiResponse);
+                }
 
-
-                user.RefreshToken = response.Data.RefreshToken;
-                await _userManager.UpdateAsync(user);
+                return BadRequest(apiResponse);
             }
-            else
+            catch (Exception exception)
             {
-                response.AddError(ExceptionCreator.CreateUnauthorizedError("Invalid login attempt"));
-                return Unauthorized(response);
+                return _actionResultMapper.Map(exception);
             }
-
-            return Ok(response);
         }
 
-        
 
         #region Private helper methods
         /// <summary>
@@ -145,6 +228,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
+        [HttpPost]
         private async Task<bool> CheckEmailExists(string email)
         {
             if (await _userManager.FindByEmailAsync(email) == null)

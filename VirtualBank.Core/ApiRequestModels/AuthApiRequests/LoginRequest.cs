@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace VirtualBank.Core.ApiRequestModels
+namespace VirtualBank.Core.ApiRequestModels.AuthApiRequests
 {
     /// <summary>
     /// login api request model

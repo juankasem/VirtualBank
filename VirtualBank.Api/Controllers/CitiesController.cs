@@ -36,7 +36,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/cities/all
         [HttpGet(ApiRoutes.Cities.GetAll)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCities(CancellationToken cancellationToken = default)
@@ -60,20 +60,19 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/cities/country/5
         [HttpGet(ApiRoutes.Cities.GetByCountryId)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCitiesByCountryId([FromRoute] int countryId, CancellationToken cancellationToken = default)
         {
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             try
             {
                 if (! await _countriesService.CountryExists(countryId))
                 {
-                    apiResponse.AddError(ExceptionCreator.CreateNotFoundError("country"));
-
+                    apiResponse.AddError(ExceptionCreator.CreateNotFoundError("country", $"country of id: {countryId} not found"));
                     return NotFound(apiResponse);
                 }
 
@@ -93,9 +92,9 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/cities/5
         [HttpGet(ApiRoutes.Cities.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCityById([FromRoute] int cityId, [FromQuery] bool includeCities = false, CancellationToken cancellationToken = default)
         {
@@ -120,9 +119,9 @@ namespace VirtualBank.Api.Controllers
 
         // PUT api/v1/cities/5
         [HttpPut(ApiRoutes.Cities.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditCity([FromRoute] int cityId, [FromBody] CreateCityRequest request,

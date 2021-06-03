@@ -49,7 +49,7 @@ namespace VirtualBank.Api.Services
             throw new NotImplementedException();
         }
 
-        public Task<ApiResponse> AddOrEditRecipientAsync(CreateRecipientRequest request, CancellationToken cancellationToken = default)
+        public Task<Response> AddOrEditRecipientAsync(CreateRecipientRequest request, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

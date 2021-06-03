@@ -47,8 +47,8 @@ namespace VirtualBank.Api.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.CreditCards.GetAll)]
         [ProducesResponseType(typeof(PagedResponse<CreditCardListResponse>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCreditCards([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -79,10 +79,10 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/credit-cards/5
         [HttpGet(ApiRoutes.CreditCards.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCreditCardById([FromRoute] int creditCardId, CancellationToken cancellationToken = default)
         {
             try
@@ -108,16 +108,16 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/credit-cards/account/5
         [HttpGet(ApiRoutes.CreditCards.GetByAccountNo)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCreditCardByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
 
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             if (customer == null)
             {
@@ -155,15 +155,15 @@ namespace VirtualBank.Api.Controllers
 
         // PUT: api/v1/credit-cards/5
         [HttpPut(ApiRoutes.CreditCards.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditCreditCard([FromRoute] int creditCardId, [FromBody] CreateCreditCardRequest request,
                                                               CancellationToken cancellationToken = default)
         {
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByCreditCardIdsync(creditCardId, cancellationToken);
@@ -206,9 +206,9 @@ namespace VirtualBank.Api.Controllers
         // PUT: api/v1/credit-cards/activate/5
         [Authorize(Roles = "Admin")]
         [HttpPut(ApiRoutes.CreditCards.Activate)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> ActivateCreditCard([FromRoute] int creditCardId,
@@ -237,9 +237,9 @@ namespace VirtualBank.Api.Controllers
         // PUT: api/v1/credit-cards/deactivate/5
         [Authorize(Roles = "Admin")]
         [HttpPut(ApiRoutes.CreditCards.Deactivate)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeactivateCreditCard([FromRoute] int creditCardId,

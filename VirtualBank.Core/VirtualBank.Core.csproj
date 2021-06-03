@@ -43,6 +43,8 @@
     <Folder Include="ApiRequestModels\RoleApiRequests \" />
     <Folder Include="ApiResponseModels\RolesApiResponses\" />
     <Folder Include="ApiResponseModels\ClaimsApiResponses\" />
+    <Folder Include="ApiRequestModels\AuthApiRequests\" />
+    <Folder Include="ApiResponseModels\AuthApiResponses\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.3" />

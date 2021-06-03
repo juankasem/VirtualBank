@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace VirtualBank.Core.ApiRequestModels
+namespace VirtualBank.Core.ApiRequestModels.AuthApiRequests
 {
 
     /// <summary>
@@ -18,7 +18,8 @@ namespace VirtualBank.Core.ApiRequestModels
         /// <summary>
         ///  customer number
         /// </summary>
-        [Required] public string CustomerNo { get; set; }
+        [Required]
+        public string CustomerNo { get; set; }
 
         /// <summary>
         /// phone number

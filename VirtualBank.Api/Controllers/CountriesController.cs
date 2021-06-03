@@ -28,7 +28,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/countries/all
         [HttpGet(ApiRoutes.Countries.GetAll)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCountries(CancellationToken cancellationToken = default)
@@ -52,10 +52,10 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/countries/5
         [HttpGet(ApiRoutes.Countries.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCountryById([FromRoute] int countryId, [FromQuery] bool includeCities = false, CancellationToken cancellationToken = default)
         {
             try
@@ -80,10 +80,10 @@ namespace VirtualBank.Api.Controllers
 
         // PUT: api/v1/countries/5
         [HttpPut(ApiRoutes.Countries.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditCountry([FromRoute] int countryId, [FromBody] CreateCountryRequest request,
                                                          CancellationToken cancellationToken = default)
         {

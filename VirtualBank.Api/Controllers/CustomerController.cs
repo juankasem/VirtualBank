@@ -41,7 +41,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/customers/all
         [HttpGet(ApiRoutes.Customers.GetAll)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCustomers([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -67,8 +67,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/customers/5
         [HttpGet(ApiRoutes.Customers.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCustomerById([FromRoute] int customerId, CancellationToken cancellationToken = default)
@@ -95,8 +95,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/customers/account/5
         [HttpGet(ApiRoutes.Customers.GetByAccountNo)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCustomerByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
@@ -123,8 +123,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/customers/iban/5
         [HttpGet(ApiRoutes.Customers.GetByIBAN)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetCustomerByIBAN([FromRoute] string iban, CancellationToken cancellationToken = default)
@@ -153,9 +153,9 @@ namespace VirtualBank.Api.Controllers
 
         // PUT api/v1/customers/5
         [HttpPut(ApiRoutes.Customers.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditCustomer([FromRoute] int customerId,[FromBody] CreateCustomerRequest request,
                                                                        CancellationToken cancellationToken = default)

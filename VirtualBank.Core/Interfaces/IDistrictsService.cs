@@ -15,7 +15,7 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<DistrictResponse>> GetDistrictByIdAsync(int districtId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> AddOrEditDistrictAsync(int districtId, CreateDistrictRequest request, CancellationToken cancellationToken = default);
+        Task<Response> AddOrEditDistrictAsync(int districtId, CreateDistrictRequest request, CancellationToken cancellationToken = default);
 
         Task<bool> DistrictExists(int cityId);
     }

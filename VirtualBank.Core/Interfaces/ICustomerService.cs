@@ -21,11 +21,11 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<RecipientCustomerResponse>> GetRecipientCustomerByIBANAsync(string iban, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken = default);
+        Task<Response> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default);
+        Task<Response> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken = default);
+        Task<Response> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken = default);
 
         Task<bool> CustomerExistsAsync(CreateCustomerRequest request);
     }

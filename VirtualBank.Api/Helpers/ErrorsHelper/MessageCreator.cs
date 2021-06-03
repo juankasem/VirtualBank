@@ -18,7 +18,8 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
        public static string AddUnprocessableEntity(string fieldName, string message) =>
            !string.IsNullOrEmpty(message) ? $"{fieldName} {message}" : $"{fieldName} Unprocessable Entity";
 
-        public static string AddForbidden() => "Forbidden";
+        public static string AddForbidden(string fieldName, string message) =>
+            !string.IsNullOrEmpty(message) ? $"{fieldName} {message}" : $"{fieldName} Forbiddden";
 
         public static string AddInternalServerError(string message) => !string.IsNullOrEmpty(message) ? message : "Internal Server Error";
 

@@ -1,5 +1,6 @@
 ﻿using System;
-namespace VirtualBank.Core.ApiResponseModels
+
+namespace VirtualBank.Core.ApiResponseModels.AuthApiResponses
 {
     /// <summary>
     /// login api response model

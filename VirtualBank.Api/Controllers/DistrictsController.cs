@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,8 +32,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/districts/all
         [HttpGet(ApiRoutes.Districts.GetAll)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllDistricts(CancellationToken cancellationToken = default)
         {
@@ -58,8 +56,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/districts/city/5
         [HttpGet(ApiRoutes.Districts.GetByCityId)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetDistrictsByCityId([FromRoute] int cityId, CancellationToken cancellationToken = default)
@@ -77,7 +75,6 @@ namespace VirtualBank.Api.Controllers
                     return Ok(apiResponse);
 
 
-
                 return BadRequest(apiResponse);
             }
             catch (Exception exception)
@@ -89,15 +86,15 @@ namespace VirtualBank.Api.Controllers
 
         // PUT: api/v1/districts/city/5
         [HttpGet(ApiRoutes.Districts.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditDistrict([FromRoute] int districtId, [FromBody] CreateDistrictRequest request,
                                                       CancellationToken cancellationToken = default)
         {
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             if (!ModelState.IsValid)
             {

@@ -19,7 +19,7 @@ namespace VirtualBank.Api.Filters
                     .Where(x => x.Value.Errors.Count > 0)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(x => x.ErrorMessage)).ToArray();
 
-                var apiResponse = new ApiResponse();
+                var apiResponse = new Response();
 
                 foreach (var errorKeyValue in errorsInModelState)
                 {

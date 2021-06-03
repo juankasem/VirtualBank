@@ -161,9 +161,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> AddOrEditBranchAsync(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> AddOrEditBranchAsync(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
             if (await BranchExists(request.Address.CountryId, request.Address.CityId, request.Name))
             {
@@ -227,9 +227,9 @@ namespace VirtualBank.Api.Services
         /// <param name="branchId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> DeleteBranchAsync(int branchId, CancellationToken cancellationToken = default)
+        public async Task<Response> DeleteBranchAsync(int branchId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
             var branch = await _branchRepo.FindByIdAsync(branchId);
 

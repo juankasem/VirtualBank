@@ -50,8 +50,8 @@ namespace VirtualBank.Api.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.DebitCards.GetAll)]
         [ProducesResponseType(typeof(PagedResponse<DebitCardListResponse>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllDebitCards([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -81,10 +81,10 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/debit-cards/5
         [HttpGet(ApiRoutes.DebitCards.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetDebitCardById([FromRoute] int debitCardId, CancellationToken cancellationToken = default)
         {
             try
@@ -110,10 +110,10 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/debit-cards/5
         [HttpGet(ApiRoutes.DebitCards.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetDebitCardByDebitCardNo([FromRoute] string debitCardNo, CancellationToken cancellationToken = default)
         {
             try
@@ -139,16 +139,16 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/debit-cards/account/5
         [HttpGet(ApiRoutes.DebitCards.GetByAccountNo)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetDebitCardByAccountNo([FromRoute] string accountNo, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByAccountNoAsync(accountNo, cancellationToken);
 
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             if (customer == null)
             {
@@ -187,15 +187,15 @@ namespace VirtualBank.Api.Controllers
 
         // PUT api/v1/debit-cards/account/5
         [HttpPut(ApiRoutes.DebitCards.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditDebitCard([FromRoute] int debitCardId, [FromBody] CreateDebitCardRequest request,
                                                               CancellationToken cancellationToken = default)
         {
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByCreditCardIdsync(debitCardId, cancellationToken);
@@ -236,9 +236,9 @@ namespace VirtualBank.Api.Controllers
         // PUT api/v1/debit-cards/activate/5
         [Authorize(Roles = "Admin")]
         [HttpPut(ApiRoutes.DebitCards.Activate)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> ActivateDebitCard([FromRoute] int debitCardId,
@@ -267,9 +267,9 @@ namespace VirtualBank.Api.Controllers
         // PUT api/v1/debit-cards/deactivate/5
         [Authorize(Roles = "Admin")]
         [HttpPut(ApiRoutes.DebitCards.Deactivate)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeactivateDebitCard([FromRoute] int debitCardId,

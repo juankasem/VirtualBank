@@ -23,8 +23,8 @@ namespace VirtualBank.Api.Helpers.ErrorsHelper
                new(StatusCodes.Status422UnprocessableEntity, fieldName, MessageCreator.AddUnprocessableEntity(fieldName, message));
 
 
-        public static ErrorResponse CreateForbiddenError() =>
-                new(StatusCodes.Status401Unauthorized, "forbidden", MessageCreator.AddForbidden());
+        public static ErrorResponse CreateForbiddenError(string fieldName, string message = null) =>
+                new(StatusCodes.Status403Forbidden, fieldName, MessageCreator.AddForbidden(fieldName, message));
 
 
         public static ErrorResponse CreateInternalServerError(string message) =>

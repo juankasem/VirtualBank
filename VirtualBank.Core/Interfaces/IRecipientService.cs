@@ -13,6 +13,6 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<RecipientResponse>> GetRecipientbyIBANAsync(string iban, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse> AddOrEditRecipientAsync(CreateRecipientRequest request, CancellationToken cancellationToken = default);
+        Task<Response> AddOrEditRecipientAsync(CreateRecipientRequest request, CancellationToken cancellationToken = default);
     }
 }

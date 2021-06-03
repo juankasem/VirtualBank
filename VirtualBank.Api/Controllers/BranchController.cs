@@ -42,7 +42,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/branch/all
         [HttpGet(ApiRoutes.Branches.GetAll)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllBranches([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -69,8 +69,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/branch/city/5
         [HttpGet(ApiRoutes.Branches.GetByCityId)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBranchesByCityId([FromRoute] int cityId,
@@ -80,7 +80,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = new ApiResponse();
+                var apiResponse = new Response();
 
                 if (!await _citiesService.CityExists(cityId))
                 {
@@ -105,8 +105,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/branch/5
         [HttpGet(ApiRoutes.Branches.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBranchById(int branchId, CancellationToken cancellationToken = default)
@@ -133,9 +133,9 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/branch/code/5
         [HttpGet(ApiRoutes.Branches.GetByCode)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBranchByCode(string code, CancellationToken cancellationToken = default)
         {
             try
@@ -161,8 +161,8 @@ namespace VirtualBank.Api.Controllers
 
         // PUT api/v1/branch/5
         [HttpPut(ApiRoutes.Branches.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditBranchAsync([FromRoute] int branchId, [FromBody] CreateBranchRequest request,
@@ -192,8 +192,8 @@ namespace VirtualBank.Api.Controllers
 
         // DELETE api/v1/branch/5
         [HttpDelete(ApiRoutes.Branches.Delete)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteBranchAsync([FromRoute] int branchId, CancellationToken cancellationToken = default)

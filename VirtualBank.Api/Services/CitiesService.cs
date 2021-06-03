@@ -128,9 +128,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> AddOrEditCityAsync(int cityId, CreateCityRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> AddOrEditCityAsync(int cityId, CreateCityRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
             if (await _citiesRepo.CityNameExists(request.CountryId, request.Name))
             {
@@ -164,7 +164,6 @@ namespace VirtualBank.Api.Services
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
             }
-
             else
             {
                 try

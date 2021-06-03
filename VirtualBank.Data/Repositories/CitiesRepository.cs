@@ -29,8 +29,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<IEnumerable<City>> GetByCountryIdAsync(int countryId)
         {
             return await _dbContext.Cities.Include(c => c.Country)
-                                          .Where(city => city.CountryId == countryId
-                                                         && city.Disabled == false)
+                                          .Where(city => city.CountryId == countryId && city.Disabled == false)
                                           .AsNoTracking().ToListAsync();
         }
 
@@ -48,6 +47,7 @@ namespace VirtualBank.Data.Repositories
 
             return city;
         }
+
 
         public async Task<City> UpdateAsync(City city)
         {

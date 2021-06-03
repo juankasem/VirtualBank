@@ -44,7 +44,7 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.Administration.ListRoles)]
         public IActionResult ListRoles()
         {
-            var apiRsponse = new ApiResponse();
+            var apiRsponse = new Response();
 
             var roles = _roleManager.Roles;
 
@@ -67,7 +67,7 @@ namespace VirtualBank.Api.Controllers
         [HttpPost(ApiRoutes.Administration.CreateRole)]
         public async Task<IActionResult> CreateRole([FromQuery] string roleName, CancellationToken cancellationToken )
         {
-            var apiRsponse = new ApiResponse();
+            var apiRsponse = new Response();
 
             if (await CheckRoleExists(roleName))
             {
@@ -107,7 +107,7 @@ namespace VirtualBank.Api.Controllers
         [HttpGet(ApiRoutes.Administration.GetUsersInRoles)]
         public async Task<IActionResult> GetUsersInRole([FromQuery] string roleId, CancellationToken cancellationToken)
         {
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             var role = await _roleManager.FindByIdAsync(roleId);
 
@@ -161,7 +161,7 @@ namespace VirtualBank.Api.Controllers
         [HttpPost(ApiRoutes.Administration.EditUsersInRoles)]
         public async Task<IActionResult> EditUsersInRole([FromQuery] string roleId, EditUserRoleRequest request, CancellationToken cancellationToken)
         {
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             var role = await _roleManager.FindByIdAsync(roleId);
 

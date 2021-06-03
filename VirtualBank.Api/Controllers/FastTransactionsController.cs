@@ -49,9 +49,9 @@ namespace VirtualBank.Api.Controllers
         // GET: api/v1/cash-transactions/all
         [Authorize("Admin")]
         [HttpGet(ApiRoutes.FastTransactions.GetAll)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllFastTransactions([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
                                                                 [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
                                                                  CancellationToken cancellationToken = default)
@@ -80,7 +80,7 @@ namespace VirtualBank.Api.Controllers
         // GET: api/v1/cash-transactions/iban/TR5
         [HttpGet(ApiRoutes.FastTransactions.GetByIBAN)]
         [ProducesResponseType(typeof(PagedResponse<FastTransactionListResponse>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBankAccountFastTransactions([FromRoute] string iban,
@@ -134,8 +134,8 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/cash-transactions/5
         [HttpGet(ApiRoutes.FastTransactions.GetById)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetFastTransactionById([FromRoute] int id, CancellationToken cancellationToken = default)
@@ -162,8 +162,8 @@ namespace VirtualBank.Api.Controllers
 
         // PUT api/v1/cash-transactions/5
         [HttpGet(ApiRoutes.FastTransactions.Post)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditFastTransaction([FromRoute] int id,
@@ -174,7 +174,7 @@ namespace VirtualBank.Api.Controllers
             var user = await _userManager.GetUserAsync(User);
             var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
 
-            var apiResponse = new ApiResponse();
+            var apiResponse = new Response();
 
             if (customer == null)
             {
@@ -212,8 +212,8 @@ namespace VirtualBank.Api.Controllers
 
         // DELETE /cash-transactions/5
         [HttpDelete(ApiRoutes.FastTransactions.Delete)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteFastTransaction([FromRoute] int id,

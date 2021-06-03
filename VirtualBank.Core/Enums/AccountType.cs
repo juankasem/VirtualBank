@@ -5,7 +5,7 @@ namespace VirtualBank.Core.Enums
     {
         Savings = 1,
         Deposit = 2,
-        Current = 3,
+        Checking = 3,
         Joint = 4
     }
 }

@@ -6,12 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.DistrictApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.DistrictApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
+using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
@@ -19,103 +21,171 @@ namespace VirtualBank.Api.Services
     public class DistrictsService : IDistrictsService
     {
         private readonly VirtualBankDbContext _dbContext;
+        private readonly IDistrictsRepository _districtsRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public DistrictsService(VirtualBankDbContext dbContext, IHttpContextAccessor httpContextAccessor)
+        public DistrictsService(VirtualBankDbContext dbContext,
+                                IDistrictsRepository districtsRepo,
+                                IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
+            _districtsRepo = districtsRepo;
             _httpContextAccessor = httpContextAccessor;
         }
-    
 
+
+        /// <summary>
+        /// Retrieve all districts
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<DistrictListResponse>> GetAllDistrictsAsync(CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<DistrictListResponse>();
 
-            var districtList = await _dbContext.Districts.OrderBy(c => c.Name).ToListAsync();
+            var allDistricts = await _districtsRepo.GetAllAsync();
 
-            var districts = new List<DistrictResponse>();
-
-            foreach (var district in districtList)
+            if (!allDistricts.Any())
             {
-                districts.Add(CreateDistrictResponse(district));
+                return responseModel;
             }
 
-            responseModel.Data = new DistrictListResponse(districts.ToImmutableList(), districts.Count);
+            var districtList = new List<DistrictResponse>();
+
+            foreach (var district in allDistricts)
+            {
+                districtList.Add(CreateDistrictResponse(district));
+            }
+
+            responseModel.Data = new DistrictListResponse(districtList.ToImmutableList(), districtList.Count);
 
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Retrieve districts by city
+        /// </summary>
+        /// <param name="cityId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<DistrictListResponse>> GetDistrictsByCityIdAsync(int cityId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<DistrictListResponse>();
 
-            var districtList = await _dbContext.Districts.Where(c => c.CityId == cityId).OrderBy(c => c.Name).ToListAsync();
+            var cityDistricts = await _districtsRepo.GetByCityIdAsync(cityId);
 
-            var districts = new List<DistrictResponse>();
-
-            foreach (var district in districtList)
+            if (!cityDistricts.Any())
             {
-                districts.Add(CreateDistrictResponse(district));
+                return responseModel;
             }
 
-            responseModel.Data = new DistrictListResponse(districts.ToImmutableList(), districts.Count);
+            var districtList = new List<DistrictResponse>();
+
+            foreach (var district in cityDistricts)
+            {
+                districtList.Add(CreateDistrictResponse(district));
+            }
+
+            responseModel.Data = new DistrictListResponse(districtList.ToImmutableList(), districtList.Count);
 
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Retrieve district by id
+        /// </summary>
+        /// <param name="districtId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ApiResponse<DistrictResponse>> GetDistrictByIdAsync(int districtId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<DistrictResponse>();
 
-            var district = await _dbContext.Districts.FirstOrDefaultAsync(c => c.Id == districtId);
+            var district = await _districtsRepo.FindByIdAsync(districtId);
 
+            if (district == null)
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(district), $"district Id: {districtId} not found"));
+                return responseModel;
+            }
 
             responseModel.Data = CreateDistrictResponse(district);
 
             return responseModel;
         }
 
-        public async Task<ApiResponse> AddOrEditDistrictAsync(int districtId, CreateDistrictRequest request, CancellationToken cancellationToken = default)
+
+        /// <summary>
+        /// Add or Edit an existing district
+        /// </summary>
+        /// <param name="districtId"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<Response> AddOrEditDistrictAsync(int districtId, CreateDistrictRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
-            var user = _httpContextAccessor.HttpContext.User;
-            var district = await _dbContext.Districts.FirstOrDefaultAsync(c => c.Id == districtId);
-
-            if (district != null)
+            if (await _districtsRepo.DistrictNameExists(request.CityId, request.Name))
             {
-                district.CityId = request.CityId;
-                district.Name = request.Name;
-                district.LastModifiedBy = user.Identity.Name;
-                district.LastModifiedOn = DateTime.UtcNow;
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("cdistrict name does already exist"));
+                return responseModel;
+            }
 
-                 _dbContext.Districts.Update(district);
+            if (districtId != 0)
+            {
+                var district = await _dbContext.Districts.FirstOrDefaultAsync(c => c.Id == districtId);
+
+                try
+                {
+                    if (district != null)
+                    {
+                        district.CityId = request.CityId;
+                        district.Name = request.Name;
+                        district.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
+                        district.LastModifiedOn = DateTime.UtcNow;
+
+                        _dbContext.Districts.Update(district);
+                    }
+                    else
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(district), $"district of Id: { districtId} not found"));
+                        return responseModel;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+                }
             }
             else
             {
-                var newDistrict = CreateDistrict(request);
-
-                if (newDistrict == null)
+                try
                 {
-                    responseModel.AddError("couldn't create new city");
-                    return responseModel;
+                    await _districtsRepo.AddAsync(CreateDistrict(request));
                 }
-
-                newDistrict.CreatedBy = user.Identity.Name;
-
-                await _dbContext.Districts.AddAsync(newDistrict);
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+                }
             }
-
-            await _dbContext.SaveChangesAsync();
 
             return responseModel;
         }
 
-        public async Task<bool> DistrictExists(int cityId)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cityId"></param>
+        /// <returns></returns>
+        public async Task<bool> DistrictExists(int districtId)
         {
-            return await _dbContext.Districts.AnyAsync(c => c.Id == cityId);
+            return await _dbContext.Districts.AnyAsync(c => c.Id == districtId);
         }
+
 
         #region private helper methods
         private District CreateDistrict(CreateDistrictRequest request)

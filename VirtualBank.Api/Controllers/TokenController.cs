@@ -77,14 +77,14 @@ namespace VirtualBank.Api.Controllers
         /// <returns></returns>
         [HttpPost(ApiRoutes.Token.Revoke)]
         [Authorize]
-        public async Task<ApiResponse> Revoke()
+        public async Task<Response> Revoke()
         {
             var user = await _userManager.GetUserAsync(User);
             user.RefreshToken = null;
 
             await _userManager.UpdateAsync(user);
 
-            return new ApiResponse();
+            return new Response();
         }
     }
 }

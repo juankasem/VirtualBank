@@ -43,11 +43,18 @@ namespace VirtualBank.Core.ApiRoutes
         {
             public const string controller = "auth";
 
-            public const string CheckEmailExists = Base + "/" + controller + "/checkEmailExists";
 
             public const string Register = Base + "/" + controller + "/register";
 
             public const string Login = Base + "/" + controller + "/login";
+
+            public const string ForgotPassword = Base + "/" + controller + "/forgot-password";
+
+            public const string ConfirmEmail = Base + "/" + controller + "/confirm-email";
+
+            public const string CheckEmailExists = Base + "/" + controller + "/check-email-exists";
+
+            public const string ResetPassword = Base + "/" + controller + "/reset-password";
         }
 
 
@@ -168,7 +175,6 @@ namespace VirtualBank.Core.ApiRoutes
         }
 
 
-
         public static class Customers
         {
             public const string controller = "customers";
@@ -183,8 +189,6 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string Post = Base + "/" + controller + "/{customerId:int}";
         }
-
-
 
 
         public static class DebitCards
@@ -223,7 +227,6 @@ namespace VirtualBank.Core.ApiRoutes
             public const string Delete = Base + "/" + controller + "/{id:int}";
 
         }
-
 
 
         public static class Token

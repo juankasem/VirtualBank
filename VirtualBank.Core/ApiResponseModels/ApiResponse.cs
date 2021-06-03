@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace VirtualBank.Core.ApiResponseModels
 {
-    public class ApiResponse
+    public class Response
     {
         public bool Success => Errors == null;
 
@@ -24,9 +24,11 @@ namespace VirtualBank.Core.ApiResponseModels
 
             Errors.AddRange(errors);
         }
+
+        public string Message { get; set; }
     }
 
-    public class ApiResponse<T> : ApiResponse
+    public class ApiResponse<T> : Response
     {
         public T Data { get; set; }
     }

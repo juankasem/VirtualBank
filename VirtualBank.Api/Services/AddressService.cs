@@ -98,9 +98,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
            
             if (addressId != 0)
@@ -155,9 +155,9 @@ namespace VirtualBank.Api.Services
         /// <param name="addressId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse> DeleteAddressAsync(int addressId, CancellationToken cancellationToken = default)
+        public async Task<Response> DeleteAddressAsync(int addressId, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse();
+            var responseModel = new Response();
 
             var address = await _addressRepository.FindByIdAsync(addressId);
 
