@@ -57,6 +57,7 @@ namespace VirtualBank.Api.Controllers
             return Ok(response);
         }
 
+
         /// <summary>
         /// Create New User end point
         /// </summary>

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
+using VirtualBank.Api.Cache;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -41,6 +42,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/customers/all
         [HttpGet(ApiRoutes.Customers.GetAll)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]

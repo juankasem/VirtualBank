@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
+using VirtualBank.Api.Cache;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CreditCardApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -46,6 +47,7 @@ namespace VirtualBank.Api.Controllers
         // GET: api/v1/credit-cards/all
         [Authorize(Roles = "Admin")]
         [HttpGet(ApiRoutes.CreditCards.GetAll)]
+        [Cached(600)]
         [ProducesResponseType(typeof(PagedResponse<CreditCardListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
@@ -79,6 +81,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/credit-cards/5
         [HttpGet(ApiRoutes.CreditCards.GetById)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
@@ -108,6 +111,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/credit-cards/account/5
         [HttpGet(ApiRoutes.CreditCards.GetByAccountNo)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]

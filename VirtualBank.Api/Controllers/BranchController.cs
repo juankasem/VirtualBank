@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
+using VirtualBank.Api.Cache;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -42,6 +43,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/branch/all
         [HttpGet(ApiRoutes.Branches.GetAll)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -105,6 +107,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/branch/5
         [HttpGet(ApiRoutes.Branches.GetById)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -133,6 +136,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/branch/code/5
         [HttpGet(ApiRoutes.Branches.GetByCode)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]

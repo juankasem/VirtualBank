@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
+using VirtualBank.Api.Cache;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -50,6 +51,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/cash-transactions/all
         [Authorize(Roles = "Admin")]
+        [Cached(600)]
         [HttpGet(ApiRoutes.CashTransactions.GetAll)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
@@ -82,6 +84,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/cash-transactions/iban/TR123
         [HttpGet(ApiRoutes.CashTransactions.GetByIBAN)]
+        [Cached(600)]
         [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
@@ -134,6 +137,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET api/v1/cash-transactions/last-transactions/iban/TR123
         [HttpGet(ApiRoutes.CashTransactions.GetLastByIBAN)]
+        [Cached(600)]
         [ProducesResponseType(typeof(CashTransactionListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]

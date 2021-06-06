@@ -12,8 +12,8 @@ namespace VirtualBank.Api.Factories
         {
 
             services.AddIdentity<AppUser, IdentityRole>()
-                       .AddEntityFrameworkStores<VirtualBankDbContext>()
-                       .AddDefaultTokenProviders();
+                    .AddEntityFrameworkStores<VirtualBankDbContext>()
+                    .AddDefaultTokenProviders();
 
             return services;
         }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VirtualBank.Api.Factories;
 using VirtualBank.Api.Filters;
+using VirtualBank.Api.Installers;
 using VirtualBank.Api.Services;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
@@ -32,6 +33,7 @@ namespace VirtualBank.Api
         {
             services.AddAutoMapper(typeof(Startup));
             services.AddDatabaseContext(Configuration);
+            services.ConfigureRedisCaheSettings(Configuration);
 
             services.AddIdentity()
                     .ConfigureIdentityOptions()

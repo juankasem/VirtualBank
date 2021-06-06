@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
+using VirtualBank.Api.Cache;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -36,6 +37,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/cities/all
         [HttpGet(ApiRoutes.Cities.GetAll)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -60,6 +62,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/cities/country/5
         [HttpGet(ApiRoutes.Cities.GetByCountryId)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -90,8 +93,10 @@ namespace VirtualBank.Api.Controllers
             }
         }
 
+
         // GET: api/v1/cities/5
         [HttpGet(ApiRoutes.Cities.GetById)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
@@ -116,6 +121,7 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
+
 
         // PUT api/v1/cities/5
         [HttpPut(ApiRoutes.Cities.Post)]

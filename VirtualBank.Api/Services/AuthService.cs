@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using VirtualBank.Api.Helpers;
 using VirtualBank.Api.Helpers.ErrorsHelper;
-using VirtualBank.Core.ApiModels;
 using VirtualBank.Core.ApiRequestModels.AuthApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AuthApiResponses;
@@ -81,10 +80,13 @@ namespace VirtualBank.Api.Services
             }
             else
             {
-                //ToDo : check api status code
-
-                return apiResponse;
+                foreach (var error in result.Errors)
+                {
+                    apiResponse.AddError(new ErrorResponse(error.Description));
+                }
             }
+
+            return apiResponse;
         }
 
 
@@ -194,7 +196,6 @@ namespace VirtualBank.Api.Services
             }
 
             return apiResponse;
-
         }
 
 

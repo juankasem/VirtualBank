@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VirtualBank.Api.Cache;
 using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -28,6 +29,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/countries/all
         [HttpGet(ApiRoutes.Countries.GetAll)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -52,6 +54,7 @@ namespace VirtualBank.Api.Controllers
 
         // GET: api/v1/countries/5
         [HttpGet(ApiRoutes.Countries.GetById)]
+        [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]

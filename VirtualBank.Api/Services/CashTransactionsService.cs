@@ -235,7 +235,7 @@ namespace VirtualBank.Api.Services
 
                 //Add amount to recipient balance
                 toAccount.Balance += amountToDeposit;
-                toAccount.AllowedBalanceToUse = toAccount.Balance;
+                toAccount.AllowedBalanceToUse += amountToDeposit;
 
                 //Update bank account
                 await _bankAccountRepo.UpdateAsync(_dbContext, toAccount);
@@ -303,7 +303,7 @@ namespace VirtualBank.Api.Services
                 if (amountToWithdraw <= fromAccount.AllowedBalanceToUse)
                 {
                     fromAccount.Balance -= amountToWithdraw;
-                    fromAccount.AllowedBalanceToUse = fromAccount.Balance; 
+                    fromAccount.AllowedBalanceToUse -= amountToWithdraw; 
 
                     await _bankAccountRepo.UpdateAsync(_dbContext, fromAccount);
 
@@ -365,7 +365,7 @@ namespace VirtualBank.Api.Services
                 {
                     //Deduct from sender account
                     senderAccount.Balance -= amountToTransfer;
-                    senderAccount.AllowedBalanceToUse = senderAccount.Balance;
+                    senderAccount.AllowedBalanceToUse -= amountToTransfer;
 
                     //Update sender bank account
                     await _bankAccountRepo.UpdateAsync(_dbContext, senderAccount);
