@@ -33,6 +33,7 @@ namespace VirtualBank.Data.Repositories
                                           .AsNoTracking().ToListAsync();
         }
 
+
         public async Task<City> FindByIdAsync(int id)
         {
             return await _dbContext.Cities.Include(c => c.Country)
@@ -51,8 +52,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<City> UpdateAsync(City city)
         {
-            var existingCity = await _dbContext.Cities.FirstOrDefaultAsync(city => city.Id == city.Id
-                                                                                   && city.Disabled == false);
+            var existingCity = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == city.Id && city.Disabled == false);
 
             if (existingCity != null)
             {
@@ -64,6 +64,7 @@ namespace VirtualBank.Data.Repositories
 
             return city;
         }
+
 
         public async Task<bool> RemoveAsync(int id)
         {

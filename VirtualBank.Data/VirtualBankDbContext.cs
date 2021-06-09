@@ -24,6 +24,7 @@ namespace VirtualBank.Data
         public DbSet<DebitCard> DebitCards { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<FastTransaction> FastTransactions { get; set; }
+        public DbSet<Loan> Loans { get; set; }
         public DbSet<Recipient> Recipients { get; set; }
 
 

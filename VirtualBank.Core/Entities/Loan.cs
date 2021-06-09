@@ -1,11 +1,18 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.Entities
 {
     public class Loan : BaseClass
     {
-        public string CustomerId { get; set; }
+        [ForeignKey(nameof(Customer))]
+        public int CustomerId { get; set; }
+        public Customer Customer { get; set; }
+
+        [ForeignKey(nameof(BankAccount))]
+        public int BankAccountId { get; set; }
+        public BankAccount BankAccount { get; set; }
 
         public LoanType LoanType { get; set; }
 
@@ -14,6 +21,5 @@ namespace VirtualBank.Core.Entities
         public decimal  InterestRate { get; set; }
 
         public DateTime DueDate { get; set; }
-
     }
 }
