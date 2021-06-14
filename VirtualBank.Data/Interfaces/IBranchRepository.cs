@@ -9,9 +9,11 @@ namespace VirtualBank.Data.Interfaces
     {
         Task<IEnumerable<Branch>> GetAllAsync();
         Task<IEnumerable<Branch>> GetByCityIdAsync(int cityId);
+        Task<IEnumerable<Branch>> SearchByNameAsync(string searchTerm);
         Task<Branch> FindByIdAsync(int id);
         Task<Branch> FindByCodeAsync(string code);
         Task<bool> ExistsAsync(int countryId, int cityId, string branchName);
+
 
         Task<Branch> AddAsync(Branch branch);
         Task<Branch> AddAsync(VirtualBankDbContext dbContext, Branch branch);

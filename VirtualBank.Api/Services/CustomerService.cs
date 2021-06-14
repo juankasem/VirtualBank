@@ -73,6 +73,43 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// Search customers by name
+        /// </summary>
+        /// <param name="searchTerm"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<CustomerListResponse>> SearchCustomersByNameAsync(string searchTerm, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CustomerListResponse>();
+
+            var searchResult = await _customerRepo.SearchByNameAsync(searchTerm);
+
+            if (!searchResult.Any())
+            {
+                return responseModel;
+            }
+
+            var customers = searchResult.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                            .Take(pageSize);
+
+            var customerList = new List<CustomerResponse>();
+
+            foreach (var customer in customers)
+            {
+                var address = await _addressRepo.FindByIdAsync(customer.AddressId);
+                customerList.Add(CreateCustomerResponse(customer, address));
+            }
+
+            responseModel.Data = new CustomerListResponse(customerList.ToImmutableList(), customerList.Count);
+
+            return responseModel;
+        }
+
+
         /// <summary>
         /// Retrieve customer by customer id
         /// </summary>

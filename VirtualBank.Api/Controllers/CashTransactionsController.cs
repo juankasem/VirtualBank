@@ -49,7 +49,7 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET api/v1/cash-transactions/all
+        // GET api/v1/cash-transactions/all?pageNumber=1&pageSize=50
         [Authorize(Roles = "Admin")]
         [Cached(600)]
         [HttpGet(ApiRoutes.CashTransactions.GetAll)]
@@ -71,6 +71,7 @@ namespace VirtualBank.Api.Controllers
                     var pagedApiResponse = new PagedResponse<CashTransactionListResponse>(apiResponse.Data);
                     return Ok(pagedApiResponse);
                 }
+
 
                 return BadRequest(apiResponse);
             }
@@ -111,8 +112,8 @@ namespace VirtualBank.Api.Controllers
 
                 if (user.Id != customer?.Data?.UserId)
                 {
-                    apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to perform operation"));
-                    return BadRequest(apiResponse);
+                    apiResponse.AddError(ExceptionCreator.CreateForbiddenError(nameof(user), "user is not authorized to perform operation"));
+                    return Forbid();
                 }
 
                 apiResponse = await _cashTransactionsService.GetBankAccountCashTransactionsAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);

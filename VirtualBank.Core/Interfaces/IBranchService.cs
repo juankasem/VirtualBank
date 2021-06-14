@@ -15,6 +15,9 @@ namespace VirtualBank.Core.Interfaces
         Task<ApiResponse<BranchListResponse>> GetBranchesByCityIdAsync(int cityId, int pageNumber, int pageSize,
                                                                        CancellationToken cancellationToken = default);
 
+        Task<ApiResponse<BranchListResponse>> SearchBranchesByNameAsync(string searchTerm, int pageNumber, int pageSize,
+                                                                  CancellationToken cancellationToken = default);
+
         Task<ApiResponse<BranchResponse>> GetBranchByIdAsync(int branchId, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<BranchResponse>> GetBranchByCodeAsync(string code, CancellationToken cancellationToken = default);

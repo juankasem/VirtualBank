@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.FastTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -19,19 +18,16 @@ namespace VirtualBank.Api.Services
 {
     public class FastTransactionsService : IFastTransactionsService
     {
-        private readonly VirtualBankDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IBankAccountRepository _bankAccountRepo;
         private readonly IBranchRepository _branchRepo;
         private readonly IFastTransactionsRepository _fastTransactionsRepo;
 
-        public FastTransactionsService(VirtualBankDbContext dbContext,
-                                      IHttpContextAccessor httpContextAccessor,
-                                      IBankAccountRepository bankAccountRepo,
-                                      IBranchRepository branchRepo,
-                                      IFastTransactionsRepository fastTransactionsRepo)
+        public FastTransactionsService(IHttpContextAccessor httpContextAccessor,
+                                       IBankAccountRepository bankAccountRepo,
+                                       IBranchRepository branchRepo,
+                                       IFastTransactionsRepository fastTransactionsRepo)
         {
-            _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
             _bankAccountRepo = bankAccountRepo;
             _branchRepo = branchRepo;

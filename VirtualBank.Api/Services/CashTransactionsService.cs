@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +38,7 @@ namespace VirtualBank.Api.Services
             _cashTransactionsRepo = cashTransactionsRepo;
             _httpContextAccessor = httpContextAccessor;
         }
+
 
         /// <summary>
         /// Retrieve all cash transactions occured

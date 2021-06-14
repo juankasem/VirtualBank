@@ -19,9 +19,9 @@ namespace VirtualBank.Api.Services
 {
     public class BankAccountService : IBankAccountService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IBankAccountRepository _bankAccountRepo;
         private readonly ICashTransactionsRepository _cashTransactionsRepo;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public BankAccountService(IBankAccountRepository bankAccountRepo,
                                   ICashTransactionsRepository cashTransactionsRepo,

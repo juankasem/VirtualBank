@@ -19,7 +19,8 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<IEnumerable<Loan>> GetAllAsync()
         {
-            return await _dbContext.Loans.Include(l => l.Customer).Include(l => l.BankAccount)
+            return await _dbContext.Loans.Include(l => l.Customer)
+                                         .Include(l => l.BankAccount)
                                          .Where(l => l.Disabled == false)
                                          .AsNoTracking().ToListAsync();
         }

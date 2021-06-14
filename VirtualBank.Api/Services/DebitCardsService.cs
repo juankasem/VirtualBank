@@ -263,7 +263,6 @@ namespace VirtualBank.Api.Services
 
 
         #region private helper methods
-
         private DebitCard CreateDebitCard(CreateDebitCardRequest request)
         {
             return new DebitCard()

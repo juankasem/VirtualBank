@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +10,11 @@ using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Cache;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
+using VirtualBank.Core.ApiResponseModels.CustomerApiResponses;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -43,7 +41,7 @@ namespace VirtualBank.Api.Controllers
         // GET api/v1/customers/all
         [HttpGet(ApiRoutes.Customers.GetAll)]
         [Cached(600)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PagedResponse<CustomerListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCustomers([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -55,7 +53,10 @@ namespace VirtualBank.Api.Controllers
                 var apiResponse = await _customerService.GetAllCustomersAsync(pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
-                    return Ok(apiResponse);
+                {
+                    var pagedApiResponse = new PagedResponse<CustomerListResponse>(apiResponse.Data);
+                    return Ok(pagedApiResponse);
+                }
 
 
                 return BadRequest(apiResponse);
@@ -65,6 +66,37 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
+
+
+        // GET api/v1/customers/search
+        [HttpGet(ApiRoutes.Customers.Search)]
+        [Cached(600)]
+        [ProducesResponseType(typeof(PagedResponse<CustomerListResponse>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> SearchCustomersByName([FromQuery] string searchTerm,
+                                                               [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+                                                               [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                               CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _customerService.SearchCustomersByNameAsync(searchTerm, pageNumber, pageSize, cancellationToken);
+
+                if (apiResponse.Success)
+                {
+                    var pagedApiResponse = new PagedResponse<CustomerListResponse>(apiResponse.Data);
+                    return Ok(pagedApiResponse);
+                }
+
+                return BadRequest(apiResponse);
+            }
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
 
 
         // GET api/v1/customers/5

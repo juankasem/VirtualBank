@@ -12,6 +12,8 @@ using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Cache;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
+using VirtualBank.Core.ApiResponseModels.BranchApiResponses;
+using VirtualBank.Core.ApiResponseModels.CustomerApiResponses;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
@@ -44,7 +46,7 @@ namespace VirtualBank.Api.Controllers
         // GET: api/v1/branch/all
         [HttpGet(ApiRoutes.Branches.GetAll)]
         [Cached(600)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PagedResponse<CustomerListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllBranches([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
@@ -56,8 +58,42 @@ namespace VirtualBank.Api.Controllers
                 var apiResponse = await _branchService.GetAllBranchesAsync(pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
-                    return Ok(apiResponse);
+                {
+                    var pagedApiResponse = new PagedResponse<BranchListResponse>(apiResponse.Data);
+                    return Ok(pagedApiResponse);
+                }
 
+
+                return BadRequest(apiResponse);
+            }
+
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
+
+        // GET: api/v1/branch/search
+        [HttpGet(ApiRoutes.Branches.Search)]
+        [Cached(600)]
+        [ProducesResponseType(typeof(PagedResponse<CustomerListResponse>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> SearchBranchesByName([FromQuery] string searchTerm,
+                                                              [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+                                                              [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                              CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _branchService.SearchBranchesByNameAsync(searchTerm, pageNumber, pageSize, cancellationToken);
+
+                if (apiResponse.Success)
+                {
+                    var pagedApiResponse = new PagedResponse<BranchListResponse>(apiResponse.Data);
+                    return Ok(pagedApiResponse);
+                }
 
                 return BadRequest(apiResponse);
             }

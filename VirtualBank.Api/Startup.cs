@@ -75,6 +75,7 @@ namespace VirtualBank.Api
             services.AddScoped<ICitiesRepository, CitiesRepository>();
             services.AddScoped<ICashTransactionsRepository, CashTransactionsRepository>();
             services.AddScoped<IFastTransactionsRepository, FastTransactionsRepository>();
+            services.AddScoped<ILoansRepository, LoansRepository>();
 
 
             // Add services
@@ -89,6 +90,7 @@ namespace VirtualBank.Api
             services.AddScoped<IDistrictsService, DistrictsService>();
             services.AddScoped<IDebitCardsService, DebitCardsService>();
             services.AddScoped<IFastTransactionsService, FastTransactionsService>();
+            services.AddScoped<ILoansService, LoansService>();
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<ITokenService, TokenService>();
 

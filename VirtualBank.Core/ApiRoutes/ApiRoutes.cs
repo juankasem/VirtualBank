@@ -86,6 +86,8 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string GetAll = Base + "/" + controller + "/all";
 
+            public const string Search = Base + "/" + controller + "/search";
+
             public const string GetByCityId = Base + "/" + controller + "/city/{cityId:int}";
 
             public const string GetById = Base + "/" + controller + "/{branchId:int}";
@@ -180,6 +182,8 @@ namespace VirtualBank.Core.ApiRoutes
             public const string controller = "customers";
 
             public const string GetAll = Base + "/" + controller + "/all";
+
+            public const string Search = Base + "/" + controller + "/search";
 
             public const string GetById = Base + "/" + controller + "/{customerId:int}";
 

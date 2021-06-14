@@ -24,6 +24,13 @@ namespace VirtualBank.Data.Repositories
                                             .AsNoTracking().ToListAsync();
         }
 
+        public async Task<IEnumerable<Branch>> SearchByNameAsync(string searchTerm)
+        {
+            return await _dbContext.Branches.Include(branch => branch.Address)
+                                            .Where(branch => branch.Name.Contains(searchTerm) && branch.Disabled == false)
+                                            .AsNoTracking().ToListAsync();
+        }
+
 
         public async Task<IEnumerable<Branch>> GetByCityIdAsync(int cityId)
         {
@@ -148,6 +155,5 @@ namespace VirtualBank.Data.Repositories
         {
             await dbContext.SaveChangesAsync();
         }
-
     }
 }

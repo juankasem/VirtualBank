@@ -177,7 +177,7 @@ namespace VirtualBank.Api.Services
 
 
         /// <summary>
-        /// 
+        /// Check if distirct exists
         /// </summary>
         /// <param name="cityId"></param>
         /// <returns></returns>

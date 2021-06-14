@@ -59,7 +59,6 @@ namespace VirtualBank.Api.Services
 
             if (result.Succeeded)
             {
-                //ToDo : send a confirmation email
                 var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
 
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmationToken);

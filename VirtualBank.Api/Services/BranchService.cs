@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -104,6 +103,43 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
+        /// <summary>
+        /// search branches by name
+        /// </summary>
+        /// <param name="searchTerm"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<BranchListResponse>> SearchBranchesByNameAsync(string searchTerm, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<BranchListResponse>();
+
+            var searchResult = await _branchRepo.SearchByNameAsync(searchTerm);
+
+            if (!searchResult.Any())
+            {
+                return responseModel;
+            }
+
+            var branches = searchResult.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                           .Take(pageSize);
+
+            var branchList = new List<BranchResponse>();
+
+            foreach (var branch in branches)
+            {
+                var address = await _addressRepo.FindByIdAsync(branch.AddressId);
+                branchList.Add(CreateBranchResponse(branch, address));
+            }
+
+            responseModel.Data = new BranchListResponse(branchList.ToImmutableList(), branchList.Count);
+
+            return responseModel;
+        }
+
+
         /// <summary>
         /// Retrieve the branch of the specified id
         /// </summary>
@@ -129,6 +165,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
         /// <summary>
         /// Retrieve the branch by the specified code
         /// </summary>
@@ -153,6 +190,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         /// <summary>
         /// Add or Edit an existing branch 
@@ -212,7 +250,7 @@ namespace VirtualBank.Api.Services
                     }
                     catch (Exception ex)
                     {
-                        await dbContextTransaction.RollbackAsync();
+                        await dbContextTransaction.RollbackAsync(cancellationToken);
                         responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                     }
                 }
@@ -220,6 +258,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         /// <summary>
         /// disable branch

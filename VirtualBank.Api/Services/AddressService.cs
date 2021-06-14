@@ -5,14 +5,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.AddressApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
@@ -149,6 +147,7 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
+
         /// <summary>
         /// Disable address
         /// </summary>
@@ -179,6 +178,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+
 
         /// <summary>
         /// Check if address exists

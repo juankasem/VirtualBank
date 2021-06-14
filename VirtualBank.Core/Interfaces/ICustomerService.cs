@@ -11,6 +11,8 @@ namespace VirtualBank.Core.Interfaces
     {
         Task<ApiResponse<CustomerListResponse>> GetAllCustomersAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
+        Task<ApiResponse<CustomerListResponse>> SearchCustomersByNameAsync(string searchTerm, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+
         Task<ApiResponse<CustomerResponse>> GetCustomerByIdAsync(int customerId, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CustomerResponse>> GetCustomerByAccountNoAsync(string accountNo, CancellationToken cancellationToken = default);

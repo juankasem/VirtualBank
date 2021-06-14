@@ -24,6 +24,14 @@ namespace VirtualBank.Data.Repositories
                                              .AsNoTracking().ToListAsync();
         }
 
+        public async Task<IEnumerable<Customer>> SearchByNameAsync(string searchTerm)
+        {
+            return await _dbContext.Customers.Include(customer => customer.Address)
+                                             .Where(customer => (customer.FirstName.Contains(searchTerm) || customer.LastName.Contains(searchTerm)) && customer.Disabled == false)
+                                             .AsNoTracking().ToListAsync();
+        }
+
+
         public async Task<Customer> FindByAccountIdAsync(int accountId)
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
@@ -49,8 +57,8 @@ namespace VirtualBank.Data.Repositories
         public async Task<Customer> FindByIdAsync(int id)
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                                         .Where(customer => customer.Id == id && customer.Disabled == false)
-                                                         .FirstOrDefaultAsync();
+                                             .Where(customer => customer.Id == id && customer.Disabled == false)
+                                             .FirstOrDefaultAsync();
         }
 
         public async Task<Customer> FindByCreditCardIdAsync(int creditCardId)
@@ -156,7 +164,5 @@ namespace VirtualBank.Data.Repositories
         {
             await dbContext.SaveChangesAsync();
         }
-
-       
     }
 }

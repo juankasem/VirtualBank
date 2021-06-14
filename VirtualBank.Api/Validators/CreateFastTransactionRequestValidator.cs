@@ -28,7 +28,6 @@ namespace VirtualBank.Api.Validators
               .WithMessage("Recipient name is required");
               
 
-
             RuleFor(x => x.RecipientIBAN)
             .NotNull()
             .NotEmpty()

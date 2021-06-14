@@ -8,6 +8,8 @@ namespace VirtualBank.Data.Interfaces
     public interface ICustomerRepository
     {
         Task<IEnumerable<Customer>> GetAllAsync();
+        Task<IEnumerable<Customer>> SearchByNameAsync(string searchTerm);
+
         Task<Customer> FindByIdAsync(int id);
         Task<Customer> FindByAccountIdAsync(int accountId);
         Task<Customer> FindByAccountNoAsync(string accountNo);
