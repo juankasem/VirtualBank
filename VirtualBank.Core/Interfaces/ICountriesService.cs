@@ -10,11 +10,11 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface ICountriesService
     {
-        Task<ApiResponse<CountriesResponse>> GetAllCountriesAsync(CancellationToken cancellationToken = default);
+        Task<ApiResponse<CountryListResponse>> GetAllCountriesAsync(CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CountryResponse>> GetCountryByIdAsync(int countryId, bool includeCities = false, CancellationToken cancellationToken = default);
 
-        Task<Response> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse<CountryResponse>> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default);
 
         Task<bool> CountryExists(int countryId);
 

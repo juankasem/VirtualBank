@@ -66,7 +66,7 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
-
+        
 
         // GET api/v1/customers/search
         [HttpGet(ApiRoutes.Customers.Search)]
@@ -96,7 +96,6 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
-
 
 
         // GET api/v1/customers/5

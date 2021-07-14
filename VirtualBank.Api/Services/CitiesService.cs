@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -19,15 +18,12 @@ namespace VirtualBank.Api.Services
 {
     public class CitiesService : ICitiesService
     {
-        private readonly VirtualBankDbContext _dbContext;
         private readonly ICitiesRepository _citiesRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CitiesService(VirtualBankDbContext dbContext,
-                             ICitiesRepository citiesRepo,
+        public CitiesService(ICitiesRepository citiesRepo,
                              IHttpContextAccessor httpContextAccessor)
         {
-            _dbContext = dbContext;
             _citiesRepo = citiesRepo;
             _httpContextAccessor = httpContextAccessor;
         }
@@ -37,18 +33,27 @@ namespace VirtualBank.Api.Services
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CityListResponse>> GetAllCitiesAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CityListResponse>> ListCitiesAsync(int countryId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CityListResponse>();
 
-            var allCities = await _citiesRepo.GetAllAsync();
+            IEnumerable<City> retrievedCities;
 
-            if (!allCities.Any())
+            if (countryId > 0)
             {
-                return responseModel;
+                retrievedCities = await _citiesRepo.GetByCountryIdAsync(countryId);
+            }
+            else
+            {
+                retrievedCities = await _citiesRepo.GetAllAsync();
             }
 
-            var cities = allCities.OrderBy(c => c.Name);
+            if (!retrievedCities.Any())
+                return responseModel;
+            
+
+            var cities = retrievedCities.OrderBy(c => c.Name);
+
 
             var cityList = new List<CityResponse>();
 
@@ -61,39 +66,6 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
-
-        /// <summary>
-        ///  Retrieve cities for the country id
-        /// </summary>
-        /// <param name="countryId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task<ApiResponse<CityListResponse>> GetCitiesByCountryIdAsync(int countryId, CancellationToken cancellationToken = default)
-        {
-            var responseModel = new ApiResponse<CityListResponse>();
-
-            var countryCities = await _citiesRepo.GetByCountryIdAsync(countryId);
-
-            if (!countryCities.Any())
-            {
-                return responseModel;
-            }
-
-            var cities = countryCities.OrderBy(c => c.Name);
-
-            var cityList = new List<CityResponse>();
-
-            foreach (var city in cities)
-            {
-                cityList.Add(CreateCityResponse(city));
-            }
-
-            responseModel.Data = new CityListResponse(cityList.ToImmutableList(), cityList.Count);
-
-            return responseModel;
-        }
-
 
         /// <summary>
         /// Retrieve city for the specified id
@@ -128,9 +100,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditCityAsync(int cityId, CreateCityRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CityResponse>> AddOrEditCityAsync(int cityId, CreateCityRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<CityResponse>();
 
             if (await _citiesRepo.CityNameExists(request.CountryId, request.Name))
             {
@@ -140,7 +112,7 @@ namespace VirtualBank.Api.Services
 
             if (cityId != 0)
             {
-                var city = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == cityId);
+                var city = await _citiesRepo.FindByIdAsync(cityId);
 
                 try
                 {
@@ -151,7 +123,8 @@ namespace VirtualBank.Api.Services
                         city.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         city.LastModifiedOn = DateTime.UtcNow;
 
-                        await _citiesRepo.UpdateAsync(city);
+                        var updatedCity = await _citiesRepo.UpdateAsync(city);
+                        responseModel.Data = CreateCityResponse(updatedCity);
                     }
                     else
                     {
@@ -168,7 +141,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    await _citiesRepo.AddAsync(CreateCity(request));
+                    var createdCity = await _citiesRepo.AddAsync(CreateCity(request));
+                    responseModel.Data = CreateCityResponse(createdCity);
                 }
                 catch (Exception ex)
                 {
@@ -189,7 +163,7 @@ namespace VirtualBank.Api.Services
         public async Task<bool> CityExists(int cityId)
         {
             return await _citiesRepo.CityExists(cityId);
-        }   
+        }
 
 
         #region private helper methods
@@ -203,7 +177,7 @@ namespace VirtualBank.Api.Services
             };
         }
 
-        private CityResponse CreateCityResponse(City city)
+        private static CityResponse CreateCityResponse(City city)
         {
             if (city != null)
             {

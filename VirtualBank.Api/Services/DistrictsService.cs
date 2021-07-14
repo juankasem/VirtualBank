@@ -124,9 +124,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditDistrictAsync(int districtId, CreateDistrictRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<DistrictResponse>> AddOrEditDistrictAsync(int districtId, CreateDistrictRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<DistrictResponse>();
 
             if (await _districtsRepo.DistrictNameExists(request.CityId, request.Name))
             {
@@ -136,7 +136,7 @@ namespace VirtualBank.Api.Services
 
             if (districtId != 0)
             {
-                var district = await _dbContext.Districts.FirstOrDefaultAsync(c => c.Id == districtId);
+                var district = await _districtsRepo.FindByIdAsync(districtId);
 
                 try
                 {
@@ -147,7 +147,8 @@ namespace VirtualBank.Api.Services
                         district.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         district.LastModifiedOn = DateTime.UtcNow;
 
-                        _dbContext.Districts.Update(district);
+                        var updatedDistrict = await _districtsRepo.UpdateAsync(district);
+                        responseModel.Data = CreateDistrictResponse(updatedDistrict);
                     }
                     else
                     {
@@ -164,7 +165,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    await _districtsRepo.AddAsync(CreateDistrict(request));
+                   var createdDistrict = await _districtsRepo.AddAsync(CreateDistrict(request));
+                   responseModel.Data = CreateDistrictResponse(createdDistrict);
                 }
                 catch (Exception ex)
                 {
@@ -188,7 +190,7 @@ namespace VirtualBank.Api.Services
 
 
         #region private helper methods
-        private District CreateDistrict(CreateDistrictRequest request)
+        private static District CreateDistrict(CreateDistrictRequest request)
         {
             if (request != null)
             {
@@ -202,7 +204,7 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-        private DistrictResponse CreateDistrictResponse(District district)
+        private static DistrictResponse CreateDistrictResponse(District district)
         {
             if (district != null)
             {

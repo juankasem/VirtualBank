@@ -17,11 +17,24 @@ namespace VirtualBank.Data.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<Branch>> GetAllAsync()
+        public async Task<IEnumerable<Branch>> ListAsync(int countryId, int cityId, int districtId)
         {
-            return await _dbContext.Branches.Include(branch => branch.Address)
-                                            .Where(branch => branch.Disabled == false)
-                                            .AsNoTracking().ToListAsync();
+            IEnumerable<Branch> branches;
+
+            branches = await _dbContext.Branches.Include(branch => branch.Address)
+                                                .Where(branch => branch.Disabled == false)
+                                                .AsNoTracking().ToListAsync();
+
+            if (countryId > 0)
+                branches = branches.Where(b => b.Address.CountryId == countryId).ToList();
+
+            if (cityId > 0)
+                branches = branches.Where(b => b.Address.CityId == cityId).ToList();
+
+            if (districtId > 0)
+                branches = branches.Where(b => b.Address.DistrictId == districtId).ToList();
+
+            return branches;
         }
 
         public async Task<IEnumerable<Branch>> SearchByNameAsync(string searchTerm)
@@ -68,7 +81,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<Branch> AddAsync(VirtualBankDbContext dbContext, Branch branch)
+        public async Task<Branch> AddAsync(Branch branch, VirtualBankDbContext dbContext)
         {
             await dbContext.Branches.AddAsync(branch);
             await SaveAsync(dbContext);
@@ -94,10 +107,10 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<Branch> UpdateAsync(VirtualBankDbContext dbContext, Branch branch)
+        public async Task<Branch> UpdateAsync(Branch branch, VirtualBankDbContext dbContext)
         {
             var existingBranch = await dbContext.Branches
-                                                 .FirstOrDefaultAsync(b => b.Id == branch.Id && b.Disabled == false);
+                                                .FirstOrDefaultAsync(b => b.Id == branch.Id && b.Disabled == false);
 
             if (existingBranch != null)
             {
@@ -128,7 +141,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext)
         {
             var isDeleted = false;
             var branch = await dbContext.Branches.FindAsync(id);

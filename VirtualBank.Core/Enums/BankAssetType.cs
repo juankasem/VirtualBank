@@ -5,6 +5,6 @@ namespace VirtualBank.Core.Enums
     {
         ATM = 1,
         POS = 2,
-        Account = 3
+        Account = 3,
     }
 }

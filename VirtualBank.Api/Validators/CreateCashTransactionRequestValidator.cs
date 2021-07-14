@@ -37,18 +37,6 @@ namespace VirtualBank.Api.Validators
                     .WithMessage("Invalid format for amount");
 
 
-            RuleFor(x => x.SenderRemainingBalance)
-                    .NotNull()
-                    .NotEmpty()
-                    .WithMessage("Invalid format for remaining sender balance");
-
-
-            RuleFor(x => x.RecipientRemainingBalance)
-                    .NotNull()
-                    .NotEmpty()
-                    .WithMessage("Invalid format for remaining recipient balance");
-
-
             RuleFor(x => x.PaymentType)
                   .NotNull()
                   .NotEmpty()

@@ -36,16 +36,16 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET: api/v1/cities/all
-        [HttpGet(ApiRoutes.Cities.GetAll)]
+        [HttpGet(ApiRoutes.Cities.List)]
         [Cached(600)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllCities(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ListCities([FromQuery] countryId, CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _citiesService.GetAllCitiesAsync(cancellationToken);
+                var apiResponse = await _citiesService.GetCitiesAsync(cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

@@ -18,11 +18,11 @@ namespace VirtualBank.Data.Interfaces
         Task<bool> CustomerExistsAsync(Customer customer);
 
         Task<Customer> AddAsync(Customer customer);
-        Task<Customer> AddAsync(VirtualBankDbContext dbContext, Customer customer);
+        Task<Customer> AddAsync(Customer customer, VirtualBankDbContext dbContext);
         Task<Customer> UpdateAsync(Customer customer);
-        Task<Customer> UpdateAsync(VirtualBankDbContext dbContext, Customer customer);
+        Task<Customer> UpdateAsync(Customer customer, VirtualBankDbContext dbContext);
         Task<bool> RemoveAsync(int id);
-        Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id);
+        Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext);
         Task SaveAsync();
         Task SaveAsync(VirtualBankDbContext dbContext);
 

@@ -122,7 +122,6 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-
         public async Task SaveAsync(VirtualBankDbContext dbContext = null)
         {
             if (dbContext != null)

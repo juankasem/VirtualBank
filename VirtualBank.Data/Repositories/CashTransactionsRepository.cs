@@ -81,7 +81,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<CashTransaction> AddAsync(VirtualBankDbContext dbContext, CashTransaction transaction)
+        public async Task<CashTransaction> AddAsync(CashTransaction transaction, VirtualBankDbContext dbContext)
         {
             await dbContext.CashTransactions.AddAsync(transaction);
             await SaveAsync(dbContext);
@@ -106,7 +106,7 @@ namespace VirtualBank.Data.Repositories
             return transaction;
         }
 
-        public async Task<CashTransaction> UpdateAsync(VirtualBankDbContext dbContext, CashTransaction transaction)
+        public async Task<CashTransaction> UpdateAsync(CashTransaction transaction, VirtualBankDbContext dbContext)
         {
             var existingCashTransaction = await dbContext.CashTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
                                                                           .FirstOrDefaultAsync();
@@ -138,7 +138,7 @@ namespace VirtualBank.Data.Repositories
             return isDeleted;
         }
 
-        public async Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext)
         {
             var transaction = await dbContext.CashTransactions.FindAsync(id);
             var isDeleted = false;

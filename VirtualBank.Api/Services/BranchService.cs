@@ -42,53 +42,20 @@ namespace VirtualBank.Api.Services
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<BranchListResponse>> GetAllBranchesAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchListResponse>> ListBranchesAsync(int countryId, int cityId, int districtId,
+                                                                             int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<BranchListResponse>();
 
-            var allBranches = await _branchRepo.GetAllAsync();
+            var retrievedBranches = await _branchRepo.ListAsync(countryId, cityId, districtId);
 
-            if (!allBranches.Any())
+            if (!retrievedBranches.Any())
             {
                 return responseModel;
             }
 
-            var branches = allBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                          .Take(pageSize);
-
-            var branchList = new List<BranchResponse>();
-
-            foreach (var branch in branches)
-            {
-                var address = await _addressRepo.FindByIdAsync(branch.AddressId);
-                branchList.Add(CreateBranchResponse(branch, address));
-            }
-
-            responseModel.Data = new BranchListResponse(branchList.ToImmutableList(), branchList.Count);
-
-            return responseModel;
-        }
-
-
-        /// <summary>
-        /// Retrieve the branches of the specified city
-        /// </summary>
-        /// <param name="cityId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task<ApiResponse<BranchListResponse>> GetBranchesByCityIdAsync(int cityId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-        {
-            var responseModel = new ApiResponse<BranchListResponse>();
-
-            var cityBranches = await _branchRepo.GetByCityIdAsync(cityId);
-
-            if (!cityBranches.Any())
-            {
-                return responseModel;
-            }
-
-            var branches = cityBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                           .Take(pageSize);
+            var branches = retrievedBranches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                .Take(pageSize);
 
             var branchList = new List<BranchResponse>();
 
@@ -199,9 +166,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditBranchAsync(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BranchResponse>> AddOrEditBranchAsync(int branchId, CreateBranchRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<BranchResponse>();
 
             if (await BranchExists(request.Address.CountryId, request.Address.CityId, request.Name))
             {
@@ -221,7 +188,9 @@ namespace VirtualBank.Api.Services
                     branch.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     branch.LastModifiedOn = DateTime.UtcNow;
 
-                    await _branchRepo.UpdateAsync(_dbContext, branch);
+                    var updatedBranch = await _branchRepo.UpdateAsync(branch, _dbContext);
+
+                    responseModel.Data = CreateBranchResponse(updatedBranch, updatedBranch.Address);
                 }
                 else
                 {
@@ -244,7 +213,9 @@ namespace VirtualBank.Api.Services
 
                         newBranch.AddressId = newAddress.Id;
 
-                        await _branchRepo.AddAsync(_dbContext, newBranch);
+                        var createdBranch = await _branchRepo.AddAsync(newBranch, _dbContext);
+
+                        responseModel.Data = CreateBranchResponse(createdBranch, createdBranch.Address);
 
                         await dbContextTransaction.CommitAsync(cancellationToken);
                     }
@@ -280,7 +251,10 @@ namespace VirtualBank.Api.Services
 
             try
             {
-                await _branchRepo.RemoveAsync(branch.Id);
+             bool isDeleted = await _branchRepo.RemoveAsync(branch.Id);
+
+                if (!isDeleted)
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError("Unexpected error"));
             }
             catch (Exception ex)
             {
@@ -303,6 +277,7 @@ namespace VirtualBank.Api.Services
         }
 
 
+        /************************************************************Private Methods*******************************************************/
         #region private helper methods
         private Branch CreateBranch(CreateBranchRequest request)
         {
@@ -352,14 +327,14 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-        private AddressResponse CreateAddressResponse(Address address)
+        private static AddressResponse CreateAddressResponse(Address address)
         {
             if (address != null)
             {
                 return new AddressResponse(address.Id, address.Name,
-                                           address.DistrictId, address.District.Name,
-                                           address.CityId, address.City.Name,
-                                           address.CountryId, address.Country.Name,
+                                           address.DistrictId, address.District?.Name,
+                                           address.CityId, address.City?.Name,
+                                           address.CountryId, address.Country?.Name,
                                            address.Street, address.PostalCode);
             }
 

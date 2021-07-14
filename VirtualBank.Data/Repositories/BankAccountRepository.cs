@@ -66,7 +66,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<BankAccount> AddAsync(VirtualBankDbContext dbContext, BankAccount bankAccount)
+        public async Task<BankAccount> AddAsync(BankAccount bankAccount, VirtualBankDbContext dbContext)
         {
             await dbContext.BankAccounts.AddAsync(bankAccount);
             await SaveAsync(dbContext);
@@ -91,11 +91,10 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<BankAccount> UpdateAsync(VirtualBankDbContext dbContext, BankAccount bankAccount)
-       
+        public async Task<BankAccount> UpdateAsync(BankAccount bankAccount, VirtualBankDbContext dbContext)
         {
             var existingBankAccount = await dbContext.BankAccounts
-                                                      .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && b.Disabled == false);
+                                                     .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && b.Disabled == false);
 
             if (existingBankAccount != null)
             {
@@ -127,7 +126,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext)
         {
             var isDeleted = false;
             var bankAccount = await dbContext.BankAccounts.FindAsync(id);

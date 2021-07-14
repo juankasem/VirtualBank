@@ -1,5 +1,4 @@
-﻿using System;
-using FluentValidation;
+﻿using FluentValidation;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 
 namespace VirtualBank.Api.Validators

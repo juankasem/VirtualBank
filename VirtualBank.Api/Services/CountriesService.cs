@@ -41,9 +41,9 @@ namespace VirtualBank.Api.Services
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CountriesResponse>> GetAllCountriesAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CountryListResponse>> GetAllCountriesAsync(CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<CountriesResponse>();
+            var responseModel = new ApiResponse<CountryListResponse>();
 
             var countries = await _countriesRepo.GetAllAsync();
 
@@ -59,7 +59,7 @@ namespace VirtualBank.Api.Services
                 countryList.Add(CreateCountryResponse(country));
             }
 
-            responseModel.Data = new CountriesResponse(countryList.ToImmutableList(), countryList.Count);
+            responseModel.Data = new CountryListResponse(countryList.ToImmutableList(), countryList.Count);
 
             return responseModel;
         }
@@ -107,9 +107,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CountryResponse>> AddOrEditCountryAsync(int countryId, CreateCountryRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<CountryResponse>();
 
             if (await CountryNameExists(request.Name))
             {
@@ -128,22 +128,24 @@ namespace VirtualBank.Api.Services
                     country.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     country.LastModifiedOn = DateTime.UtcNow;
 
-                    await _countriesRepo.UpdateAsync(country);
+                   var updatedCountry = await _countriesRepo.UpdateAsync(country);
+                   responseModel.Data = CreateCountryResponse(updatedCountry);
+
                 }
                 else
                 {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(country), $"country of id {countryId}: not found"));
                     return responseModel;
                 }
-            }
-         
+            }  
             else
             {
                 try
                 {
                     var newCountry = CreateCountry(request);
 
-                    await _countriesRepo.AddAsync(newCountry);
+                    var addedCountry = await _countriesRepo.AddAsync(newCountry);
+                    responseModel.Data = CreateCountryResponse(addedCountry);
                 }
                 catch (Exception ex)
                 {
@@ -166,6 +168,7 @@ namespace VirtualBank.Api.Services
             return await _dbContext.Countries.AnyAsync(c => c.Id == countryId);
         }
 
+
         /// <summary>
         /// Check whetehr country's name is alraedy used or not
         /// </summary>
@@ -180,16 +183,20 @@ namespace VirtualBank.Api.Services
         #region private helper methods
         private Country CreateCountry(CreateCountryRequest request)
         {
-            return new Country()
+            if (request != null)
             {
-                Name = request.Name,
-                Code = request.Code,
-                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
-            }; 
+                return new Country()
+                {
+                    Name = request.Name,
+                    Code = request.Code,
+                    CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+                };
+            }
 
+            return null;
         }
 
-        private CountryResponse CreateCountryResponse(Country country)
+        private static CountryResponse CreateCountryResponse(Country country)
         {
             if (country != null)
             {

@@ -135,9 +135,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditFastTransactionAsync(int id, CreateFastTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<FastTransactionResponse>> AddOrEditFastTransactionAsync(int id, CreateFastTransactionRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<FastTransactionResponse>();
 
             if (id != 0)
             {
@@ -171,7 +171,9 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    await _fastTransactionsRepo.AddAsync(CreateFastTransaction(request));
+                   var createdFastTransaction = await _fastTransactionsRepo.AddAsync(CreateFastTransaction(request));
+
+                    responseModel.Data = await CreateFastTransactionResponse(createdFastTransaction);
                 }
                 catch (Exception ex)
                 {
@@ -235,6 +237,7 @@ namespace VirtualBank.Api.Services
 
             return null;
         }
+
 
         private FastTransaction CreateFastTransaction(CreateFastTransactionRequest request)
         {  

@@ -64,7 +64,7 @@ namespace VirtualBank.Api.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost(ApiRoutes.Auth.Register)]
-        public async Task<IActionResult> Register(SignupRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Register([FromBody] SignupRequest request, CancellationToken cancellationToken)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace VirtualBank.Api.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost(ApiRoutes.Auth.Login)]
-        public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
         {
             try
             {
@@ -127,7 +127,7 @@ namespace VirtualBank.Api.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost(ApiRoutes.Auth.ForgotPassword)]
-        public async Task<IActionResult> ForgotPassword(string email, CancellationToken cancellationToken)
+        public async Task<IActionResult> ForgotPassword([FromQuery] string email, CancellationToken cancellationToken)
         {
             var apiResponse = new Response();
 
@@ -229,7 +229,7 @@ namespace VirtualBank.Api.Controllers
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost(ApiRoutes.Auth.CheckEmailExists)]
         private async Task<bool> CheckEmailExists(string email)
         {
             if (await _userManager.FindByEmailAsync(email) == null)

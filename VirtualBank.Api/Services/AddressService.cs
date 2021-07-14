@@ -82,7 +82,6 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-
             responseModel.Data = CreateAddressResponse(address);
 
             return responseModel;
@@ -96,10 +95,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<AddressResponse>> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
-
+            var responseModel = new ApiResponse<AddressResponse>();
            
             if (addressId != 0)
             {
@@ -116,7 +114,9 @@ namespace VirtualBank.Api.Services
                     address.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     address.LastModifiedOn = DateTime.UtcNow;
 
-                    await _addressRepository.UpdateAsync(address);
+                   var updatedAddress = await _addressRepository.UpdateAsync(address);
+                   responseModel.Data = CreateAddressResponse(updatedAddress);
+
                 }
                 else
                 {
@@ -136,7 +136,8 @@ namespace VirtualBank.Api.Services
 
                 try
                 {
-                    await _addressRepository.AddAsync(CreateAddress(request));
+                    var createdAddress =  await _addressRepository.AddAsync(CreateAddress(request));
+                    responseModel.Data = CreateAddressResponse(createdAddress);
                 }
                 catch (Exception ex)
                 {
@@ -198,17 +199,21 @@ namespace VirtualBank.Api.Services
         #region private helper methods
         private Address CreateAddress(CreateAddressRequest request)
         {
-            return new Address()
+            if (request != null)
             {
-                Name = request.Name,
-                DistrictId = request.DistrictId,
-                CityId = request.CityId,
-                CountryId = request.CountryId,
-                Street = request.Street,
-                PostalCode = request.PostalCode,
-                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+                return new Address()
+                {
+                    Name = request.Name,
+                    DistrictId = request.DistrictId,
+                    CityId = request.CityId,
+                    CountryId = request.CountryId,
+                    Street = request.Street,
+                    PostalCode = request.PostalCode,
+                    CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
                 };
-           
+            }
+
+            return null;
         }
 
         private AddressResponse CreateAddressResponse(Address address)

@@ -17,16 +17,16 @@ namespace VirtualBank.Core.Interfaces
                                                                                            int pageNumber, int pageSize,
                                                                                            CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<LastCashTransactionListResponse>> GetLastCashTransactionsAsync(string iban, CancellationToken cancellationToken = default);
+        Task<ApiResponse<LastCashTransactionListResponse>> GetLatestCashTransactionsAsync(string iban, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CashTransactionResponse>> GetLastCashTransactionAsync(string iban, CancellationToken cancellationToken = default);
 
-        Task<Response> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse<CashTransactionResponse>> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
 
-        Task<Response> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse<CashTransactionResponse>> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
 
-        Task<Response> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse<CashTransactionResponse>> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
 
-        Task<Response> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse<CashTransactionResponse>> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default);
     }
 }

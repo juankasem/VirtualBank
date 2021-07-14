@@ -12,7 +12,6 @@ using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
@@ -155,19 +154,27 @@ namespace VirtualBank.Api.Services
         /// <param name="iban"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<RecipientBankAccountResponse>> GetRecipientBankAccountByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<RecipientBankAccountResponse>> ValidateRecipientBankAccountAsync(RecipientBankAccountRequest request, CancellationToken cancellationToken = default)
+
         {
             var responseModel = new ApiResponse<RecipientBankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIBANAsync(iban);
+            var bankAccount = await _bankAccountRepo.FindByIBANAsync(request.IBAN);
 
             if (bankAccount == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"IBAN: {iban} Not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account of: {request.IBAN} not found"));
                 return responseModel;
             }
 
             var accountOwner = CreateBankAccountOwner(bankAccount);
+            var recipientName = request.RecipientName;
+
+            if (accountOwner != recipientName)
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientName), $"Recipient name: {recipientName} not found"));
+                return responseModel;
+            }
 
             responseModel.Data = CreateRecipientBankAccountResponse(bankAccount, accountOwner);
 
@@ -182,10 +189,10 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditBankAccountAsync(int accountId, CreateBankAccountRequest request,
-                                                                 CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<BankAccountResponse>> AddOrEditBankAccountAsync(int accountId, CreateBankAccountRequest request,
+                                                                                      CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<BankAccountResponse>();
 
             if (accountId > 0)
             {
@@ -200,11 +207,13 @@ namespace VirtualBank.Api.Services
                     bankaccount.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     bankaccount.LastModifiedOn = DateTime.UtcNow;
 
-                    await _bankAccountRepo.UpdateAsync(bankaccount);
+                    var updatedBankAccount = await _bankAccountRepo.UpdateAsync(bankaccount);
+
+                    responseModel.Data = CreateBankAccountResponse(updatedBankAccount, CreateBankAccountOwner(updatedBankAccount));
                 }
                 else
                 {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError("bankAccount", $"bank account Not found"));
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError("bankAccount", $"bank account not found"));
                     return responseModel;
                 }
             }
@@ -214,7 +223,9 @@ namespace VirtualBank.Api.Services
                 {
                     var newBankAccount = CreateBankAccount(request);
 
-                    await _bankAccountRepo.AddAsync(newBankAccount);
+                    var createdBankAccount = await _bankAccountRepo.AddAsync(newBankAccount);
+
+                    responseModel.Data = CreateBankAccountResponse(createdBankAccount, CreateBankAccountOwner(createdBankAccount));
                 }
                 catch (Exception ex)
                 {
@@ -244,7 +255,7 @@ namespace VirtualBank.Api.Services
             }
             else
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account id: {accountId} not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount), $"bank account of id: {accountId} not found"));
             }
 
             return responseModel;
@@ -383,25 +394,36 @@ namespace VirtualBank.Api.Services
 
 
         #region private helper methods
-        private BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, DateTime? lastTransactionDate = null)
+        private static BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, DateTime? lastTransactionDate = null)
         {
             if (bankAccount != null)
             {
-                return new BankAccountResponse(bankAccount.Id, bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
-                                               accountOwner,bankAccount.Branch.Code, bankAccount.Branch.Name,
-                                               bankAccount.Balance, bankAccount.AllowedBalanceToUse,
-                                               bankAccount.Currency.Name, bankAccount.CreatedAt, lastTransactionDate);
+                return new BankAccountResponse(bankAccount.Id,
+                                               bankAccount.AccountNo,
+                                               bankAccount.IBAN,
+                                               bankAccount.Type,
+                                               accountOwner,bankAccount.Branch.Code,
+                                               bankAccount.Branch.Name,
+                                               bankAccount.Balance,
+                                               bankAccount.AllowedBalanceToUse,
+                                               bankAccount.Currency.Name,
+                                               bankAccount.CreatedAt,
+                                               lastTransactionDate);
             }
 
             return null;
         }
 
-        private RecipientBankAccountResponse CreateRecipientBankAccountResponse(BankAccount bankAccount, string accountOwner)
+        private static RecipientBankAccountResponse CreateRecipientBankAccountResponse(BankAccount bankAccount, string accountOwner)
         {
             if (bankAccount != null)
             {
-                return new RecipientBankAccountResponse(bankAccount.AccountNo, bankAccount.IBAN, bankAccount.Type,
-                                                        accountOwner, bankAccount.Branch.Name, bankAccount.Currency.Name);
+                return new RecipientBankAccountResponse(bankAccount.AccountNo,
+                                                        bankAccount.IBAN,
+                                                        accountOwner,bankAccount.Type,
+                                                        bankAccount.Branch.Name,
+                                                        bankAccount.Branch.Address.City.Name,
+                                                        bankAccount.Currency.Name);
             }
 
             return null;
@@ -409,8 +431,7 @@ namespace VirtualBank.Api.Services
 
         private BankAccount CreateBankAccount(CreateBankAccountRequest request)
         {
-
-            var newBankAccount = new BankAccount()
+            return new BankAccount()
             {
                 AccountNo = Guid.NewGuid().ToString(),
                 IBAN = request.IBAN,
@@ -422,15 +443,12 @@ namespace VirtualBank.Api.Services
                 Type = request.Type,
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
             };
-
-                return newBankAccount;
         }
 
-        private string CreateBankAccountOwner(BankAccount bankAccount)
+        private static string CreateBankAccountOwner(BankAccount bankAccount)
         {
             return bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
         }
-
       
         #endregion
     }

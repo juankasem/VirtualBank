@@ -13,7 +13,7 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<AddressResponse>> GetAddressByIdAsync(int addressId, CancellationToken cancellationToken = default);
 
-        Task<Response> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default);
+        Task<ApiResponse<AddressResponse>> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default);
 
         Task<Response> DeleteAddressAsync(int addressId, CancellationToken cancellationToken = default);
 

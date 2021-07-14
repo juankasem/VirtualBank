@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,7 +49,6 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(PagedResponse<CreditCardListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllCreditCards([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
                                                            [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
@@ -77,6 +74,42 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
+
+
+        // GET: api/v1/credit-cards/iban
+        [HttpGet(ApiRoutes.CreditCards.GetByIBAN)]
+        [Cached(600)]
+        [ProducesResponseType(typeof(PagedResponse<CreditCardListResponse>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetCreditCardsByIBAN(string iban, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var apiResponse = await _creditCardsService.GetCreditCardsByIBANAsync(iban, cancellationToken);
+
+                if (apiResponse.Success)
+                {
+                    var pagedApiResponse = new PagedResponse<CreditCardListResponse>(apiResponse.Data);
+
+                    return Ok(pagedApiResponse);
+                }
+
+                else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
+                    return NotFound(apiResponse);
+
+
+                return BadRequest(apiResponse);
+            }
+
+            catch (Exception exception)
+            {
+                return _actionResultMapper.Map(exception);
+            }
+        }
+
 
 
         // GET: api/v1/credit-cards/5

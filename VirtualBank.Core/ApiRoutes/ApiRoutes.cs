@@ -30,19 +30,17 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string ListRoles = Base + "/" + controller + "/roles/list";
 
-            public const string GetUsersInRoles = Base + "/" + controller + "/roles/users";
+            public const string GetUsersInRole = Base + "/" + controller + "/roles/users";
 
-            public const string EditUsersInRoles = Base + "/" + controller + "/roles/users";
+            public const string EditUsersInRole = Base + "/" + controller + "/roles/users";
 
             public const string CreateRole = Base + "/" + controller + "/roles";
-
         }
 
 
         public static class Auth
         {
             public const string controller = "auth";
-
 
             public const string Register = Base + "/" + controller + "/register";
 
@@ -70,7 +68,7 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string GetByIBAN = Base + "/" + controller + "/iban/{iban}";
 
-            public const string GetRecipientByIBAN = Base + "/" + controller + "/recipient-iban/{iban}";
+            public const string ValidateRecipient = Base + "/" + controller + "/validate-recipient/";
 
             public const string Post = Base + "/" + controller + "/{accountId:int}";
 
@@ -84,7 +82,7 @@ namespace VirtualBank.Core.ApiRoutes
         {
             public const string controller = "branch";
 
-            public const string GetAll = Base + "/" + controller + "/all";
+            public const string List = Base + "/" + controller + "/list";
 
             public const string Search = Base + "/" + controller + "/search";
 
@@ -98,7 +96,6 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string Delete = Base + "/" + controller + "/{branchId:int}";
         }
-
 
 
         public static class Districts
@@ -119,7 +116,7 @@ namespace VirtualBank.Core.ApiRoutes
         {
             public const string controller = "cities";
 
-            public const string GetAll = Base + "/" + controller + "/all";
+            public const string List = Base + "/" + controller + "/list";
 
             public const string GetByCountryId = Base + "/" + controller + "/country/{countryId:int}";
 
@@ -147,11 +144,11 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string GetAll = Base + "/" + controller + "/all";
 
-            public const string GetByAccountNo = Base + "/" + controller + "/account-no/{accountNo}";
+            public const string GetByAccountNo = Base + "/" + controller + "/list/account-no/{accountNo}";
 
-            public const string GetByIBAN = Base + "/" + controller + "/iban/{iban}";
+            public const string GetByIBAN = Base + "/" + controller + "/list/iban/{iban}";
 
-            public const string GetLastByIBAN = Base + "/" + controller + "/last-transactions/iban/{iban}";
+            public const string GetLatestByIBAN = Base + "/" + controller + "/latest-transactions/{iban}";
 
             public const string Post = Base + "/" + controller;
         }
@@ -162,6 +159,8 @@ namespace VirtualBank.Core.ApiRoutes
             public const string controller = "credit-cards";
 
             public const string GetAll = Base + "/" + controller + "/all";
+
+            public const string GetByIBAN = Base + "/" + controller + "/iban/{iban}";
 
             public const string GetById = Base + "/" + controller + "/{creditCardId:int}";
 
@@ -215,7 +214,6 @@ namespace VirtualBank.Core.ApiRoutes
         }
 
 
-
         public static class FastTransactions
         {
             public const string controller = "fast-transactions";
@@ -241,7 +239,5 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string Revoke = Base + "/" + controller + "/revoke";
         }
-  
-
     }
 }

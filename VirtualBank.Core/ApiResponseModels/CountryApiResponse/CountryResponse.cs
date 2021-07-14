@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using VirtualBank.Core.ApiResponseModels.CityApiResponses;
 using VirtualBank.Core.ArgumentChecks;
 

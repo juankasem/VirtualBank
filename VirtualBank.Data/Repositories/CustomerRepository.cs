@@ -82,7 +82,7 @@ namespace VirtualBank.Data.Repositories
             return customer;
         }
 
-        public async Task<Customer> AddAsync(VirtualBankDbContext dbContext, Customer customer)
+        public async Task<Customer> AddAsync(Customer customer, VirtualBankDbContext dbContext)
         {
             await _dbContext.Customers.AddAsync(customer);
             await SaveAsync(dbContext);
@@ -106,7 +106,7 @@ namespace VirtualBank.Data.Repositories
             return customer;
         }
 
-        public async Task<Customer> UpdateAsync(VirtualBankDbContext dbContext, Customer customer)
+        public async Task<Customer> UpdateAsync(Customer customer, VirtualBankDbContext dbContext)
         {
             var existingCustomer = await _dbContext.Customers.Where(c => c.Id == customer.Id && c.Disabled == false)
                                                              .FirstOrDefaultAsync();
@@ -138,7 +138,7 @@ namespace VirtualBank.Data.Repositories
             return isDeleted;
         }
 
-        public async Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id)
+        public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext)
         {
             var isDeleted = false;
             var customer = await _dbContext.Customers.FindAsync(id);

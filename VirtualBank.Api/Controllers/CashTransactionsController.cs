@@ -137,7 +137,7 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET api/v1/cash-transactions/last-transactions/iban/TR123
-        [HttpGet(ApiRoutes.CashTransactions.GetLastByIBAN)]
+        [HttpGet(ApiRoutes.CashTransactions.GetLatestByIBAN)]
         [Cached(600)]
         [ProducesResponseType(typeof(CashTransactionListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
@@ -166,7 +166,7 @@ namespace VirtualBank.Api.Controllers
                     return BadRequest(apiResponse);
                 }
 
-                apiResponse = await _cashTransactionsService.GetLastCashTransactionsAsync(iban, cancellationToken);
+                apiResponse = await _cashTransactionsService.GetLatestCashTransactionsAsync(iban, cancellationToken);
 
                 if (apiResponse.Success)
                 {
@@ -252,6 +252,7 @@ namespace VirtualBank.Api.Controllers
         }
 
 
+        // POST api/v1/cash-transactions/credit-card
         [HttpPost(ApiRoutes.CashTransactions.Post)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]

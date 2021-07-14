@@ -1,15 +1,15 @@
-﻿using System;
-using VirtualBank.Core.ArgumentChecks;
+﻿using VirtualBank.Core.ArgumentChecks;
 
 namespace VirtualBank.Core.ApiResponseModels.CityApiResponses
 {
     public class CityResponse
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
-        public int CountryId { get; set; }
+        public int CountryId { get; }
 
         public string Name { get; }
+
 
         public CityResponse(int id, int countryId, string name)
         {

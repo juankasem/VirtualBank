@@ -76,7 +76,7 @@ namespace VirtualBank.Api.Controllers
                 return BadRequest(apiRsponse);
             }
 
-            IdentityRole identityRole = new IdentityRole
+            IdentityRole identityRole = new ()
             {
                 Name = roleName
             };
@@ -104,7 +104,7 @@ namespace VirtualBank.Api.Controllers
         /// <param name="roleId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HttpGet(ApiRoutes.Administration.GetUsersInRoles)]
+        [HttpGet(ApiRoutes.Administration.GetUsersInRole)]
         public async Task<IActionResult> GetUsersInRole([FromQuery] string roleId, CancellationToken cancellationToken)
         {
             var apiResponse = new Response();
@@ -158,7 +158,7 @@ namespace VirtualBank.Api.Controllers
         /// <param name="roleId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HttpPost(ApiRoutes.Administration.EditUsersInRoles)]
+        [HttpPost(ApiRoutes.Administration.EditUsersInRole)]
         public async Task<IActionResult> EditUsersInRole([FromQuery] string roleId, EditUserRoleRequest request, CancellationToken cancellationToken)
         {
             var apiResponse = new Response();

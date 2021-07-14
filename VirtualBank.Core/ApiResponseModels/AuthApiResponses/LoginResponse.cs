@@ -8,6 +8,26 @@ namespace VirtualBank.Core.ApiResponseModels.AuthApiResponses
     public class LoginResponse
     {
         /// <summary>
+        /// user id
+        /// </summary>
+        public string Id { get; set; }
+
+        /// <summary>
+        /// displayed user name
+        /// </summary>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// user email
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
+        /// user phone number
+        /// </summary>
+        public string Phone { get; set; }
+
+        /// <summary>
         /// access token for authentication
         /// </summary>
         public string AccessToken { get; set; }

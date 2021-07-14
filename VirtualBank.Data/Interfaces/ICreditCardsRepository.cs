@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using VirtualBank.Core.Entities;
 
@@ -8,6 +7,7 @@ namespace VirtualBank.Data.Interfaces
     public interface ICreditCardsRepository
     {
         Task<IEnumerable<CreditCard>> GetAllAsync();
+        Task<IEnumerable<CreditCard>> GetByIBANAsync(string iban);
         Task<IEnumerable<CreditCard>> GetByCustomerIdAsync(int customerId);
         Task<CreditCard> FindByIdAsync(int id);
         Task<CreditCard> FindByCreditCardNoAsync(string creditCardNo);

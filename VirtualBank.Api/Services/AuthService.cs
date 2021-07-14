@@ -64,7 +64,7 @@ namespace VirtualBank.Api.Services
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmationToken);
                 var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
-                string url = $"{_configuration["AppUrl"]}/api/auth/confirm-email/userId={appUser.Id}&token={validEmailToken}";
+                string url = $"{_configuration["AppUrl"]}/api/v1/auth/confirm-email?userId={appUser.Id}&token={validEmailToken}";
 
                 await _mailService.SendEmailAsync(request.Email, "Confirm your email", $"<h1>Welcome to Authentication</h1>" +
                     $"<p>please confirm your email by <a href='{url}'>clicking here</a></p>"
@@ -101,7 +101,7 @@ namespace VirtualBank.Api.Services
 
             var user = await _userManager.FindByNameAsync(request.CustomerNo);
 
-            if (user == null)
+            if (user is null)
             {
                 apiResponse.AddError(ExceptionCreator.CreateUnauthorizedError("Invalid login credentials"));
                 return apiResponse;
@@ -113,6 +113,10 @@ namespace VirtualBank.Api.Services
             {
                 apiResponse.Data = new LoginResponse()
                 {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Phone =user.PhoneNumber,
                     AccessToken = _tokenService.GenerateAccessToken(await user.GetClaimsAsync(_userManager)),
                     RefreshToken = _tokenService.GenerateRefreshToken()
                 };
@@ -142,7 +146,7 @@ namespace VirtualBank.Api.Services
 
             var user = await _userManager.FindByEmailAsync(email);
 
-            if (user == null)
+            if (user is null)
             {
                 apiResponse.AddError(ExceptionCreator.CreateNotFoundError(nameof(user), $"user not found"));
                 return apiResponse;
@@ -196,7 +200,6 @@ namespace VirtualBank.Api.Services
 
             return apiResponse;
         }
-
 
 
         /// <summary>

@@ -7,8 +7,8 @@ namespace VirtualBank.Data.Interfaces
 {
     public interface IBranchRepository
     {
-        Task<IEnumerable<Branch>> GetAllAsync();
-        Task<IEnumerable<Branch>> GetByCityIdAsync(int cityId);
+        Task<IEnumerable<Branch>> ListAsync(int countryId, int cityId, int districtId);
+       
         Task<IEnumerable<Branch>> SearchByNameAsync(string searchTerm);
         Task<Branch> FindByIdAsync(int id);
         Task<Branch> FindByCodeAsync(string code);
@@ -16,13 +16,13 @@ namespace VirtualBank.Data.Interfaces
 
 
         Task<Branch> AddAsync(Branch branch);
-        Task<Branch> AddAsync(VirtualBankDbContext dbContext, Branch branch);
+        Task<Branch> AddAsync(Branch branch, VirtualBankDbContext dbContext);
 
         Task<Branch> UpdateAsync(Branch branch);
-        Task<Branch> UpdateAsync(VirtualBankDbContext dbContext, Branch branch);
+        Task<Branch> UpdateAsync(Branch branch, VirtualBankDbContext dbContext);
 
         Task<bool> RemoveAsync(int id);
-        Task<bool> RemoveAsync(VirtualBankDbContext dbContext, int id);
+        Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext);
 
 
         Task SaveAsync();

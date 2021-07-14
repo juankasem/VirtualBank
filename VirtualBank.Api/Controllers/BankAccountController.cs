@@ -216,16 +216,16 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET api/v1/bank-account/recipient-iban/TR123
-        [HttpGet(ApiRoutes.BankAccounts.GetRecipientByIBAN)]
+        [HttpGet(ApiRoutes.BankAccounts.ValidateRecipient)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRecipientAccountByIBAN([FromRoute] string iban, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ValidateRecipientBankAccount([FromBody] RecipientBankAccountRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _bankAccountService.GetRecipientBankAccountByIBANAsync(iban, cancellationToken);
+                var apiResponse = await _bankAccountService.ValidateRecipientBankAccountAsync(request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

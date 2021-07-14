@@ -11,22 +11,18 @@ using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CreditCardApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
     public class CreditCardsService : ICreditCardsService
     {
-        private readonly VirtualBankDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICreditCardsRepository _creditCardsRepo;
 
-        public CreditCardsService(VirtualBankDbContext dbContext,
-                                  IHttpContextAccessor httpContextAccessor,
+        public CreditCardsService(IHttpContextAccessor httpContextAccessor,
                                   ICreditCardsRepository creditCardsRepo)
         {
-            _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
             _creditCardsRepo = creditCardsRepo;
         }
@@ -63,7 +59,43 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-       
+
+
+        /// <summary>
+        /// Retrieve credit cards for the specified IBAN
+        /// </summary>
+        /// <param name="iban"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ApiResponse<CreditCardListResponse>> GetCreditCardsByIBANAsync(string iban, CancellationToken cancellationToken = default)
+        {
+            var responseModel = new ApiResponse<CreditCardListResponse>();
+
+            var creditCards = await _creditCardsRepo.GetByIBANAsync(iban);
+
+            if (creditCards == null)
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError( $"credit card of IBAN: {iban}: not found"));
+                return responseModel;
+            }
+
+            if (!creditCards.Any())
+            {
+                return responseModel;
+            }
+
+            var creditCardList = new List<CreditCardResponse>();
+
+
+            foreach (var creditCard in creditCards)
+            {
+                creditCardList.Add(CreateCreditCardResponse(creditCard));
+            }
+
+            responseModel.Data = new CreditCardListResponse(creditCardList.ToImmutableList(), creditCardList.Count());
+
+            return responseModel;
+        }
 
         /// <summary>
         /// Retrieve credit card by id
@@ -135,9 +167,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditCreditCardAsync(int creditCardId, CreateCreditCardRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CreditCardResponse>> AddOrEditCreditCardAsync(int creditCardId, CreateCreditCardRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<CreditCardResponse>();
 
             if (creditCardId != 0)
             {
@@ -153,7 +185,8 @@ namespace VirtualBank.Api.Services
                         creditCard.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         creditCard.LastModifiedOn = DateTime.UtcNow;
 
-                        await _creditCardsRepo.UpdateAsync(creditCard);
+                        var updatedCreditCard = await _creditCardsRepo.UpdateAsync(creditCard);
+                        responseModel.Data = CreateCreditCardResponse(updatedCreditCard);
                     }
                     else
                     {
@@ -170,7 +203,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    await _creditCardsRepo.AddAsync(CreateCreditCard(request));
+                   var createdCreditCard = await _creditCardsRepo.AddAsync(CreateCreditCard(request));
+                   responseModel.Data = CreateCreditCardResponse(createdCreditCard);
                 }
                 catch (Exception ex)
                 {
@@ -205,7 +239,6 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
 
 
         /// <summary>
@@ -256,12 +289,16 @@ namespace VirtualBank.Api.Services
         {
             if (creditCard != null)
             {
-                return new CreditCardResponse(creditCard.Id, creditCard.CreditCardNo,
-                                              creditCard.ExpirationDate, creditCard.BankAccount.IBAN);
+                var creditCardHolder = creditCard.BankAccount?.Owner?.FirstName + " " + creditCard.BankAccount?.Owner?.LastName;
+
+                return new CreditCardResponse(creditCard.Id, creditCard.CreditCardNo, creditCardHolder,
+                                              creditCard.BankAccount?.IBAN, creditCard.ExpirationDate,
+                                              creditCard.CreatedAt, (DateTime) creditCard.LastModifiedOn);
             }
 
             return null;
         }
+
 
         #endregion
     }

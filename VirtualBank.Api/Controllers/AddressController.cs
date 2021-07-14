@@ -65,7 +65,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAddresshById(int addressId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAddressById(int addressId, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -80,7 +80,6 @@ namespace VirtualBank.Api.Controllers
 
                 return BadRequest(apiResponse);
             }
-
             catch (Exception exception)
             {
                 return _actionResultMapper.Map(exception);

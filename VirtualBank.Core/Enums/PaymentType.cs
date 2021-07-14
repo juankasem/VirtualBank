@@ -5,10 +5,10 @@ namespace VirtualBank.Core.Enums
     {
         CashTransfer = 1,
         Rent = 2,
-        SalaryPayment = 3,
+        Salary = 3,
         Mortgage = 4,
         ECommerce = 5,
-        ComissionFees = 6,
+        CommissionFees = 6,
         Other = 7
     }
 }

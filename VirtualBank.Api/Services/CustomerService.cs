@@ -270,9 +270,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken)
+        public async Task<ApiResponse<CustomerResponse>> AddOrEditCustomerAsync(int customerId, CreateCustomerRequest request, CancellationToken cancellationToken)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<CustomerResponse>();
 
             if (await CustomerExistsAsync(request))
             {
@@ -324,10 +324,12 @@ namespace VirtualBank.Api.Services
                 {
                     try
                     {
-                        var newAddress = await _addressRepo.AddAsync(CreateAddress(request), _dbContext);
+                        var createdAddress = await _addressRepo.AddAsync(CreateAddress(request), _dbContext);
 
-                        newCustomer.AddressId = newAddress.Id;
-                        await _customerRepo.AddAsync(_dbContext, newCustomer);
+                        newCustomer.AddressId = createdAddress.Id;
+
+                        var createdCustomer = await _customerRepo.AddAsync(newCustomer, _dbContext);
+                        responseModel.Data = CreateCustomerResponse(createdCustomer, createdAddress);
 
                         await dbContextTransaction.CommitAsync();
                     }
@@ -433,7 +435,7 @@ namespace VirtualBank.Api.Services
                 };
             }
 
-            return null;     
+            return null;
         }
 
         private Address CreateAddress(CreateCustomerRequest request)
@@ -480,10 +482,16 @@ namespace VirtualBank.Api.Services
         {
             if (address != null)
             {
-                return new AddressResponse(address.Id, address.Name, address.DistrictId, address.District.Name,
-                                           address.CityId, address.City.Name,
-                                           address.CountryId, address.Country.Name,
-                                           address.Street, address.PostalCode);
+                return new AddressResponse(address.Id,
+                                           address.Name,
+                                           address.DistrictId,
+                                           address.District.Name,
+                                           address.CityId,
+                                           address.City.Name,
+                                           address.CountryId,
+                                           address.Country.Name,
+                                           address.Street,
+                                           address.PostalCode);
             }
 
             return null;

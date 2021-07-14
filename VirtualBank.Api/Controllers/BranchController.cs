@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,18 +42,21 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET: api/v1/branch/all
-        [HttpGet(ApiRoutes.Branches.GetAll)]
+        [HttpGet(ApiRoutes.Branches.List)]
         [Cached(600)]
         [ProducesResponseType(typeof(PagedResponse<CustomerListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllBranches([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
-                                                        [FromQuery] int pageSize = PagingConstants.DefaultPageSize,       
-                                                         CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ListBranches([FromQuery] int countryId,
+                                                      [FromQuery] int cityId,
+                                                      [FromQuery] int districtId,
+                                                      [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+                                                      [FromQuery] int pageSize = PagingConstants.DefaultPageSize,       
+                                                      CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _branchService.GetAllBranchesAsync(pageNumber, pageSize, cancellationToken);
+                var apiResponse = await _branchService.ListBranchesAsync(pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
