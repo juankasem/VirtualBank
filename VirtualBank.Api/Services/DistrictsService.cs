@@ -39,50 +39,30 @@ namespace VirtualBank.Api.Services
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<DistrictListResponse>> GetAllDistrictsAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<DistrictListResponse>> ListDistrictsAsync(int cityId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<DistrictListResponse>();
 
-            var allDistricts = await _districtsRepo.GetAllAsync();
+            IEnumerable<District> retrievedDistricts;
 
-            if (!allDistricts.Any())
+            if (cityId > 0)
             {
-                return responseModel;
+                retrievedDistricts = await _districtsRepo.GetByCityIdAsync(cityId);
             }
+            else
+            {
+                retrievedDistricts = await _districtsRepo.GetAllAsync();
+            }
+
+            if (!retrievedDistricts.Any())
+                return responseModel;
+
+
+            var districts = retrievedDistricts.OrderBy(c => c.Name);
 
             var districtList = new List<DistrictResponse>();
 
-            foreach (var district in allDistricts)
-            {
-                districtList.Add(CreateDistrictResponse(district));
-            }
-
-            responseModel.Data = new DistrictListResponse(districtList.ToImmutableList(), districtList.Count);
-
-            return responseModel;
-        }
-
-
-        /// <summary>
-        /// Retrieve districts by city
-        /// </summary>
-        /// <param name="cityId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task<ApiResponse<DistrictListResponse>> GetDistrictsByCityIdAsync(int cityId, CancellationToken cancellationToken = default)
-        {
-            var responseModel = new ApiResponse<DistrictListResponse>();
-
-            var cityDistricts = await _districtsRepo.GetByCityIdAsync(cityId);
-
-            if (!cityDistricts.Any())
-            {
-                return responseModel;
-            }
-
-            var districtList = new List<DistrictResponse>();
-
-            foreach (var district in cityDistricts)
+            foreach (var district in districts)
             {
                 districtList.Add(CreateDistrictResponse(district));
             }

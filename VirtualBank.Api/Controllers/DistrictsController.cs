@@ -30,12 +30,12 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: api/v1/districts/all
-        [HttpGet(ApiRoutes.Districts.GetAll)]
+        // GET: api/v1/districts/list?cityId=1
+        [HttpGet(ApiRoutes.Districts.List)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllDistricts(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ListDistricts([FromQuery] cityId, CancellationToken cancellationToken = default)
         {
             try
             {

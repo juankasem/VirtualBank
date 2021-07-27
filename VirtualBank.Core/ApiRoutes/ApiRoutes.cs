@@ -102,7 +102,7 @@ namespace VirtualBank.Core.ApiRoutes
         {
             public const string controller = "districts";
 
-            public const string GetAll = Base + "/" + controller + "/all";
+            public const string List = Base + "/" + controller + "/list";
 
             public const string GetByCityId = Base + "/" + controller + "/city/{cityId:int}";
 
