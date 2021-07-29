@@ -453,7 +453,7 @@ namespace VirtualBank.Api.Services
 
                     //Deduct from sender account
                     senderAccount.Balance -= amountToTransfer;
-                    senderAccount.AllowedBalanceToUse = senderAccount.Balance;
+                    senderAccount.AllowedBalanceToUse -= amountToTransfer;
 
                     await _bankAccountRepo.UpdateAsync(senderAccount, _dbContext);
 
