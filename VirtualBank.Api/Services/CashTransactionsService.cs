@@ -295,7 +295,7 @@ namespace VirtualBank.Api.Services
 
                     if (isBlocked)
                     {
-                        responseModel.AddError(ExceptionCreator.CreateUnprocessableEntityError(nameof(fromAccount), "deposit is blocked"));
+                        responseModel.AddError(ExceptionCreator.CreateUnprocessableEntityError(nameof(fromAccount), "deposit is blocked, you cannot complete withdrawal"));
                         return responseModel;
                     }
                 }
@@ -366,6 +366,14 @@ namespace VirtualBank.Api.Services
                     return responseModel;
                 }
 
+                if (senderAccount.Type != AccountType.Current || senderAccount.Type != AccountType.Recurring)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
+
+                    return responseModel;
+                }
+
+
                 if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
                 {
                     //Deduct from sender account
@@ -426,13 +434,14 @@ namespace VirtualBank.Api.Services
             try
             {
                 var senderAccount = await _bankAccountRepo.FindByIBANAsync(request.From);
-                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.To);
 
                 if (senderAccount == null)
                 {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount), "sender account not found"));
                     return responseModel;
                 }
+
+                var recipientAccount = await _bankAccountRepo.FindByIBANAsync(request.To);
 
                 if (recipientAccount == null)
                 {
@@ -443,6 +452,13 @@ namespace VirtualBank.Api.Services
                 if (recipientAccount.Owner.FirstName != request.RecipientFirstName || recipientAccount.Owner.LastName != request.RecipientLastName)
                 {
                     responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(recipientAccount), "recipient name is not valid"));
+                    return responseModel;
+                }
+
+                if (senderAccount.Type != AccountType.Current || senderAccount.Type != AccountType.Recurring)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
+
                     return responseModel;
                 }
 

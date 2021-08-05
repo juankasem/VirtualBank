@@ -231,6 +231,27 @@ namespace VirtualBank.Core.ApiRoutes
         }
 
 
+
+
+        public static class Loans
+        { 
+            public const string controller = "loans";
+
+            public const string GetAll = Base + "/" + controller + "/all";
+
+            public const string GetById = Base + "/" + controller + "/{id:int}";
+
+            public const string GetByIBAN = Base + "/" + controller + "/iban/{iban}";
+
+            public const string GetByCustomerId = Base + "/" + controller + "/customer/{id:int}";
+
+            public const string Post = Base + "/" + controller + "/{id:int}";
+
+            public const string Delete = Base + "/" + controller + "/{id:int}";
+
+        }
+
+
         public static class Token
         {
             public const string controller = "token";

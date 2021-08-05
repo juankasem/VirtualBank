@@ -32,17 +32,19 @@ namespace VirtualBank.Api.Services
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<LoanListResponse>> GetAllLoansAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<LoanListResponse>> GetAllLoansAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<LoanListResponse>();
 
-            var loans = await _loansRepo.GetAllAsync();
+            var allLoans = await _loansRepo.GetAllAsync();
 
-            if (!loans.Any())
+            if (!allLoans.Any())
             {
                 return responseModel;
             }
 
+            var loans = allLoans.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                    .Take(pageSize);
             var loanList = new List<LoanResponse>();
 
             foreach (var loan in loans)
@@ -220,6 +222,6 @@ namespace VirtualBank.Api.Services
                                     loan.InterestRate, loan.DueDate);
 
         }
-
+        #endregion
     }
 }

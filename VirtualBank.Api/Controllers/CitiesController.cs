@@ -41,45 +41,11 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListCities([FromQuery] countryId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ListCities([FromQuery] int countryId, CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _citiesService.GetCitiesAsync(cancellationToken);
-
-                if (apiResponse.Success)
-                    return Ok(apiResponse);
-
-
-                return BadRequest(apiResponse);
-            }
-            catch (Exception exception)
-            {
-                return _actionResultMapper.Map(exception);
-            }
-        }
-
-
-        // GET: api/v1/cities/country/5
-        [HttpGet(ApiRoutes.Cities.GetByCountryId)]
-        [Cached(600)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCitiesByCountryId([FromRoute] int countryId, CancellationToken cancellationToken = default)
-        {
-            var apiResponse = new Response();
-
-            try
-            {
-                if (! await _countriesService.CountryExists(countryId))
-                {
-                    apiResponse.AddError(ExceptionCreator.CreateNotFoundError("country", $"country of id: {countryId} not found"));
-                    return NotFound(apiResponse);
-                }
-
-                 apiResponse = await _citiesService.GetCitiesByCountryIdAsync(countryId, cancellationToken);
+                var apiResponse = await _citiesService.ListCitiesAsync(countryId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

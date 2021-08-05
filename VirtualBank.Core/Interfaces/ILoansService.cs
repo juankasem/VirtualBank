@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using VirtualBank.Core.ApiRequestModels.LoanApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -9,7 +8,7 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface ILoansService
     {
-        Task<ApiResponse<LoanListResponse>> GetAllLoansAsync(CancellationToken cancellationToken = default);
+        Task<ApiResponse<LoanListResponse>> GetAllLoansAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<LoanListResponse>> GetLoansByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default);
 

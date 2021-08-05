@@ -26,17 +26,12 @@ namespace VirtualBank.Api.Controllers
     public class BranchController : ControllerBase
     {
         private readonly IBranchService _branchService;
-        private readonly ICitiesService _citiesService;
         private readonly IActionResultMapper<BranchController> _actionResultMapper;
 
-        public BranchController(IBranchService branchService,
-                                ICitiesService citiesService,
-                                ICustomerService customerService,
-                                UserManager<AppUser> userManager,
+        public BranchController(IBranchService branchService,           
                                 IActionResultMapper<BranchController> actionResultMapper)
         {
             _branchService = branchService;
-            _citiesService = citiesService;
             _actionResultMapper = actionResultMapper;
         }
 
@@ -44,7 +39,7 @@ namespace VirtualBank.Api.Controllers
         // GET: api/v1/branch/all
         [HttpGet(ApiRoutes.Branches.List)]
         [Cached(600)]
-        [ProducesResponseType(typeof(PagedResponse<CustomerListResponse>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PagedResponse<BranchListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> ListBranches([FromQuery] int countryId,
@@ -56,7 +51,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-                var apiResponse = await _branchService.ListBranchesAsync(pageNumber, pageSize, cancellationToken);
+                var apiResponse = await _branchService.ListBranchesAsync(countryId, cityId, districtId, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
@@ -106,42 +101,6 @@ namespace VirtualBank.Api.Controllers
         }
 
 
-        // GET: api/v1/branch/city/5
-        [HttpGet(ApiRoutes.Branches.GetByCityId)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetBranchesByCityId([FromRoute] int cityId,
-                                                             [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
-                                                             [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
-                                                             CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var apiResponse = new Response();
-
-                if (!await _citiesService.CityExists(cityId))
-                {
-                    return NotFound(apiResponse);
-                }
-
-                apiResponse = await _branchService.GetBranchesByCityIdAsync(cityId, pageNumber, pageSize, cancellationToken);
-
-                if (apiResponse.Success)
-                    return Ok(apiResponse);
-
-
-                return BadRequest(apiResponse);
-            }
-
-            catch (Exception exception)
-            {
-                return _actionResultMapper.Map(exception);
-            }
-        }
-
-
         // GET: api/v1/branch/5
         [HttpGet(ApiRoutes.Branches.GetById)]
         [Cached(600)]
@@ -170,6 +129,7 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
+
 
         // GET: api/v1/branch/code/5
         [HttpGet(ApiRoutes.Branches.GetByCode)]

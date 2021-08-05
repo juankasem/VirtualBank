@@ -35,11 +35,11 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListDistricts([FromQuery] cityId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ListDistricts([FromQuery] int cityId, CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _districtsService.GetAllDistrictsAsync(cancellationToken);
+                var apiResponse = await _districtsService.ListDistrictsAsync(cityId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
