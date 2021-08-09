@@ -148,7 +148,7 @@ namespace VirtualBank.Core.ApiRoutes
 
             public const string GetByIBAN = Base + "/" + controller + "/list/iban/{iban}";
 
-            public const string GetLatestByIBAN = Base + "/" + controller + "/latest-transactions/{iban}";
+            public const string GetLatestTransfersByIBAN = Base + "/" + controller + "/latest-transactions/{iban}";
 
             public const string Post = Base + "/" + controller;
         }

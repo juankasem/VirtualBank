@@ -137,15 +137,15 @@ namespace VirtualBank.Api.Controllers
 
 
         // GET api/v1/cash-transactions/last-transactions/iban/TR123
-        [HttpGet(ApiRoutes.CashTransactions.GetLatestByIBAN)]
+        [HttpGet(ApiRoutes.CashTransactions.GetLatestTransfersByIBAN)]
         [Cached(600)]
         [ProducesResponseType(typeof(CashTransactionListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetLastCashTransactions([FromRoute] string iban,
-                                                                 CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetLatestTransfers([FromRoute] string iban,
+                                                            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -166,7 +166,7 @@ namespace VirtualBank.Api.Controllers
                     return BadRequest(apiResponse);
                 }
 
-                apiResponse = await _cashTransactionsService.GetLatestCashTransactionsAsync(iban, cancellationToken);
+                apiResponse = await _cashTransactionsService.GetLatestTransfersAsync(iban, cancellationToken);
 
                 if (apiResponse.Success)
                 {
