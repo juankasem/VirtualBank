@@ -70,7 +70,6 @@ namespace VirtualBank.Api.Services
                 var recipient = await GetCustomerName(cashTransaction.To);
 
                 cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, cashTransaction.From, sender, recipient));
-
             }
 
             responseModel.Data = new CashTransactionListResponse(cashTransactionList.ToImmutableList(), cashTransactionList.Count);
@@ -126,11 +125,11 @@ namespace VirtualBank.Api.Services
 
                 else if (cashTransaction.Type == CashTransactionType.Deposit)
                 {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, "ATM", accountHolderName));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, Enum.GetName(typeof(BankAssetType), cashTransaction.InitiatedBy), accountHolderName));
                 }
                 else if (cashTransaction.Type == CashTransactionType.Withdrawal)
                 {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderName, "ATM"));
+                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderName, Enum.GetName(typeof(BankAssetType), cashTransaction.InitiatedBy)));
                 }
                 else if (cashTransaction.Type == CashTransactionType.CommissionFees)
                 {
@@ -150,32 +149,25 @@ namespace VirtualBank.Api.Services
         /// <param name="iban"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<LastCashTransactionListResponse>> GetLatestCashTransactionsAsync(string iban, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<LastCashTransactionListResponse>> GetLatestTransfersAsync(string iban, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<LastCashTransactionListResponse>();
 
-            var lastCashTransactions = await _cashTransactionsRepo.GetLastByIBANAsync(iban);
+            var latestTransfers = await _cashTransactionsRepo.GetLastByIBANAsync(iban);
 
-            if (!lastCashTransactions.Any())
+            if (!latestTransfers.Any())
             {
                 return responseModel;
             }
 
-            var cashTransactions = lastCashTransactions.OrderByDescending(c => c.CreatedAt).Take(7);
+            var latestTransfersList = latestTransfers.OrderByDescending(c => c.CreatedAt).Where(c => IsTransferTransaction(c)).Take(7)
+                                                     .Select(async tx => CreateLatestTransferResponse(tx.To, await GetCustomerName(tx.To),
+                                                                                                        tx.Amount, tx.TransactionDate))
+                                                     .Select(t => t.Result)
+                                                     .ToImmutableList();
 
-            var lastCashTransactionList = new List<LastCashTransactionResponse>();
 
-            foreach (var tx in cashTransactions)
-            {
-                if (IsTransferTransaction(tx))
-                {
-                    var recipient = await GetCustomerName(tx.To);
-
-                    lastCashTransactionList.Add(CreateLastCashTransactionResponse(tx.To, recipient, tx.Amount, tx.TransactionDate));
-                }
-            }
-
-            responseModel.Data = new LastCashTransactionListResponse(lastCashTransactionList.ToImmutableList(), lastCashTransactionList.Count);
+            responseModel.Data = new LastCashTransactionListResponse(latestTransfersList, latestTransfersList.Count);
 
             return responseModel;
         }
@@ -576,7 +568,7 @@ namespace VirtualBank.Api.Services
 
 
         [NonAction]
-        private static LastCashTransactionResponse CreateLastCashTransactionResponse(string toAccount, string recipient, decimal amount, DateTime createdOn)
+        private static LastCashTransactionResponse CreateLatestTransferResponse(string toAccount, string recipient, decimal amount, DateTime createdOn)
         {
             return new LastCashTransactionResponse(toAccount, recipient, amount, createdOn);
         }

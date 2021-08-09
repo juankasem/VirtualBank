@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Entities;
+﻿using VirtualBank.Core.ArgumentChecks;
 
 namespace VirtualBank.Core.ApiRequestModels.FastTransactionApiRequests
 {

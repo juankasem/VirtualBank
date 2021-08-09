@@ -33,11 +33,11 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllCountries(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAllCountries([FromQuery] bool includeCities = false, CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _countriesService.GetAllCountriesAsync(cancellationToken);
+                var apiResponse = await _countriesService.GetAllCountriesAsync(includeCities, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

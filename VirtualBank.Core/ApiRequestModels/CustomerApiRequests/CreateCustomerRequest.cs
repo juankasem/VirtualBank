@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.ArgumentChecks;
@@ -8,46 +7,28 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
 {
     public class CreateCustomerRequest
     {
-        [Required]
-        [MinLength(50)]
         public string IdentificationNo { get; set; }
 
-        [Required]
         public IdentificationType IdentificationType { get; set; }
 
-        [Required]
-        [MinLength(50)]
         public string TaxNumber { get; set; }
 
-        [Required]
-        [MaxLength(150)]
         public string FirstName { get; set; }
 
-        [MaxLength(50)]
         public string MiddleName { get; set; }
 
-        [Required]
-        [MaxLength(150)]
         public string LastName { get; set; }
 
-        [Required]
-        [MaxLength(150)]
         public string FatherName { get; set; }
 
-        [Required]
-        [MaxLength(150)]
         public string Nationality { get; set; }
 
-        [Required]
         public Gender Gender { get; set; }
 
-        [Required]
         public DateTime BirthDate { get; set; }
 
-        [Required]
         public string UserId { get; set; }
 
-        [Required]
         public Address Address { get; set; }
 
 

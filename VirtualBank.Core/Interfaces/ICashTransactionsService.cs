@@ -16,7 +16,7 @@ namespace VirtualBank.Core.Interfaces
                                                                                            int pageNumber, int pageSize,
                                                                                            CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<LastCashTransactionListResponse>> GetLatestCashTransactionsAsync(string iban, CancellationToken cancellationToken = default);
+        Task<ApiResponse<LastCashTransactionListResponse>> GetLatestTransfersAsync(string iban, CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CashTransactionResponse>> GetLastCashTransactionAsync(string iban, CancellationToken cancellationToken = default);
 

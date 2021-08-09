@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -44,18 +43,12 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var creditCards = allCreditCards.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                                .Take(pageSize);
+            var creditCardList= allCreditCards.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                                  .Take(pageSize)
+                                                                                  .Select(c => CreateCreditCardResponse(c))
+                                                                                  .ToImmutableList();
 
-            var creditCardList = new List<CreditCardResponse>();
-
-
-            foreach (var creditCard in creditCards)
-            {
-                creditCardList.Add(CreateCreditCardResponse(creditCard));
-            }
-
-            responseModel.Data = new CreditCardListResponse(creditCardList.ToImmutableList(), creditCardList.Count());
+            responseModel.Data = new CreditCardListResponse(creditCardList, creditCardList.Count);
 
             return responseModel;
         }
@@ -84,15 +77,9 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var creditCardList = new List<CreditCardResponse>();
+            var creditCardList = creditCards.OrderByDescending(c => c.CreatedAt).Select(c => CreateCreditCardResponse(c)).ToImmutableList();
 
-
-            foreach (var creditCard in creditCards)
-            {
-                creditCardList.Add(CreateCreditCardResponse(creditCard));
-            }
-
-            responseModel.Data = new CreditCardListResponse(creditCardList.ToImmutableList(), creditCardList.Count());
+            responseModel.Data = new CreditCardListResponse(creditCardList, creditCardList.Count());
 
             return responseModel;
         }

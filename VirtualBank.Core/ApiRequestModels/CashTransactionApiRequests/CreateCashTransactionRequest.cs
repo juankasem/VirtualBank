@@ -1,6 +1,5 @@
 ﻿using System;
 using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests

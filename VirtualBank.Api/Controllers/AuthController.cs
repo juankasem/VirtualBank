@@ -37,6 +37,7 @@ namespace VirtualBank.Api.Controllers
             _userManager = userManager;
             _authService = authService;
             _mailService = mailService;
+            _actionResultMapper = actionResultMapper;
         }
 
         /// <summary>

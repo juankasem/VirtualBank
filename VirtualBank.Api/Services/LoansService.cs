@@ -43,16 +43,12 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var loans = allLoans.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                    .Take(pageSize);
-            var loanList = new List<LoanResponse>();
+            var loanList = allLoans.OrderByDescending(l => l.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                       .Take(pageSize)
+                                                                       .Select(x => CreateLoanResponse(x))
+                                                                       .ToImmutableList();
 
-            foreach (var loan in loans)
-            {
-                loanList.Add(CreateLoanResponse(loan));
-            }
-
-            responseModel.Data = new LoanListResponse(loanList.ToImmutableList(), loanList.Count);
+            responseModel.Data = new LoanListResponse(loanList, loanList.Count);
 
             return responseModel;
         }

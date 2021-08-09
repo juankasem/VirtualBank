@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -41,7 +40,7 @@ namespace VirtualBank.Api.Services
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CountryListResponse>> GetAllCountriesAsync(CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<CountryListResponse>> GetAllCountriesAsync(bool includeCities = false, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CountryListResponse>();
 
@@ -52,17 +51,25 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var countryList = new List<CountryResponse>();
+            ImmutableList<CountryResponse> countryList;
 
-            foreach (var country in countries)
-            {
-                countryList.Add(CreateCountryResponse(country));
-            }
+            if (includeCities)
+                countryList = countries.OrderBy(c => c.Name)
+                                       .Select(x => CreateCountryWithCitiesResponse(x))
+                                       .Select(x => x.Result)
+                                       .ToImmutableList();
 
-            responseModel.Data = new CountryListResponse(countryList.ToImmutableList(), countryList.Count);
+            else
+              countryList = countries.OrderBy(c => c.Name)
+                                     .Select(x => CreateCountryResponse(x))
+                                     .ToImmutableList();
+
+
+            responseModel.Data = new CountryListResponse(countryList, countryList.Count);
 
             return responseModel;
         }
+
 
         /// <summary>
         /// Retrieve country for the specified id
@@ -142,9 +149,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var newCountry = CreateCountry(request);
+                    var addedCountry = await _countriesRepo.AddAsync(CreateCountry(request));
 
-                    var addedCountry = await _countriesRepo.AddAsync(newCountry);
                     responseModel.Data = CreateCountryResponse(addedCountry);
                 }
                 catch (Exception ex)
@@ -210,15 +216,11 @@ namespace VirtualBank.Api.Services
         {
             if (country != null)
             {
-                var cityList = await _citiesRepo.GetByCountryIdAsync(country.Id);
-                var cities = new List<CityResponse>();
+                var cities = await _citiesRepo.GetByCountryIdAsync(country.Id);
 
-                foreach (var city in cityList)
-                {
-                    cities.Add(CreateCityResponse(city));
-                }
+                var cityList = cities.OrderBy(c => c.Name).Select(c => CreateCityResponse(c)).ToImmutableList();
 
-                return new CountryResponse(country.Id, country.Name, country.Code, cities.ToImmutableList());
+                return new CountryResponse(country.Id, country.Name, country.Code, cityList);
             }
 
             return null;

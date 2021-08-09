@@ -11,13 +11,11 @@ namespace VirtualBank.Core.ApiRequestModels.AuthApiRequests
         /// <summary>
         /// customer number of the user
         /// </summary>
-        [Required]
         public string CustomerNo { get; set; }
 
         /// <summary>
         /// account password
         /// </summary>
-        [Required]
         public string Password { get; set; }
     }
 }

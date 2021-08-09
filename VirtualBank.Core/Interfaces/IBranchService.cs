@@ -25,6 +25,6 @@ namespace VirtualBank.Core.Interfaces
 
         Task<Response> DeleteBranchAsync(int branchId, CancellationToken cancellationToken = default);
 
-        Task<bool> BranchExists(int countryId, int cityId, string branchName);
+        Task<bool> BranchExists(int countryId, int cityId, string branchName, CancellationToken cancellationToken = default);
     }
 }

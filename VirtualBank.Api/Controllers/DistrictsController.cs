@@ -17,15 +17,12 @@ namespace VirtualBank.Api.Controllers
     public class DistrictsController : Controller
     {
         private readonly IDistrictsService _districtsService;
-        private readonly ICitiesService _citiesService;
         private readonly IActionResultMapper<DistrictsController> _actionResultMapper;
 
         public DistrictsController(IDistrictsService districtsService,
-                                   ICitiesService citiesService,
                                    IActionResultMapper<DistrictsController> actionResultMapper)
         {
             _districtsService = districtsService;
-            _citiesService = citiesService;
             _actionResultMapper = actionResultMapper;
         }
 
@@ -40,36 +37,6 @@ namespace VirtualBank.Api.Controllers
             try
             {
                 var apiResponse = await _districtsService.ListDistrictsAsync(cityId, cancellationToken);
-
-                if (apiResponse.Success)
-                    return Ok(apiResponse);
-
-
-                return BadRequest(apiResponse);
-            }
-            catch (Exception exception)
-            {
-                return _actionResultMapper.Map(exception);
-            }
-        }
-
-
-        // GET: api/v1/districts/city/5
-        [HttpGet(ApiRoutes.Districts.GetByCityId)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetDistrictsByCityId([FromRoute] int cityId, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                if (!await _citiesService.CityExists(cityId))
-                {
-                    return NotFound();
-                }
-
-                var apiResponse = await _districtsService.GetDistrictsByCityIdAsync(cityId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

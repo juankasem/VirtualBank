@@ -37,32 +37,25 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CityListResponse>();
 
-            IEnumerable<City> retrievedCities;
+            IEnumerable<City> cities;
 
             if (countryId > 0)
             {
-                retrievedCities = await _citiesRepo.GetByCountryIdAsync(countryId);
+                cities = await _citiesRepo.GetByCountryIdAsync(countryId);
             }
             else
             {
-                retrievedCities = await _citiesRepo.GetAllAsync();
+                cities = await _citiesRepo.GetAllAsync();
             }
 
-            if (!retrievedCities.Any())
+            if (!cities.Any())
                 return responseModel;
-            
-
-            var cities = retrievedCities.OrderBy(c => c.Name);
 
 
-            var cityList = new List<CityResponse>();
+            var cityList = cities.OrderBy(c => c.Name).Select(x => CreateCityResponse(x)).ToImmutableList();
 
-            foreach (var city in cities)
-            {
-                cityList.Add(CreateCityResponse(city));
-            }
 
-            responseModel.Data = new CityListResponse(cityList.ToImmutableList(), cityList.Count);
+            responseModel.Data = new CityListResponse(cityList, cityList.Count);
 
             return responseModel;
         }

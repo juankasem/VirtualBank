@@ -53,17 +53,15 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var fastTransactions = allFastTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                                          .Take(pageSize);
-
-            var fastTransactionList = new List<FastTransactionResponse>();
-
-            foreach (var transaction in fastTransactions)
-            {
-                fastTransactionList.Add(await CreateFastTransactionResponse(transaction));
-            }
-
-            responseModel.Data = new FastTransactionListResponse(fastTransactionList.ToImmutableList(), fastTransactionList.Count());
+            var fastTransactions = allFastTransactions.OrderByDescending(c => c.CreatedAt)
+                                                      .Skip((pageNumber - 1) * pageSize)
+                                                      .Take(pageSize)
+                                                      .Select(x => CreateFastTransactionResponse(x))
+                                                      .Select(t => t.Result)
+                                                      .ToImmutableList();
+           
+                
+            responseModel.Data = new FastTransactionListResponse(fastTransactions, fastTransactions.Count);
 
             return responseModel;
         }
@@ -88,17 +86,16 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                                              .Take(pageSize);
 
-            var fastTransactionList = new List<FastTransactionResponse>();
+            var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedAt)
+                                                          .Skip((pageNumber - 1) * pageSize)
+                                                          .Take(pageSize)
+                                                          .Select(x => CreateFastTransactionResponse(x))
+                                                          .Select(t => t.Result)
+                                                          .ToImmutableList();
 
-            foreach (var transaction in fastTransactions)
-            {
-                fastTransactionList.Add(await CreateFastTransactionResponse(transaction));
-            }
 
-            responseModel.Data = new FastTransactionListResponse(fastTransactionList.ToImmutableList(), fastTransactionList.Count());
+            responseModel.Data = new FastTransactionListResponse(fastTransactions, fastTransactions.Count);
 
             return responseModel;
         }
