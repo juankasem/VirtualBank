@@ -22,7 +22,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .Where(b => b.Disabled == false)
+                                                .Where(b => !b.Disabled)
                                                 .AsNoTracking().ToListAsync();
         }
 
@@ -30,7 +30,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .Where(b => b.CustomerId.Equals(customerId) && b.Disabled == false)
+                                                .Where(b => b.CustomerId.Equals(customerId) && !b.Disabled)
                                                 .AsNoTracking().ToListAsync();
         }
 
@@ -38,7 +38,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .FirstOrDefaultAsync(b => b.Id.Equals(id) && b.Disabled == false);
+                                                .FirstOrDefaultAsync(b => b.Id.Equals(id) && !b.Disabled);
         }
 
         public async Task<BankAccount> FindByAccountNoAsync(string accountNo)
@@ -46,14 +46,14 @@ namespace VirtualBank.Data.Repositories
         
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .FirstOrDefaultAsync(b => b.AccountNo.Equals(accountNo) && b.Disabled == false);
+                                                .FirstOrDefaultAsync(b => b.AccountNo.Equals(accountNo) && !b.Disabled);
         }
 
         public async Task<BankAccount> FindByIBANAsync(string iban)
         {
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .FirstOrDefaultAsync(b => b.IBAN.Equals(iban) && b.Disabled == false);
+                                                .FirstOrDefaultAsync(b => b.IBAN.Equals(iban) && !b.Disabled);
         }
 
 
@@ -77,7 +77,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<BankAccount> UpdateAsync(BankAccount bankAccount)
         {
             var existingBankAccount = await _dbContext.BankAccounts
-                                                      .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && b.Disabled == false);
+                                                      .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && !b.Disabled);
 
             if (existingBankAccount != null)
             {
@@ -93,8 +93,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<BankAccount> UpdateAsync(BankAccount bankAccount, VirtualBankDbContext dbContext)
         {
-            var existingBankAccount = await dbContext.BankAccounts
-                                                     .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && b.Disabled == false);
+            var existingBankAccount = await dbContext.BankAccounts.FirstOrDefaultAsync(b => b.Id == bankAccount.Id && !b.Disabled);
 
             if (existingBankAccount != null)
             {
@@ -122,7 +121,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             return isDeleted;
-
         }
 
 

@@ -7,7 +7,7 @@ namespace VirtualBank.Core.ApiResponseModels.BranchApiResponses
 {
     public class BranchResponse
     {
-        public int Id { get; set; }
+        public int Id { get;  }
 
         public string Name { get; }
 

@@ -76,6 +76,7 @@ namespace VirtualBank.Api
             services.AddScoped<ICashTransactionsRepository, CashTransactionsRepository>();
             services.AddScoped<IFastTransactionsRepository, FastTransactionsRepository>();
             services.AddScoped<ILoansRepository, LoansRepository>();
+            services.AddScoped<IUtilityPaymentRepository, UtilityPaymentRepository>();
 
 
             // Add services

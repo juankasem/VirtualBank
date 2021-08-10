@@ -8,6 +8,12 @@ namespace VirtualBank.Core.Entities
     public class UtilityPayment : BaseClass
     {
         /// <summary>
+        /// transaction type
+        /// </summary>
+        [Required]
+        public UtilityType Type { get; set; }
+
+        /// <summary>
         /// BANK ACCOUNT
         /// </summary>
         [ForeignKey(nameof(BankAccount))]
@@ -15,16 +21,24 @@ namespace VirtualBank.Core.Entities
         public BankAccount BankAccount { get; set; }
 
         /// <summary>
-        /// transaction type
+        /// Subscription Number
         /// </summary>
         [Required]
-        public UtilityType Type { get; set; }
-
         [MaxLength(10)]
         public string SubscriptionNo { get; set; }
 
-        [MaxLength(10)]
-        public string ContractNo { get; set; }
+        /// <summary>
+        /// Invoice Number
+        /// </summary>
+        [Required]
+        public string InvoiceNo { get; set; }
+
+        /// <summary>
+        /// company name
+        /// </summary>
+        [Required]
+        [MaxLength(100)]
+        public string CompanyName { get; set; }
 
         /// <summary>
         /// amount of money

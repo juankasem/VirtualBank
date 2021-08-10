@@ -26,6 +26,7 @@ namespace VirtualBank.Data
         public DbSet<FastTransaction> FastTransactions { get; set; }
         public DbSet<Loan> Loans { get; set; }
         public DbSet<Recipient> Recipients { get; set; }
+        public DbSet<UtilityPayment> UtilityPayments { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
