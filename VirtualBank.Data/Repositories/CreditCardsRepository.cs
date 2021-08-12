@@ -21,7 +21,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
                                                .ThenInclude(c => c.Owner)
-                                               .Where(c => c.Disabled == false)
+                                               .Where(c => !c.Disabled)
                                                .AsNoTracking().ToListAsync();
         }
 
@@ -29,7 +29,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<IEnumerable<CreditCard>> GetByIBANAsync(string iban)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                               .Where(c => c.BankAccount.IBAN == iban && c.Disabled == false)
+                                               .Where(c => c.BankAccount.IBAN == iban && !c.Disabled)
                                                .AsNoTracking().ToListAsync();
         }
 
@@ -38,7 +38,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
                                                .ThenInclude(c => c.Owner.Id == customerId)
-                                               .Where(c => c.Disabled == false)
+                                               .Where(c => !c.Disabled)
                                                .AsNoTracking().ToListAsync();
         }
 
@@ -46,7 +46,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<CreditCard> FindByIdAsync(int id)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                               .Where(c => c.Id == id && c.Disabled == false)
+                                               .Where(c => c.Id == id && !c.Disabled)
                                                .FirstOrDefaultAsync();
         }
 
@@ -54,7 +54,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<CreditCard> FindByCreditCardNoAsync(string creditCardNo)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                                          .Where(c => c.CreditCardNo == creditCardNo && c.Disabled == false)
+                                                          .Where(c => c.CreditCardNo == creditCardNo && !c.Disabled)
                                                           .FirstOrDefaultAsync();
         }
 
@@ -62,7 +62,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<CreditCard> FindByAccountNoAsync(string accountNo)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                               .Where(c => c.BankAccount.AccountNo == accountNo && c.Disabled == false)
+                                               .Where(c => c.BankAccount.AccountNo == accountNo && !c.Disabled)
                                                .FirstOrDefaultAsync();
         }
 
@@ -72,7 +72,7 @@ namespace VirtualBank.Data.Repositories
             var isValid = false;
 
             var creditCard = await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                             .Where(c => c.PIN == pin && c.Disabled == false)
+                                             .Where(c => c.PIN == pin && !c.Disabled)
                                              .FirstOrDefaultAsync();
             if (creditCard.PIN == pin)
             {
@@ -92,8 +92,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<CreditCard> UpdateAsync(CreditCard creditCard)
         {
-            var existingCreditCard = await _dbContext.CreditCards.Where(c => c.Id == creditCard.Id && c.Disabled == false)
-                                                                 .FirstOrDefaultAsync();
+            var existingCreditCard = await _dbContext.CreditCards.FirstOrDefaultAsync(c => c.Id == creditCard.Id && !c.Disabled);
 
             if (existingCreditCard != null)
             {

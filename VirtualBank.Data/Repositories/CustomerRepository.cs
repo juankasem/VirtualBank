@@ -92,7 +92,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<Customer> UpdateAsync(Customer customer)
         {
-            var existingCustomer = await _dbContext.Customers.Where(c => c.Id == customer.Id && c.Disabled == false)
+            var existingCustomer = await _dbContext.Customers.Where(c => c.Id == customer.Id && !c.Disabled)
                                                    .FirstOrDefaultAsync();
 
             if (existingCustomer != null)
@@ -108,8 +108,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<Customer> UpdateAsync(Customer customer, VirtualBankDbContext dbContext)
         {
-            var existingCustomer = await _dbContext.Customers.Where(c => c.Id == customer.Id && c.Disabled == false)
-                                                             .FirstOrDefaultAsync();
+            var existingCustomer = await _dbContext.Customers.Where(c => c.Id == customer.Id && !c.Disabled).FirstOrDefaultAsync();
 
             if (existingCustomer != null)
             {

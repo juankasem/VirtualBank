@@ -1,5 +1,6 @@
 ﻿using System;
 using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
 {
@@ -20,7 +21,7 @@ namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
         /// <summary>
         /// Amount of money
         /// </summary>
-        public decimal Amount { get; set; }
+        public Amount Amount { get; set; }
 
 
         /// <summary>
@@ -29,11 +30,11 @@ namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
         public DateTime TransactionDate { get; }
 
 
-        public LastCashTransactionResponse(string to, string recipient, decimal amount, DateTime transactionDate)
+        public LastCashTransactionResponse(string to, string recipient, Amount amount, DateTime transactionDate)
         {
             To = Throw.ArgumentNullException.IfNull(to, nameof(to));
             Recipient = Throw.ArgumentNullException.IfNull(recipient, nameof(recipient));
-            Amount = Throw.ArgumentNullException.IfNull(amount, nameof(amount));
+            Amount = amount;
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));
         }
     }

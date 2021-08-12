@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.Entities
 {
@@ -31,15 +31,15 @@ namespace VirtualBank.Core.Entities
 
         [Required]
         [Column(TypeName = "decimal(8,2)")]
-        public decimal Balance { get; set; }
+        public Amount Balance { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(8,2)")]
-        public decimal AllowedBalanceToUse { get; set; }
+        public Amount AllowedBalanceToUse { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(8,2)")]
-        public decimal MinimumAllowedBalance { get; set; } = 1;
+        public Amount MinimumAllowedBalance { get; set; } 
 
         [ForeignKey(nameof(Currency))]
         [Required]

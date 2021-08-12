@@ -20,7 +20,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<IEnumerable<District>> GetAllAsync()
         {
             return await _dbContext.Districts.Include(d => d.City)
-                                             .Where(district => district.Disabled == false)
+                                             .Where(district => !district.Disabled)
                                              .AsNoTracking().ToListAsync();
         }
 
@@ -28,7 +28,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<IEnumerable<District>> GetByCityIdAsync(int cityId)
         {
             return await _dbContext.Districts.Include(c => c.City)
-                                             .Where(district => district.CityId == cityId && district.Disabled == false)
+                                             .Where(district => district.CityId == cityId && !district.Disabled)
                                              .AsNoTracking().ToListAsync();
         }
 
@@ -36,7 +36,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<District> FindByIdAsync(int id)
         {
             return await _dbContext.Districts.Include(d => d.City)
-                                             .FirstOrDefaultAsync(district => district.Id == id && district.Disabled == false);
+                                             .FirstOrDefaultAsync(district => district.Id == id && !district.Disabled);
         }
 
 
@@ -50,8 +50,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<District> UpdateAsync(District district)
         {
-            var existingDistrict = await _dbContext.Districts.FirstOrDefaultAsync(d => d.Id == district.Id
-                                                                                           && district.Disabled == false);
+            var existingDistrict = await _dbContext.Districts.FirstOrDefaultAsync(d => d.Id == district.Id && !district.Disabled);
 
             if (existingDistrict != null)
             {

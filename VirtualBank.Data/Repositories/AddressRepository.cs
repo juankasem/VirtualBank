@@ -22,9 +22,9 @@ namespace VirtualBank.Data.Repositories
             return await _dbContext.Addresses.Include(address => address.District)
                                              .Include(address => address.City)
                                              .Include(address => address.Country)
-                                             .Where(address => address.Disabled == false)
+                                             .Where(address => !address.Disabled)
                                              .AsNoTracking().ToListAsync();
-}   
+        }   
 
        
         public async Task<Address> FindByIdAsync(int id)
@@ -32,7 +32,7 @@ namespace VirtualBank.Data.Repositories
             return await _dbContext.Addresses.Include(address => address.District)
                                              .Include(address => address.City)
                                              .Include(address => address.Country)
-                                             .FirstOrDefaultAsync(address => address.Disabled == false);
+                                             .FirstOrDefaultAsync(address => !address.Disabled);
         }
 
 
@@ -60,8 +60,7 @@ namespace VirtualBank.Data.Repositories
 
             if (dbContext != null)
             {
-                var existingAddress = await dbContext.Addresses
-                                              .FirstOrDefaultAsync(a => a.Id == address.Id && a.Disabled == false);
+                var existingAddress = await dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == address.Id && !a.Disabled);
 
                 if (existingAddress != null)
                 {
@@ -74,8 +73,7 @@ namespace VirtualBank.Data.Repositories
 
             else
             {
-                var existingAddress = await _dbContext.Addresses
-                                              .FirstOrDefaultAsync(a => a.Id == address.Id && a.Disabled == false);
+                var existingAddress = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == address.Id && !a.Disabled);
 
                 if (existingAddress != null)
                 {
@@ -129,6 +127,7 @@ namespace VirtualBank.Data.Repositories
             else
                await _dbContext.SaveChangesAsync();
         }
+
 
         public async Task<bool> AddressExistsAsync(int countryId, int cityId, int districtId, string street, string name)
         {

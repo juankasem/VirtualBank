@@ -20,23 +20,20 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<IEnumerable<Country>> GetAllAsync()
         {
-            return await _dbContext.Countries.Where(country => country.Disabled == false)
+            return await _dbContext.Countries.Where(country => !country.Disabled)
                                              .AsNoTracking().ToListAsync();
         }
 
 
         public async Task<Country> FindByIdAsync(int id)
         {
-            return await _dbContext.Countries .FirstOrDefaultAsync(country => country.Id == id &&
-                                                                              country.Disabled == false);
+            return await _dbContext.Countries.FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
                                                      
         }
 
         public async Task<Country> FindByIdWithCitiesAsync(int id)
         {
-            return await _dbContext.Countries.Include(c => c.Cities)
-                                             .FirstOrDefaultAsync(country => country.Id == id &&
-                                                                             country.Disabled == false);
+            return await _dbContext.Countries.Include(c => c.Cities).FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
         }
 
 
@@ -51,8 +48,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<Country> UpdateAsync(Country country)
         {
-            var existingCountry = await _dbContext.Countries.FirstOrDefaultAsync(country => country.Id == country.Id &&
-                                                                                            country.Disabled == false);
+            var existingCountry = await _dbContext.Countries.FirstOrDefaultAsync(c => c.Id == country.Id && !c.Disabled);
 
             if (existingCountry != null)
             {

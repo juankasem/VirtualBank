@@ -28,7 +28,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
                                                                 && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays
-                                                                && c.Disabled == false)
+                                                                && !c.Disabled)
                                                                 .AsNoTracking().ToListAsync();
         }
 
@@ -50,7 +50,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<CashTransaction> GetLastAsync(string iban)
         {
            return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
-                                                          && c.Disabled == false)
+                                                          && !c.Disabled)
                                                    .OrderByDescending(c => c.CreatedAt)
                                                    .FirstOrDefaultAsync();
         }
@@ -59,16 +59,13 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<CashTransaction> FindByIdAsync(int id)
         {
-            return await _dbContext.CashTransactions.Where(c => c.Id == id && c.Disabled == false)
-                                                    .FirstOrDefaultAsync();
+            return await _dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
         }
+
 
         public async Task<CashTransaction> FindByIBANAsync(string iban)
         {
-            return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
-                                                            && c.Disabled == false)
-                                                    .OrderByDescending(c => c.TransactionDate)
-                                                    .FirstOrDefaultAsync();
+            return await _dbContext.CashTransactions.FirstOrDefaultAsync(c => (c.From == iban || c.To == iban) && !c.Disabled);
         }
 
 
@@ -92,8 +89,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<CashTransaction> UpdateAsync(CashTransaction transaction)
         {
-            var existingCashTransaction = await _dbContext.CashTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
-                                                                           .FirstOrDefaultAsync();
+            var existingCashTransaction = await _dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == transaction.Id && !c.Disabled);
 
             if (existingCashTransaction != null)
             {
@@ -108,8 +104,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<CashTransaction> UpdateAsync(CashTransaction transaction, VirtualBankDbContext dbContext)
         {
-            var existingCashTransaction = await dbContext.CashTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
-                                                                          .FirstOrDefaultAsync();
+            var existingCashTransaction = await dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == transaction.Id && !c.Disabled);
 
             if (existingCashTransaction != null)
             {

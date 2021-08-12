@@ -1,6 +1,7 @@
 ﻿using System;
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 {
@@ -19,7 +20,7 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
         public string RecipientLastName { get; set; }
 
-        public decimal Amount { get; set; }
+        public Amount Amount { get; set; }
 
         public string Description { get; set; }
 
@@ -36,7 +37,7 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
 
         public CreateCashTransactionRequest(CashTransactionType type, BankAssetType initiatedBy, string from, string to,
-                                            string recipientFirstName, string recipientLastName, decimal amount, string description,
+                                            string recipientFirstName, string recipientLastName, Amount amount, string description,
                                             PaymentType paymentType, DateTime transactionDate, string creditCardNo, string debitCardNo, string pin)
         {
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));

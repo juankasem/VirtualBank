@@ -30,7 +30,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.Loans.Include(l => l.Customer)
                                          .Include(l => l.BankAccount)
-                                         .Where(l => l.CustomerId == customerId && l.Disabled == false)
+                                         .Where(l => l.CustomerId == customerId && !l.Disabled)
                                          .AsNoTracking().ToListAsync();
         }
 
@@ -39,7 +39,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.Loans.Include(l => l.Customer)
                                          .Include(l => l.BankAccount)
-                                         .Where(l => l.BankAccount.IBAN == iban && l.Disabled == false)
+                                         .Where(l => l.BankAccount.IBAN == iban && !l.Disabled)
                                          .AsNoTracking().ToListAsync();
         }
 
@@ -48,7 +48,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.Loans.Include(l => l.Customer)
                                          .Include(l => l.BankAccount)
-                                         .FirstOrDefaultAsync(l => l.Id == id && l.Disabled == false);
+                                         .FirstOrDefaultAsync(l => l.Id == id && !l.Disabled);
         }
 
 
@@ -64,7 +64,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<Loan> UpdateAsync(Loan loan)
         {
 
-            var existingLoan = await _dbContext.Loans.FirstOrDefaultAsync(l => l.Id == loan.Id && loan.Disabled == false);
+            var existingLoan = await _dbContext.Loans.FirstOrDefaultAsync(l => l.Id == loan.Id && !l.Disabled);
 
             if (existingLoan != null)
             {

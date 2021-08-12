@@ -22,7 +22,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.FastTransactions.Include(c => c.Account)
                                                     .Include(c => c.Branch)
-                                                    .Where(c => c.Disabled == false)
+                                                    .Where(c => !c.Disabled)
                                                     .AsNoTracking().ToListAsync();
         }
 
@@ -31,7 +31,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.FastTransactions.Include(c => c.Account)
                                                     .Include(c => c.Branch)
-                                                    .Where(c => c.AccountId == accountId && c.Disabled == false)
+                                                    .Where(c => c.AccountId == accountId && !c.Disabled)
                                                     .AsNoTracking().ToListAsync();
         }
 
@@ -39,7 +39,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.FastTransactions.Include(c => c.Account)
                                                              .Include(c => c.Branch)
-                                                             .Where(c => c.Account.IBAN == iban && c.Disabled == false)
+                                                             .Where(c => c.Account.IBAN == iban && !c.Disabled)
                                                              .AsNoTracking().ToListAsync();
         }
 
@@ -48,7 +48,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.FastTransactions.Include(c => c.Account)
                                                     .Include(c => c.Branch)
-                                                    .Where(c => c.Id == id && c.Disabled == false)
+                                                    .Where(c => c.Id == id && !c.Disabled)
                                                     .FirstOrDefaultAsync();
         }
 
@@ -61,20 +61,19 @@ namespace VirtualBank.Data.Repositories
             return transaction;
         }
 
-        public async Task<FastTransaction> UpdateAsync(FastTransaction transaction)
+        public async Task<FastTransaction> UpdateAsync(FastTransaction fastTx)
         {
-            var existingFastTransaction = await _dbContext.FastTransactions.Where(c => c.Id == transaction.Id && transaction.Disabled == false)
-                                                                           .FirstOrDefaultAsync();
+            var existingFastTransaction = await _dbContext.FastTransactions.FirstOrDefaultAsync(c => c.Id == fastTx.Id && !c.Disabled);
 
             if (existingFastTransaction != null)
             {
                 _dbContext.Entry(existingFastTransaction).State = EntityState.Detached;
             }
 
-            _dbContext.Entry(transaction).State = EntityState.Modified;
+            _dbContext.Entry(fastTx).State = EntityState.Modified;
             await SaveAsync();
 
-            return transaction;
+            return fastTx;
         }
 
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -76,8 +75,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<BankAccount> UpdateAsync(BankAccount bankAccount)
         {
-            var existingBankAccount = await _dbContext.BankAccounts
-                                                      .FirstOrDefaultAsync(b => b.Id == bankAccount.Id && !b.Disabled);
+            var existingBankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(b => b.Id == bankAccount.Id && !b.Disabled);
 
             if (existingBankAccount != null)
             {
