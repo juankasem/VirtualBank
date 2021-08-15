@@ -44,11 +44,11 @@ namespace VirtualBank.Core.Entities
         [Column(TypeName="decimal(8,2)")]
         public decimal Amount { get; set; }
 
-
         /// <summary>
         /// currency of credited funds
         /// </summary>
         [Required]
+        [MaxLength(5)]
         public string Currency { get; set; }
 
         /// <summary>
@@ -64,6 +64,13 @@ namespace VirtualBank.Core.Entities
         [Required]
         [Column(TypeName = "decimal(8,2)")]
         public decimal RecipientRemainingBalance { get; set; }
+
+        /// <summary>
+        /// fees of transaction
+        /// </summary>
+        [Required]
+        [Column(TypeName = "decimal(8,2)")]
+        public decimal Fees { get; set; }
 
         /// <summary>
         /// given description of transaction

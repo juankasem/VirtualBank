@@ -30,7 +30,7 @@ namespace VirtualBank.Api.Validators
                     .WithMessage("invalid format for IBAN");
 
 
-            RuleFor(x => x.Amount.Value)
+            RuleFor(x => x.)
                     .NotNull()
                     .NotEmpty()
                     .ScalePrecision(8, 2)

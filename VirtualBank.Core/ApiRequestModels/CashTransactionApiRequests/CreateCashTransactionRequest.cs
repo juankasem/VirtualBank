@@ -5,7 +5,6 @@ using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 {
-    #nullable enable
     public class CreateCashTransactionRequest
     {
         public CashTransactionType Type { get; set; }
@@ -20,7 +19,9 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
         public string RecipientLastName { get; set; }
 
-        public CreditedFunds CreditedFunds { get; set; }
+        public DebitedFunds DebitedFunds { get; set; }
+
+        public DebitedFunds Fees { get; set; }
 
         public string Description { get; set; }
 
@@ -37,8 +38,9 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
 
         public CreateCashTransactionRequest(CashTransactionType type, BankAssetType initiatedBy, string from, string to,
-                                            string recipientFirstName, string recipientLastName, CreditedFunds creditedFunds, string description,
-                                            PaymentType paymentType, DateTime transactionDate, string creditCardNo, string debitCardNo, string pin)
+                                            string recipientFirstName, string recipientLastName, DebitedFunds debitedFunds,
+                                            DebitedFunds fees, string description,PaymentType paymentType, DateTime transactionDate,
+                                            string creditCardNo, string debitCardNo, string pin)
         {
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
             InitiatedBy = Throw.ArgumentNullException.IfNull(initiatedBy, nameof(initiatedBy));
@@ -46,7 +48,8 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
             To = to;
             RecipientFirstName = recipientFirstName;
             RecipientLastName = recipientLastName;
-            CreditedFunds = creditedFunds;
+            DebitedFunds = Throw.ArgumentNullException.IfNull(debitedFunds, nameof(debitedFunds));
+            DebitedFunds = Throw.ArgumentNullException.IfNull(fees, nameof(fees));
             Description = description;
             PaymentType = Throw.ArgumentNullException.IfNull(paymentType, nameof(paymentType));
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));
