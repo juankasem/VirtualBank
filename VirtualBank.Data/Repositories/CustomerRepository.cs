@@ -20,14 +20,14 @@ namespace VirtualBank.Data.Repositories
         public async Task<IEnumerable<Customer>> GetAllAsync()
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                             .Where(customer => customer.Disabled == false)
+                                             .Where(customer => !customer.Disabled)
                                              .AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<Customer>> SearchByNameAsync(string searchTerm)
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                             .Where(customer => (customer.FirstName.Contains(searchTerm) || customer.LastName.Contains(searchTerm)) && customer.Disabled == false)
+                                             .Where(customer => (customer.FirstName.Contains(searchTerm) || customer.LastName.Contains(searchTerm)) && !customer.Disabled)
                                              .AsNoTracking().ToListAsync();
         }
 
@@ -35,7 +35,7 @@ namespace VirtualBank.Data.Repositories
         public async Task<Customer> FindByAccountIdAsync(int accountId)
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                             .Where(customer => customer.BankAccounts.FirstOrDefault().Id == accountId && customer.Disabled == false)
+                                             .Where(customer => customer.BankAccounts.FirstOrDefault().Id == accountId && !customer.Disabled)
                                              .FirstOrDefaultAsync();
         }
 
@@ -43,36 +43,38 @@ namespace VirtualBank.Data.Repositories
         {
 
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                             .Where(customer => customer.BankAccounts.FirstOrDefault().AccountNo == accountNo && customer.Disabled == false)
+                                             .Where(customer => customer.BankAccounts.FirstOrDefault().AccountNo == accountNo && !customer.Disabled)
                                              .FirstOrDefaultAsync();
         }
 
         public async Task<Customer> FindByIBANAsync(string iban)
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                             .Where(customer => customer.BankAccounts.FirstOrDefault().IBAN == iban && customer.Disabled == false)
+                                             .Where(customer => customer.BankAccounts.FirstOrDefault().IBAN == iban && !customer.Disabled)
                                              .FirstOrDefaultAsync();
         }
 
         public async Task<Customer> FindByIdAsync(int id)
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                             .Where(customer => customer.Id == id && customer.Disabled == false)
-                                             .FirstOrDefaultAsync();
+                                             .FirstOrDefaultAsync(customer => customer.Id == id && !customer.Disabled);
         }
+
 
         public async Task<Customer> FindByCreditCardIdAsync(int creditCardId)
         {
             return await _dbContext.Customers.Include(customer => customer.Address)
-                                             .Where(customer => customer.CreditCards.FirstOrDefault().Id == creditCardId && customer.Disabled == false)
+                                             .Where(customer => customer.CreditCards.FirstOrDefault().Id == creditCardId && !customer.Disabled)
                                              .FirstOrDefaultAsync();
         }
 
         public async Task<bool> CustomerExistsAsync(Customer customer)
         {
-            return await _dbContext.Customers.AnyAsync(c => c.FirstName == customer.FirstName && c.LastName == customer.LastName
-                                                                                              && c.FatherName == customer.FatherName);
+            return await _dbContext.Customers.AnyAsync(c => c.FirstName == customer.FirstName
+                                                            && c.LastName == customer.LastName
+                                                            && c.FatherName == customer.FatherName);
         }
+
 
         public async Task<Customer> AddAsync(Customer customer)
         {
@@ -92,8 +94,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<Customer> UpdateAsync(Customer customer)
         {
-            var existingCustomer = await _dbContext.Customers.Where(c => c.Id == customer.Id && !c.Disabled)
-                                                   .FirstOrDefaultAsync();
+            var existingCustomer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customer.Id && !c.Disabled);
 
             if (existingCustomer != null)
             {
@@ -108,7 +109,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<Customer> UpdateAsync(Customer customer, VirtualBankDbContext dbContext)
         {
-            var existingCustomer = await _dbContext.Customers.Where(c => c.Id == customer.Id && !c.Disabled).FirstOrDefaultAsync();
+            var existingCustomer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customer.Id && !c.Disabled);
 
             if (existingCustomer != null)
             {

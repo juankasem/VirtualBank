@@ -206,7 +206,7 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<CashTransactionResponse>> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-            var amountToDeposit = request.Amount;
+            var amountToDeposit = request.CreditedFunds.Amount;
 
             using var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -259,7 +259,7 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<CashTransactionResponse>> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-            var amountToWithdraw = request.Amount;
+            var amountToWithdraw = request.CreditedFunds.Amount;
 
             using var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
@@ -325,6 +325,7 @@ namespace VirtualBank.Api.Services
 
                 return responseModel;
             }
+
         }
 
 
@@ -337,7 +338,8 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<CashTransactionResponse>> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-            var amountToTransfer = request.Amount;
+            var amountToTransfer = request.CreditedFunds.Amount;
+            var currency = request.CreditedFunds.Currency;
 
             using var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -358,10 +360,22 @@ namespace VirtualBank.Api.Services
                     return responseModel;
                 }
 
+                if (senderAccount.IBAN == recipientAccount.IBAN)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("sender should send to a different bad account"));
+                    return responseModel;
+
+                }
+
                 if (senderAccount.Type != AccountType.Current || senderAccount.Type != AccountType.Recurring)
                 {
                     responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
+                    return responseModel;
+                }
 
+                if (currency != senderAccount.Currency.Code)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
                     return responseModel;
                 }
 
@@ -420,7 +434,8 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<CashTransactionResponse>> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-            var amountToTransfer = request.Amount;
+            var amountToTransfer = request.CreditedFunds.Amount;
+            var currency = request.CreditedFunds.Currency;
 
             using var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
@@ -441,6 +456,13 @@ namespace VirtualBank.Api.Services
                       return responseModel;
                 }
 
+                if (senderAccount.IBAN == recipientAccount.IBAN)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("sender should send to a different bad account"));
+                    return responseModel;
+
+                }
+
                 if (recipientAccount.Owner.FirstName != request.RecipientFirstName || recipientAccount.Owner.LastName != request.RecipientLastName)
                 {
                     responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(recipientAccount), "recipient name does not match account holder's name"));
@@ -452,6 +474,13 @@ namespace VirtualBank.Api.Services
                     responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
                       return responseModel;
                 }
+
+                if (currency != senderAccount.Currency.Code)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
+                    return responseModel;
+                }
+
 
                 if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
                 {
@@ -488,7 +517,7 @@ namespace VirtualBank.Api.Services
 
                     //Modify request for commission fees transaction
                     request.Type = CashTransactionType.CommissionFees;
-                    request.Amount = fees;
+                    request.CreditedFunds = CreateCreditedFunds(fees, request.CreditedFunds.Currency);
 
                     //Create & Save commission fees into db
                     await _cashTransactionsRepo.AddAsync(CreateCashTransaction(request, senderAccount.Balance, 0), _dbContext);
@@ -525,7 +554,8 @@ namespace VirtualBank.Api.Services
                 Type = request.Type,
                 From = request.From,
                 To = !isTransferFees ? request.To : BANKACCOUNTNO,
-                Amount = request.Amount.Value,
+                Amount = request.CreditedFunds.Amount,
+                Currency = request.CreditedFunds.Currency,
                 SenderRemainingBalance = senderBalance,
                 RecipientRemainingBalance = recipientBalance,
                 InitiatedBy = request.InitiatedBy,
@@ -533,8 +563,8 @@ namespace VirtualBank.Api.Services
                 PaymentType = !isTransferFees ? request.PaymentType : PaymentType.CommissionFees,
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name,
                 TransactionDate = request.TransactionDate,
-                CreditCardNo = request.CreditCardNo ?? null,
-                DebitCardNo = request.DebitCardNo ?? null
+                CreditCardNo = request.CreditCardNo,
+                DebitCardNo = request.DebitCardNo
             };
         }
 
@@ -542,10 +572,12 @@ namespace VirtualBank.Api.Services
         private static CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string iban, string sender, string recipient)
         {
             var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
+        
 
             return new CashTransactionResponse(cashTransaction.From,
                                                cashTransaction.To,
-                                               cashTransaction.From != iban ? new Amount(cashTransaction.Amount) : new Amount(-cashTransaction.Amount),
+                                               cashTransaction.From != iban ? CreateCreditedFunds(cashTransaction.Amount, cashTransaction.Currency)
+                                               : CreateCreditedFunds(-cashTransaction.Amount, cashTransaction.Currency),
                                                sender,
                                                recipient,
                                                cashTransaction.PaymentType,
@@ -570,6 +602,11 @@ namespace VirtualBank.Api.Services
         private static LastCashTransactionResponse CreateLatestTransferResponse(string toAccount, string recipient, Amount amount, DateTime createdOn)
         {
             return new LastCashTransactionResponse(toAccount, recipient, amount, createdOn);
+        }
+
+        private static CreditedFunds CreateCreditedFunds(decimal amount, string currency)
+        {
+            return new CreditedFunds(new Amount(amount), currency);
         }
 
 

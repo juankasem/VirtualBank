@@ -20,7 +20,7 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
         public string RecipientLastName { get; set; }
 
-        public Amount Amount { get; set; }
+        public CreditedFunds CreditedFunds { get; set; }
 
         public string Description { get; set; }
 
@@ -37,7 +37,7 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
 
         public CreateCashTransactionRequest(CashTransactionType type, BankAssetType initiatedBy, string from, string to,
-                                            string recipientFirstName, string recipientLastName, Amount amount, string description,
+                                            string recipientFirstName, string recipientLastName, CreditedFunds creditedFunds, string description,
                                             PaymentType paymentType, DateTime transactionDate, string creditCardNo, string debitCardNo, string pin)
         {
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
@@ -46,7 +46,7 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
             To = to;
             RecipientFirstName = recipientFirstName;
             RecipientLastName = recipientLastName;
-            Amount = amount;
+            CreditedFunds = creditedFunds;
             Description = description;
             PaymentType = Throw.ArgumentNullException.IfNull(paymentType, nameof(paymentType));
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));

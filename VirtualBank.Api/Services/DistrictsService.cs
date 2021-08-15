@@ -43,31 +43,25 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<DistrictListResponse>();
 
-            IEnumerable<District> retrievedDistricts;
+            IEnumerable<District> districts;
 
             if (cityId > 0)
             {
-                retrievedDistricts = await _districtsRepo.GetByCityIdAsync(cityId);
+                districts = await _districtsRepo.GetByCityIdAsync(cityId);
             }
             else
             {
-                retrievedDistricts = await _districtsRepo.GetAllAsync();
+                districts = await _districtsRepo.GetAllAsync();
             }
 
-            if (!retrievedDistricts.Any())
+            if (!districts.Any())
                 return responseModel;
 
 
-            var districts = retrievedDistricts.OrderBy(c => c.Name);
+            var districtList = districts.OrderBy(c => c.Name).Select(x => CreateDistrictResponse(x)).ToImmutableList();
 
-            var districtList = new List<DistrictResponse>();
 
-            foreach (var district in districts)
-            {
-                districtList.Add(CreateDistrictResponse(district));
-            }
-
-            responseModel.Data = new DistrictListResponse(districtList.ToImmutableList(), districtList.Count);
+            responseModel.Data = new DistrictListResponse(districtList, districtList.Count);
 
             return responseModel;
         }

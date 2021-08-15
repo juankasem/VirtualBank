@@ -38,11 +38,18 @@ namespace VirtualBank.Core.Entities
         public string To { get; set; }
 
         /// <summary>
-        /// amount of money
+        /// amount of credited funds
         /// </summary>
         [Required]
         [Column(TypeName="decimal(8,2)")]
         public decimal Amount { get; set; }
+
+
+        /// <summary>
+        /// currency of credited funds
+        /// </summary>
+        [Required]
+        public string Currency { get; set; }
 
         /// <summary>
         /// remaining balance of the sender account
