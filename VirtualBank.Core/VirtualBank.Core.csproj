@@ -14,7 +14,6 @@
     <Folder Include="ApiResponseModels\CustomerApiResponses\" />
     <Folder Include="ApiResponseModels\CashTrasactionApiResponses\" />
     <Folder Include="ArgumentChecks\" />
-    <Folder Include="ApiResponseModels\AccountApiResponses\" />
     <Folder Include="ApiRequestModels\CashTransactionApiRequests\" />
     <Folder Include="ApiRequestModels\BankAccountApiRequests\" />
     <Folder Include="ApiRequestModels\BranchApiRequests\" />

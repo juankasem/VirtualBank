@@ -1,0 +1,12 @@
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/bin/Debug/netcoreapp3.1/VirtualBank.Data.deps.json
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/bin/Debug/netcoreapp3.1/VirtualBank.Data.dll
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/bin/Debug/netcoreapp3.1/VirtualBank.Data.pdb
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/bin/Debug/netcoreapp3.1/VirtualBank.Core.dll
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/bin/Debug/netcoreapp3.1/VirtualBank.Core.pdb
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/obj/Debug/netcoreapp3.1/VirtualBank.Data.AssemblyInfoInputs.cache
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/obj/Debug/netcoreapp3.1/VirtualBank.Data.AssemblyInfo.cs
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/obj/Debug/netcoreapp3.1/VirtualBank.Data.csproj.CoreCompileInputs.cache
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/obj/Debug/netcoreapp3.1/VirtualBank.Data.csproj.CopyComplete
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/obj/Debug/netcoreapp3.1/VirtualBank.Data.dll
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/obj/Debug/netcoreapp3.1/VirtualBank.Data.pdb
+/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Data/obj/Debug/netcoreapp3.1/VirtualBank.Data.csproj.AssemblyReference.cache
