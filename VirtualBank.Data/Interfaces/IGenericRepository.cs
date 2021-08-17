@@ -17,7 +17,6 @@ namespace VirtualBank.Data.Interfaces
                         params Expression<Func<TEntity, object>>[] includeProperties);
         Task<TEntity> CreateAsync(TEntity entity);
         Task<TEntity> UpdateAsync(TEntity entity, object key);
-        Task DeleteAsync(TEntity entity);
-        Task SaveAsync();
+        void DeleteAsync(TEntity entity);
     }
 }

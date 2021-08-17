@@ -11,13 +11,6 @@ namespace VirtualBank.Core.Entities
         public int AccountId { get; set; }
         public BankAccount Account { get; set; }
 
-
-        [ForeignKey(nameof(Branch))]
-        [Required]
-        public int BranchId { get; set; }
-        public Branch Branch { get; set; }
-
-
         [Required]
         [MaxLength(50)]
         public string RecipientName { get; set; }

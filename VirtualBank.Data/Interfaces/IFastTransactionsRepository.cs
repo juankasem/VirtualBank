@@ -14,6 +14,5 @@ namespace VirtualBank.Data.Interfaces
         Task<FastTransaction> AddAsync(FastTransaction transaction);
         Task<FastTransaction> UpdateAsync(FastTransaction transaction);
         Task<bool> RemoveAsync(int id);
-        Task SaveAsync();
     }
 }

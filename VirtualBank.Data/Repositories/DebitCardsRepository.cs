@@ -21,7 +21,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.DebitCards.Include(c => c.BankAccount)
                                               .ThenInclude(c => c.Owner)
-                                              .Where(c => c.Disabled == false)
+                                              .Where(c => !c.Disabled)
                                               .AsNoTracking().ToListAsync();
         }
 
@@ -30,7 +30,7 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.DebitCards.Include(c => c.BankAccount)
                                               .ThenInclude(c => c.Owner.Id == customerId)
-                                              .Where(c => c.Disabled == false)
+                                              .Where(c => !c.Disabled)
                                               .AsNoTracking().ToListAsync();
         }
 
@@ -38,24 +38,22 @@ namespace VirtualBank.Data.Repositories
         public async Task<DebitCard> FindByIdAsync(int id)
         {
             return await _dbContext.DebitCards.Include(c => c.BankAccount)
-                                              .Where(c => c.Id == id && c.Disabled == false)
-                                              .FirstOrDefaultAsync();
+                                              .FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
         }
 
 
         public async Task<DebitCard> FindByAccountNoAsync(string accountNo)
         {
             return await _dbContext.DebitCards.Include(c => c.BankAccount)
-                                              .Where(c => c.BankAccount.AccountNo == accountNo && c.Disabled == false)
-                                              .FirstOrDefaultAsync();
+                                              .FirstOrDefaultAsync(c => c.BankAccount.AccountNo == accountNo && !c.Disabled);
         }
 
 
         public async Task<DebitCard> FindByDebitCardNoAsync(string debitCardNo)
         {
             return await _dbContext.DebitCards.Include(c => c.BankAccount)
-                                              .Where(c => c.DebitCardNo == debitCardNo && c.Disabled == false)
-                                              .FirstOrDefaultAsync();
+                                              .FirstOrDefaultAsync(c => c.DebitCardNo == debitCardNo && !c.Disabled);
+                                              
         }
 
 
@@ -64,8 +62,7 @@ namespace VirtualBank.Data.Repositories
             var isValid = false;
 
             var debitCard = await _dbContext.DebitCards.Include(c => c.BankAccount)
-                                            .Where(c => c.PIN == pin && c.Disabled == false)
-                                            .FirstOrDefaultAsync();
+                                            .FirstOrDefaultAsync(c => c.PIN == pin && !c.Disabled);
             if (debitCard.PIN == pin)
             {
                 isValid = true;
@@ -78,7 +75,6 @@ namespace VirtualBank.Data.Repositories
         public async Task<DebitCard> AddAsync(DebitCard debitCard)
         {
             await _dbContext.DebitCards.AddAsync(debitCard);
-            await SaveAsync();
 
             return debitCard;
         }
@@ -86,8 +82,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<DebitCard> UpdateAsync(DebitCard debitCard)
         {
-            var existingDebitCard = await _dbContext.DebitCards.Where(c => c.Id == debitCard.Id && c.Disabled == false)
-                                                                .FirstOrDefaultAsync();
+            var existingDebitCard = await _dbContext.DebitCards.FirstOrDefaultAsync(c => c.Id == debitCard.Id && !c.Disabled);
 
             if (existingDebitCard != null)
             {
@@ -95,7 +90,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(debitCard).State = EntityState.Modified;
-            await SaveAsync();
 
             return debitCard;
         }
@@ -109,18 +103,11 @@ namespace VirtualBank.Data.Repositories
             if (debitCard != null)
             {
                 debitCard.Disabled = true;
-                await SaveAsync();
 
                 isDeleted = true;
             }
 
             return isDeleted;
-        }
-
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

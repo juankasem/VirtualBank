@@ -17,6 +17,7 @@ namespace VirtualBank.Data.Repositories
             _dbContext = dbContext;
         }
 
+
         public async Task<IEnumerable<CashTransaction>> GetAllAsync()
         {
             return await _dbContext.CashTransactions.Where(c => c.Disabled == false)
@@ -29,7 +30,7 @@ namespace VirtualBank.Data.Repositories
             return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
                                                                 && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays
                                                                 && !c.Disabled)
-                                                                .AsNoTracking().ToListAsync();
+                                                    .AsNoTracking().ToListAsync();
         }
 
 
@@ -56,7 +57,6 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-
         public async Task<CashTransaction> FindByIdAsync(int id)
         {
             return await _dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
@@ -72,16 +72,6 @@ namespace VirtualBank.Data.Repositories
         public async Task<CashTransaction> AddAsync(CashTransaction transaction)
         {
             await _dbContext.CashTransactions.AddAsync(transaction);
-            await SaveAsync();
-
-            return transaction;
-        }
-
-
-        public async Task<CashTransaction> AddAsync(CashTransaction transaction, VirtualBankDbContext dbContext)
-        {
-            await dbContext.CashTransactions.AddAsync(transaction);
-            await SaveAsync(dbContext);
 
             return transaction;
         }
@@ -97,25 +87,10 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(transaction).State = EntityState.Modified;
-            await SaveAsync();
 
             return transaction;
         }
 
-        public async Task<CashTransaction> UpdateAsync(CashTransaction transaction, VirtualBankDbContext dbContext)
-        {
-            var existingCashTransaction = await dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == transaction.Id && !c.Disabled);
-
-            if (existingCashTransaction != null)
-            {
-                dbContext.Entry(existingCashTransaction).State = EntityState.Detached;
-            }
-
-            dbContext.Entry(transaction).State = EntityState.Modified;
-            await SaveAsync(dbContext);
-
-            return transaction;
-        }
 
         public async Task<bool> RemoveAsync(int id)
         {
@@ -125,41 +100,11 @@ namespace VirtualBank.Data.Repositories
             if (transaction != null)
             {
                 transaction.Disabled = true;
-                await SaveAsync();
 
                 isDeleted = true;
             }
 
             return isDeleted;
-        }
-
-        public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext)
-        {
-            var transaction = await dbContext.CashTransactions.FindAsync(id);
-            var isDeleted = false;
-
-            if (transaction != null)
-            {
-                transaction.Disabled = true;
-                await SaveAsync(dbContext);
-
-                isDeleted = true;
-
-            }
-
-            return isDeleted; 
-        }
-
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
-        }
-
-
-        public async Task SaveAsync(VirtualBankDbContext dbContext)
-        {
-            await dbContext.SaveChangesAsync();
         }
     }
 }

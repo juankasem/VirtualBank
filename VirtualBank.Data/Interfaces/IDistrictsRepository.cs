@@ -15,6 +15,5 @@ namespace VirtualBank.Data.Interfaces
         Task<bool> RemoveAsync(int id);
         Task<bool> DistrictExists(int districtId);
         Task<bool> DistrictNameExists(int cityId, string districtName);
-        Task SaveAsync();
     }
 }

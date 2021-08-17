@@ -69,7 +69,6 @@ namespace VirtualBank.Data.Repositories
         public async Task<TEntity> CreateAsync(TEntity entity)
         {
             await  _dbContext.Set<TEntity>().AddAsync(entity);
-            await SaveAsync();
 
             return entity;
         }
@@ -82,28 +81,21 @@ namespace VirtualBank.Data.Repositories
                 return null;
             }
 
-            TEntity existingEntity = _dbSet.Find(key);
+            TEntity existingEntity =await _dbSet.FindAsync(key);
 
             if (existingEntity != null)
             {
                 _dbContext.Entry(entity).State = EntityState.Modified;
                 _dbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
 
-                await SaveAsync();
             }
 
             return existingEntity;
         }
 
-        public async Task DeleteAsync(TEntity entity)
+        public void DeleteAsync(TEntity entity)
         {
             _dbContext.Set<TEntity>().Remove(entity);
-            await SaveAsync();
-        }
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

@@ -12,24 +12,21 @@ using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.DistrictApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
+using VirtualBank.Data.Repositories;
 
 namespace VirtualBank.Api.Services
 {
 
     public class DistrictsService : IDistrictsService
     {
-        private readonly VirtualBankDbContext _dbContext;
-        private readonly IDistrictsRepository _districtsRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public DistrictsService(VirtualBankDbContext dbContext,
-                                IDistrictsRepository districtsRepo,
+        public DistrictsService(IUnitOfWork unitOfWork,
                                 IHttpContextAccessor httpContextAccessor)
         {
-            _dbContext = dbContext;
-            _districtsRepo = districtsRepo;
+            _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -47,11 +44,11 @@ namespace VirtualBank.Api.Services
 
             if (cityId > 0)
             {
-                districts = await _districtsRepo.GetByCityIdAsync(cityId);
+                districts = await _unitOfWork.Districts.GetByCityIdAsync(cityId);
             }
             else
             {
-                districts = await _districtsRepo.GetAllAsync();
+                districts = await _unitOfWork.Districts.GetAllAsync();
             }
 
             if (!districts.Any())
@@ -77,7 +74,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<DistrictResponse>();
 
-            var district = await _districtsRepo.FindByIdAsync(districtId);
+            var district = await _unitOfWork.Districts.FindByIdAsync(districtId);
 
             if (district == null)
             {
@@ -102,7 +99,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<DistrictResponse>();
 
-            if (await _districtsRepo.DistrictNameExists(request.CityId, request.Name))
+            if (await _unitOfWork.Districts.DistrictNameExists(request.CityId, request.Name))
             {
                 responseModel.AddError(ExceptionCreator.CreateBadRequestError("cdistrict name does already exist"));
                 return responseModel;
@@ -110,7 +107,7 @@ namespace VirtualBank.Api.Services
 
             if (districtId != 0)
             {
-                var district = await _districtsRepo.FindByIdAsync(districtId);
+                var district = await _unitOfWork.Districts.FindByIdAsync(districtId);
 
                 try
                 {
@@ -121,7 +118,7 @@ namespace VirtualBank.Api.Services
                         district.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         district.LastModifiedOn = DateTime.UtcNow;
 
-                        var updatedDistrict = await _districtsRepo.UpdateAsync(district);
+                        var updatedDistrict = await _unitOfWork.Districts.UpdateAsync(district);
                         responseModel.Data = CreateDistrictResponse(updatedDistrict);
                     }
                     else
@@ -139,7 +136,7 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                   var createdDistrict = await _districtsRepo.AddAsync(CreateDistrict(request));
+                   var createdDistrict = await _unitOfWork.Districts.AddAsync(CreateDistrict(request));
                    responseModel.Data = CreateDistrictResponse(createdDistrict);
                 }
                 catch (Exception ex)
@@ -159,7 +156,7 @@ namespace VirtualBank.Api.Services
         /// <returns></returns>
         public async Task<bool> DistrictExists(int districtId)
         {
-            return await _dbContext.Districts.AnyAsync(c => c.Id == districtId);
+            return await _unitOfWork.Districts.AnyAsync(c => c.Id == districtId);
         }
 
 

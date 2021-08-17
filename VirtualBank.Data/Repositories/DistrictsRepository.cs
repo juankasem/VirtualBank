@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +42,6 @@ namespace VirtualBank.Data.Repositories
         public async Task<District> AddAsync(District district)
         {
             await _dbContext.Districts.AddAsync(district);
-            await SaveAsync();
 
             return district;
         }
@@ -58,7 +56,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(district).State = EntityState.Modified;
-            await SaveAsync();
 
             return district;
         }
@@ -72,7 +69,6 @@ namespace VirtualBank.Data.Repositories
             if (district != null)
             {
                 district.Disabled = true;
-                await SaveAsync();
 
                 isDeleted = true;
             }
@@ -91,11 +87,5 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.Districts.AnyAsync(d => d.CityId == cityId && d.Name == districtName);
         }
-
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
-        } 
     }
 }

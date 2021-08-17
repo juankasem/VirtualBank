@@ -71,19 +71,10 @@ namespace VirtualBank.Data.Repositories
                                                            b.Name.Equals(branchName));
         }
 
+
         public async Task<Branch> AddAsync(Branch branch)
         {
             await _dbContext.Branches.AddAsync(branch);
-            await SaveAsync();
-
-            return branch;
-        }
-
-
-        public async Task<Branch> AddAsync(Branch branch, VirtualBankDbContext dbContext)
-        {
-            await dbContext.Branches.AddAsync(branch);
-            await SaveAsync(dbContext);
 
             return branch;
         }
@@ -99,23 +90,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(branch).State = EntityState.Modified;
-            await SaveAsync();
-
-            return branch;
-        }
-
-
-        public async Task<Branch> UpdateAsync(Branch branch, VirtualBankDbContext dbContext)
-        {
-            var existingBranch = await dbContext.Branches.FirstOrDefaultAsync(b => b.Id == branch.Id && !b.Disabled);
-
-            if (existingBranch != null)
-            {
-                dbContext.Entry(existingBranch).State = EntityState.Detached;
-            }
-
-            dbContext.Entry(branch).State = EntityState.Modified;
-            await SaveAsync(dbContext);
 
             return branch;
         }
@@ -129,41 +103,10 @@ namespace VirtualBank.Data.Repositories
             if (branch != null)
             {
                 branch.Disabled = true;
-                await SaveAsync();
-
                 isDeleted = true;
             }
 
             return isDeleted;
-        }
-
-
-        public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext)
-        {
-            var isDeleted = false;
-            var branch = await dbContext.Branches.FindAsync(id);
-
-            if (branch != null)
-            {
-                branch.Disabled = true;
-                await SaveAsync(dbContext);
-
-                isDeleted = true;
-            }
-
-            return isDeleted;
-        }
-
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
-        }
-
-
-        public async Task SaveAsync(VirtualBankDbContext dbContext)
-        {
-            await dbContext.SaveChangesAsync();
         }
     }
 }

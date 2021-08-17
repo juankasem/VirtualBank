@@ -13,6 +13,5 @@ namespace VirtualBank.Data.Interfaces
         Task<Loan> AddAsync(Loan loan);
         Task<Loan> UpdateAsync(Loan loan);
         Task<bool> RemoveAsync(int id);
-        Task SaveAsync();
     }
 }

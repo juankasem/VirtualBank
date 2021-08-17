@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using VirtualBank.Core.ArgumentChecks;
+﻿using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Core.ApiRequestModels.BranchApiRequests

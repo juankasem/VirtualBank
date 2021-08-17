@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -37,95 +36,43 @@ namespace VirtualBank.Data.Repositories
 
 
 
-        public async Task<Address> AddAsync(Address address, VirtualBankDbContext dbContext = null)
+        public async Task<Address> AddAsync(Address address)
         {
-            if (dbContext != null)
-            {
-                await dbContext.Addresses.AddAsync(address);
-                await SaveAsync(dbContext);
-            }
-            else
-            {
-                await _dbContext.Addresses.AddAsync(address);
-                await SaveAsync();
-            }
+            await _dbContext.Addresses.AddAsync(address);           
            
+            return address;
+        }
+
+
+        public async Task<Address> UpdateAsync(Address address)
+        {   
+            var existingAddress = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == address.Id && !a.Disabled);
+
+            if (existingAddress != null)
+            {
+                _dbContext.Entry(existingAddress).State = EntityState.Detached;
+            }
+
+            _dbContext.Entry(address).State = EntityState.Modified;
+            
 
             return address;
         }
 
 
-        public async Task<Address> UpdateAsync(Address address, VirtualBankDbContext dbContext = null)
-        {
-
-            if (dbContext != null)
-            {
-                var existingAddress = await dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == address.Id && !a.Disabled);
-
-                if (existingAddress != null)
-                {
-                    dbContext.Entry(existingAddress).State = EntityState.Detached;
-                }
-
-                dbContext.Entry(address).State = EntityState.Modified;
-                await SaveAsync(dbContext);
-            }
-
-            else
-            {
-                var existingAddress = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == address.Id && !a.Disabled);
-
-                if (existingAddress != null)
-                {
-                    _dbContext.Entry(existingAddress).State = EntityState.Detached;
-                }
-
-                _dbContext.Entry(address).State = EntityState.Modified;
-                await SaveAsync();
-            }
-        
-
-            return address;
-        }
-
-
-        public async Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext = null)
+        public async Task<bool> RemoveAsync(int id)
         {
             var isDeleted= false;
+    
+            var address = await _dbContext.Addresses.FindAsync(id);
 
-            if (dbContext != null)
+            if (address != null)
             {
-                var address = await dbContext.Addresses.FindAsync(id);
-
-                if (address != null)
-                {
-                    address.Disabled = true;
-                    await SaveAsync(dbContext);
-                    isDeleted = true;
-                }
+                address.Disabled = true;
+                isDeleted = true;
             }
-            else
-            {
-                var address = await _dbContext.Addresses.FindAsync(id);
-
-                if (address != null)
-                {
-                    address.Disabled = true;
-                    await SaveAsync();
-                    isDeleted = true;
-                }
-            }
-          
+            
             return isDeleted;
-        }
-
-
-        public async Task SaveAsync(VirtualBankDbContext dbContext = null)
-        {
-            if (dbContext != null)
-                await dbContext.SaveChangesAsync();
-            else
-               await _dbContext.SaveChangesAsync();
         }
 
 

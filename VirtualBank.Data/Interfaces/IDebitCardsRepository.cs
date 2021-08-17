@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using VirtualBank.Core.Entities;
 
@@ -16,7 +15,5 @@ namespace VirtualBank.Data.Interfaces
         Task<DebitCard> AddAsync(DebitCard debitCard);
         Task<DebitCard> UpdateAsync(DebitCard debitCard);
         Task<bool> RemoveAsync(int id);
-
-        Task SaveAsync();
     }
 }

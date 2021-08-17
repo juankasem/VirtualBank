@@ -67,6 +67,7 @@ namespace VirtualBank.Api
             services.AddSingleton<IActionResultProvider, ActionResultProvider>();
             services.AddHttpContextAccessor();
 
+
             // Add repositories
             services.AddScoped<IBankAccountRepository, BankAccountRepository>();
             services.AddScoped<IBranchRepository, BranchRepository>();
@@ -94,7 +95,7 @@ namespace VirtualBank.Api
             services.AddScoped<ILoansService, LoansService>();
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<ITokenService, TokenService>();
-
+            services.AddScoped<IUnityOfWork, UnitOfWork>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

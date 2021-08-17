@@ -17,10 +17,10 @@ namespace VirtualBank.Api.Services
     public class CreditCardsService : ICreditCardsService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ICreditCardsRepository _creditCardsRepo;
+        private readonly IUnitOfWork _creditCardsRepo;
 
         public CreditCardsService(IHttpContextAccessor httpContextAccessor,
-                                  ICreditCardsRepository creditCardsRepo)
+                                 ICreditCardsRepository creditCardsRepo)
         {
             _httpContextAccessor = httpContextAccessor;
             _creditCardsRepo = creditCardsRepo;

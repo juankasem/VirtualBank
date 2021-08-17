@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +39,6 @@ namespace VirtualBank.Data.Repositories
         public async Task<Country> AddAsync(Country country)
         {
             await _dbContext.Countries.AddAsync(country);
-            await SaveAsync();
 
             return country;
         }
@@ -56,7 +54,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(country).State = EntityState.Modified;
-            await SaveAsync();
 
             return country;
         }
@@ -70,18 +67,11 @@ namespace VirtualBank.Data.Repositories
             if (country != null)
             {
                 country.Disabled = true;
-                await SaveAsync();
 
                 isDeleted = true;
             }
 
             return isDeleted;
-        }
-
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

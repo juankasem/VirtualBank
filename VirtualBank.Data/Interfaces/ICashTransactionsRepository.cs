@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using VirtualBank.Core.Entities;
 
@@ -15,13 +14,7 @@ namespace VirtualBank.Data.Interfaces
         Task<CashTransaction> FindByIdAsync(int id);
         Task<CashTransaction> FindByIBANAsync(string iban);
         Task<CashTransaction> AddAsync(CashTransaction transaction);
-        Task<CashTransaction> AddAsync(CashTransaction transaction, VirtualBankDbContext dbContext);
         Task<CashTransaction> UpdateAsync(CashTransaction transaction);
-        Task<CashTransaction> UpdateAsync(CashTransaction transaction, VirtualBankDbContext dbContext);
         Task<bool> RemoveAsync(int id);
-        Task<bool> RemoveAsync(int id, VirtualBankDbContext dbContext);
-        Task SaveAsync();
-        Task SaveAsync(VirtualBankDbContext dbContext);
-
     }
 }

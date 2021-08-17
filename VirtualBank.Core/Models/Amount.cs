@@ -2,7 +2,7 @@
 
 namespace VirtualBank.Core.Models
 {
-    public record Amount
+    public class Amount
     {
         public decimal Value { get; }
 
@@ -15,6 +15,5 @@ namespace VirtualBank.Core.Models
         public Amount Subtract(Amount amount) => new (Value - amount);
 
         public static implicit operator decimal(Amount? amount) => amount?.Value ?? 0;
-
     }
 }

@@ -46,24 +46,21 @@ namespace VirtualBank.Data.Repositories
         public async Task<CreditCard> FindByIdAsync(int id)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                               .Where(c => c.Id == id && !c.Disabled)
-                                               .FirstOrDefaultAsync();
+                                               .FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
         }
 
 
         public async Task<CreditCard> FindByCreditCardNoAsync(string creditCardNo)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                                          .Where(c => c.CreditCardNo == creditCardNo && !c.Disabled)
-                                                          .FirstOrDefaultAsync();
+                                               .FirstOrDefaultAsync(c => c.CreditCardNo == creditCardNo && !c.Disabled);
         }
 
 
         public async Task<CreditCard> FindByAccountNoAsync(string accountNo)
         {
             return await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                               .Where(c => c.BankAccount.AccountNo == accountNo && !c.Disabled)
-                                               .FirstOrDefaultAsync();
+                                               .FirstOrDefaultAsync(c => c.BankAccount.AccountNo == accountNo && !c.Disabled);
         }
 
       
@@ -72,8 +69,7 @@ namespace VirtualBank.Data.Repositories
             var isValid = false;
 
             var creditCard = await _dbContext.CreditCards.Include(c => c.BankAccount)
-                                             .Where(c => c.PIN == pin && !c.Disabled)
-                                             .FirstOrDefaultAsync();
+                                                         .FirstOrDefaultAsync(c => c.PIN == pin && !c.Disabled);
             if (creditCard.PIN == pin)
             {
                 isValid = true;
@@ -85,10 +81,10 @@ namespace VirtualBank.Data.Repositories
         public async Task<CreditCard> AddAsync(CreditCard creditCard)
         {
             await _dbContext.CreditCards.AddAsync(creditCard);
-            await SaveAsync();
 
             return creditCard;
         }
+
 
         public async Task<CreditCard> UpdateAsync(CreditCard creditCard)
         {
@@ -100,7 +96,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(creditCard).State = EntityState.Modified;
-            await SaveAsync();
 
             return creditCard;
         }
@@ -114,17 +109,10 @@ namespace VirtualBank.Data.Repositories
             if (creditCard != null)
             {
                 creditCard.Disabled = true;
-                await SaveAsync();
-
                 isDeleted = true;
             }
 
             return isDeleted;
-        }
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

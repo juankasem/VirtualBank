@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -11,7 +10,6 @@ using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.FastTransactionApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
@@ -19,19 +17,15 @@ namespace VirtualBank.Api.Services
     public class FastTransactionsService : IFastTransactionsService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IBankAccountRepository _bankAccountRepo;
-        private readonly IBranchRepository _branchRepo;
-        private readonly IFastTransactionsRepository _fastTransactionsRepo;
+        private readonly IUnitOfWork _unitOfWork;
+
 
         public FastTransactionsService(IHttpContextAccessor httpContextAccessor,
-                                       IBankAccountRepository bankAccountRepo,
-                                       IBranchRepository branchRepo,
-                                       IFastTransactionsRepository fastTransactionsRepo)
+                                     IUnitOfWork unitOfWork)
         {
             _httpContextAccessor = httpContextAccessor;
-            _bankAccountRepo = bankAccountRepo;
-            _branchRepo = branchRepo;
-            _fastTransactionsRepo = fastTransactionsRepo;
+            _unitOfWork = unitOfWork;
+
         }
 
 
@@ -46,7 +40,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<FastTransactionListResponse>();
 
-            var allFastTransactions = await _fastTransactionsRepo.GetAll();
+            var allFastTransactions = await _unitOfWork.FastTransactions.GetAll();
 
             if (!allFastTransactions.Any())
             {
@@ -79,7 +73,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<FastTransactionListResponse>();
 
-            var accountFastTransactions = await _fastTransactionsRepo.GetByIBAN(iban);
+            var accountFastTransactions = await _unitOfWork.FastTransactions.GetByIBAN(iban);
 
             if (!accountFastTransactions.Any())
             {
@@ -111,7 +105,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<FastTransactionResponse>();
 
-            var transaction = await _fastTransactionsRepo.FindByIdAsync(id);
+            var transaction = await _unitOfWork.FastTransactions.FindByIdAsync(id);
 
             if (transaction == null)
             {
@@ -138,7 +132,7 @@ namespace VirtualBank.Api.Services
 
             if (id != 0)
             {
-                var fastTransaction = await _fastTransactionsRepo.FindByIdAsync(id);
+                var fastTransaction = await _unitOfWork.FastTransactions.FindByIdAsync(id);
 
                 if (fastTransaction != null)
                 {
@@ -151,7 +145,8 @@ namespace VirtualBank.Api.Services
 
                     try
                     {
-                        await _fastTransactionsRepo.UpdateAsync(fastTransaction);
+                        await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
+                        await _unitOfWork.CompleteAsync();
                     }
                     catch (Exception ex)
                     {
@@ -168,9 +163,11 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                   var createdFastTransaction = await _fastTransactionsRepo.AddAsync(CreateFastTransaction(request));
+                   var createdFastTransaction = await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request));
 
                     responseModel.Data = await CreateFastTransactionResponse(createdFastTransaction);
+
+                    await _unitOfWork.CompleteAsync();
                 }
                 catch (Exception ex)
                 {
@@ -193,7 +190,7 @@ namespace VirtualBank.Api.Services
 
             try
             {
-                var isRemoved = await _fastTransactionsRepo.RemoveAsync(id);
+                var isRemoved = await _unitOfWork.FastTransactions.RemoveAsync(id);
 
                 if (!isRemoved)
                 {
@@ -215,14 +212,14 @@ namespace VirtualBank.Api.Services
         {
             if (transaction != null)
             {
-                var branch = await _branchRepo.FindByIdAsync(transaction.BranchId);
+                var branch = await _unitOfWork.Branches.FindByIdAsync(transaction.BranchId);
 
                 if (branch == null)
                 {
                     return null;
                 }
 
-                var bankAccount = await _bankAccountRepo.FindByIdAsync(transaction.AccountId);
+                var bankAccount = await _unitOfWork.BankAccounts.FindByIdAsync(transaction.AccountId);
 
                 if (bankAccount  == null)
                 {

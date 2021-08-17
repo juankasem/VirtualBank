@@ -16,7 +16,5 @@ namespace VirtualBank.Data.Interfaces
         Task<CreditCard> AddAsync(CreditCard creditCard);
         Task<CreditCard> UpdateAsync(CreditCard creditCard);
         Task<bool> RemoveAsync(int id);
-
-        Task SaveAsync();
     }
 }

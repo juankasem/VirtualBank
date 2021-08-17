@@ -11,20 +11,19 @@ using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CityApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
     public class CitiesService : ICitiesService
     {
-        private readonly ICitiesRepository _citiesRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CitiesService(ICitiesRepository citiesRepo,
+        public CitiesService(IUnitOfWork unitOfWork,
                              IHttpContextAccessor httpContextAccessor)
         {
-            _citiesRepo = citiesRepo;
+            _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -41,11 +40,11 @@ namespace VirtualBank.Api.Services
 
             if (countryId > 0)
             {
-                cities = await _citiesRepo.GetByCountryIdAsync(countryId);
+                cities = await _unitOfWork.Cities.GetByCountryIdAsync(countryId);
             }
             else
             {
-                cities = await _citiesRepo.GetAllAsync();
+                cities = await _unitOfWork.Cities.GetAllAsync();
             }
 
             if (!cities.Any())
@@ -71,7 +70,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CityResponse>();
 
-            var city = await _citiesRepo.FindByIdAsync(cityId);
+            var city = await _unitOfWork.Cities.FindByIdAsync(cityId);
 
             if (city == null)
             {
@@ -97,7 +96,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CityResponse>();
 
-            if (await _citiesRepo.CityNameExists(request.CountryId, request.Name))
+            if (await _unitOfWork.Cities.CityNameExists(request.CountryId, request.Name))
             {
                 responseModel.AddError(ExceptionCreator.CreateBadRequestError("city", "city name does already exist"));
                 return responseModel;
@@ -105,7 +104,7 @@ namespace VirtualBank.Api.Services
 
             if (cityId != 0)
             {
-                var city = await _citiesRepo.FindByIdAsync(cityId);
+                var city = await _unitOfWork.Cities.FindByIdAsync(cityId);
 
                 try
                 {
@@ -116,8 +115,10 @@ namespace VirtualBank.Api.Services
                         city.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         city.LastModifiedOn = DateTime.UtcNow;
 
-                        var updatedCity = await _citiesRepo.UpdateAsync(city);
+                        var updatedCity = await _unitOfWork.Cities.UpdateAsync(city);
                         responseModel.Data = CreateCityResponse(updatedCity);
+
+                       await _unitOfWork.CompleteAsync();
                     }
                     else
                     {
@@ -134,8 +135,11 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var createdCity = await _citiesRepo.AddAsync(CreateCity(request));
+                    var createdCity = await _unitOfWork.Cities.AddAsync(CreateCity(request));
                     responseModel.Data = CreateCityResponse(createdCity);
+
+                    await _unitOfWork.CompleteAsync();
+
                 }
                 catch (Exception ex)
                 {
@@ -155,7 +159,7 @@ namespace VirtualBank.Api.Services
         /// <returns></returns>
         public async Task<bool> CityExists(int cityId)
         {
-            return await _citiesRepo.CityExists(cityId);
+            return await _unitOfWork.Cities.CityExists(cityId);
         }
 
 
