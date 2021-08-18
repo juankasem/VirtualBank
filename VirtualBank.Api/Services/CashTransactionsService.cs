@@ -474,8 +474,8 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.BankAccounts.UpdateAsync(senderAccount);
 
                     //Deposit to recipient account
-                    recipientAccount.Balance.Add(new Amount(amountToTransfer));
-                    recipientAccount.AllowedBalanceToUse.Add(new Amount(amountToTransfer));
+                    recipientAccount.Balance.Add(amountToTransfer);
+                    recipientAccount.AllowedBalanceToUse.Add(amountToTransfer);
 
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
 
