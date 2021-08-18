@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.DistrictApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -159,7 +158,7 @@ namespace VirtualBank.Api.Services
         /// <returns></returns>
         public async Task<bool> DistrictExists(int districtId)
         {
-            return await _unitOfWork.Districts.AnyAsync(c => c.Id == districtId);
+            return await _unitOfWork.Districts.DistrictExists(districtId);
         }
 
 
