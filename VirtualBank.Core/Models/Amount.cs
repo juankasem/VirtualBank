@@ -10,9 +10,9 @@ namespace VirtualBank.Core.Models
             Value = Throw.ArgumentOutOfRangeException.IfLessThan(value, 0, nameof(value));
 
 
-        public Amount Add(Amount amount) => new (Value + amount);
+        public Amount Add(Amount amount) => new Amount(Value + amount);
 
-        public Amount Subtract(Amount amount) => new (Value - amount);
+        public Amount Subtract(Amount amount) => new Amount(Value - amount);
 
         public static implicit operator decimal(Amount? amount) => amount?.Value ?? 0;
     }

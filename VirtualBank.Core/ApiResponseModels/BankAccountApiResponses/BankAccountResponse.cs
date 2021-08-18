@@ -4,7 +4,7 @@ using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.ApiResponseModels.AccountApiResponses
+namespace VirtualBank.Core.ApiResponseModels.BankAccountApiResponses
 {
     public class BankAccountResponse
     {

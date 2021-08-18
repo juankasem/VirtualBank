@@ -168,6 +168,8 @@ namespace VirtualBank.Api.Services
                     var updatedBranch = await _unitOfWork.Branches.UpdateAsync(branch);
 
                     responseModel.Data = CreateBranchResponse(updatedBranch);
+
+                    await _unitOfWork.CompleteAsync();
                 }
                 else
                 {
@@ -179,13 +181,10 @@ namespace VirtualBank.Api.Services
             {
                 var newAddress = CreateAddress(request);
                 var newBranch = CreateBranch(request);
-
                
                 try
                 {
                     await _unitOfWork.Addresses.AddAsync(newAddress);
-
-                    newBranch.AddressId = newAddress.Id;
 
                     var createdBranch = await _unitOfWork.Branches.AddAsync(newBranch);
 
@@ -197,7 +196,6 @@ namespace VirtualBank.Api.Services
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
-                
             }
 
             return responseModel;

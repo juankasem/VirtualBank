@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
+using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 
 namespace VirtualBank.Api.Validators
 {
@@ -34,19 +34,13 @@ namespace VirtualBank.Api.Validators
                     .WithMessage("Customer is required");
 
 
-            RuleFor(x => x.BranchId)
-                    .NotNull()
-                    .GreaterThan(0)
-                    .WithMessage("Branch is required");
-
-
             RuleFor(x => x.CurrencyId)
                     .NotNull()
                     .GreaterThan(0)
                     .WithMessage("Currency is required");
 
 
-            RuleFor(x => x.MinimumAllowedBalance)
+            RuleFor(x => x.MinimumAllowedBalance.Value)
                     .GreaterThanOrEqualTo(1)
                     .WithMessage("Minimum allowed balance should be equal or greater than 1");
         }

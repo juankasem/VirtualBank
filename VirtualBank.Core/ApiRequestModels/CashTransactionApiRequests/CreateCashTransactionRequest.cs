@@ -49,7 +49,7 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
             RecipientFirstName = recipientFirstName;
             RecipientLastName = recipientLastName;
             DebitedFunds = Throw.ArgumentNullException.IfNull(debitedFunds, nameof(debitedFunds));
-            DebitedFunds = Throw.ArgumentNullException.IfNull(fees, nameof(fees));
+            Fees = Throw.ArgumentNullException.IfNull(fees, nameof(fees));
             Description = description;
             PaymentType = Throw.ArgumentNullException.IfNull(paymentType, nameof(paymentType));
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));

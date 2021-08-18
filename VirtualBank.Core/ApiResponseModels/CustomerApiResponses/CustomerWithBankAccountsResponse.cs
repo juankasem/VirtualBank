@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
-using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
+using VirtualBank.Core.ApiResponseModels.BankAccountApiResponses;
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;

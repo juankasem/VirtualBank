@@ -6,12 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
-using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
+using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
-using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
+using VirtualBank.Core.ApiResponseModels.BankAccountApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Interfaces;
+using VirtualBank.Core.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
@@ -348,7 +349,7 @@ namespace VirtualBank.Api.Services
                                     interestRate = 0.01;
                                 }
                             }
-                                catch (Exception ex)
+                             catch (Exception ex)
                                 {
                                 responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
@@ -372,7 +373,7 @@ namespace VirtualBank.Api.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+                                 responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
                                 return responseModel;
                                 }
@@ -385,7 +386,7 @@ namespace VirtualBank.Api.Services
                     }
 
                     profit = deposit.Amount * (decimal)interestRate;
-                    bankAccount.Balance += deposit.Amount + profit;                   
+                    bankAccount.Balance.Add(new Amount(deposit.Amount + profit)) ;                   
                 }
             }
 
@@ -406,7 +407,7 @@ namespace VirtualBank.Api.Services
                                                bankAccount.Branch.Name,
                                                bankAccount.Balance,
                                                bankAccount.AllowedBalanceToUse,
-                                               bankAccount.Currency.Name,
+                                               bankAccount.Currency,
                                                bankAccount.CreatedAt,
                                                lastTransactionDate);
             }

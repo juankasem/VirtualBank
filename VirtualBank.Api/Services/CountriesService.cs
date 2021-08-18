@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -12,26 +11,19 @@ using VirtualBank.Core.ApiResponseModels.CityApiResponses;
 using VirtualBank.Core.ApiResponseModels.CountryApiResponse;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
     public class CountriesService : ICountriesService
     {
-        private readonly VirtualBankDbContext _dbContext;
-        private readonly ICountriesRepository _countriesRepo;
-        private readonly ICitiesRepository _citiesRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CountriesService(VirtualBankDbContext dbContext,
-                                ICountriesRepository countriesRepo,
-                                ICitiesRepository  citiesRepo,
+        public CountriesService(IUnitOfWork unitOfWork,
                                 IHttpContextAccessor httpContextAccessor)
         {
-            _dbContext = dbContext;
-            _countriesRepo = countriesRepo;
-            _citiesRepo = citiesRepo;
+            _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -44,7 +36,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CountryListResponse>();
 
-            var countries = await _countriesRepo.GetAllAsync();
+            var countries = await _unitOfWork.Countries.GetAllAsync();
 
             if (!countries.Any())
             {
@@ -85,10 +77,10 @@ namespace VirtualBank.Api.Services
             Country country = null;
 
             if (includeCities)
-                country = await _countriesRepo.FindByIdWithCitiesAsync(countryId);
+                country = await _unitOfWork.Countries.FindByIdWithCitiesAsync(countryId);
 
             else
-                country = await _countriesRepo.FindByIdAsync(countryId);
+                country = await _unitOfWork.Countries.FindByIdAsync(countryId);
 
 
             if (country == null)
@@ -101,7 +93,7 @@ namespace VirtualBank.Api.Services
              responseModel.Data = await CreateCountryWithCitiesResponse(country);
 
             else
-            responseModel.Data = CreateCountryResponse(country);
+             responseModel.Data = CreateCountryResponse(country);
 
             return responseModel;
         }
@@ -118,7 +110,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CountryResponse>();
 
-            if (await CountryNameExists(request.Name))
+            if (await _unitOfWork.Countries.CountryNameExistsAsync(request.Name))
             {
                 responseModel.AddError(ExceptionCreator.CreateBadRequestError("country", "country name does already exist"));
                 return responseModel;
@@ -126,7 +118,7 @@ namespace VirtualBank.Api.Services
 
             if (countryId != 0)
             {
-                var country = await _countriesRepo.FindByIdAsync(countryId);
+                var country = await _unitOfWork.Countries.FindByIdAsync(countryId);
 
                 if (country != null)
                 {
@@ -135,9 +127,10 @@ namespace VirtualBank.Api.Services
                     country.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     country.LastModifiedOn = DateTime.UtcNow;
 
-                   var updatedCountry = await _countriesRepo.UpdateAsync(country);
+                   var updatedCountry = await _unitOfWork.Countries.UpdateAsync(country);
                    responseModel.Data = CreateCountryResponse(updatedCountry);
 
+                    await _unitOfWork.CompleteAsync();
                 }
                 else
                 {
@@ -149,9 +142,11 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var addedCountry = await _countriesRepo.AddAsync(CreateCountry(request));
+                    var addedCountry = await _unitOfWork.Countries.AddAsync(CreateCountry(request));
 
                     responseModel.Data = CreateCountryResponse(addedCountry);
+
+                    await _unitOfWork.CompleteAsync();
                 }
                 catch (Exception ex)
                 {
@@ -161,28 +156,6 @@ namespace VirtualBank.Api.Services
             }
 
             return responseModel;
-        }
-
-
-        /// <summary>
-        /// Check whetehr country exists or not
-        /// </summary>
-        /// <param name="countryId"></param>
-        /// <returns></returns>
-        public async Task<bool> CountryExists(int countryId)
-        {
-            return await _dbContext.Countries.AnyAsync(c => c.Id == countryId);
-        }
-
-
-        /// <summary>
-        /// Check whetehr country's name is alraedy used or not
-        /// </summary>
-        /// <param name="countryName"></param>
-        /// <returns></returns>
-        public async Task<bool> CountryNameExists(string countryName)
-        {
-            return await _dbContext.Countries.AnyAsync(c => c.Name == countryName);
         }
 
 
@@ -216,7 +189,7 @@ namespace VirtualBank.Api.Services
         {
             if (country != null)
             {
-                var cities = await _citiesRepo.GetByCountryIdAsync(country.Id);
+                var cities = await _unitOfWork.Cities.GetByCountryIdAsync(country.Id);
 
                 var cityList = cities.OrderBy(c => c.Name).Select(c => CreateCityResponse(c)).ToImmutableList();
 
@@ -226,7 +199,7 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-        private CityResponse CreateCityResponse(City city)
+        private static CityResponse CreateCityResponse(City city)
         {
             if (city != null)
             {

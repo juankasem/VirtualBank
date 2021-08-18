@@ -67,11 +67,25 @@ namespace VirtualBank.Data.Repositories
             if (country != null)
             {
                 country.Disabled = true;
-
                 isDeleted = true;
             }
-
+            
             return isDeleted;
+        }
+
+        public async Task<bool> CountryExistsAsync(int countryId) => await _dbContext.Countries.AnyAsync(c => c.Id == countryId);
+
+
+        public async Task<bool> CountryNameExistsAsync(string countryName)
+        {
+            var exists = false;
+
+            if(await _dbContext.Countries.FirstOrDefaultAsync(c => c.Name.Trim() == countryName.Trim()) != null)
+            {
+                exists = true;
+            }
+
+            return exists;
         }
     }
 }

@@ -43,8 +43,6 @@ namespace VirtualBank.Data.Repositories
         public async Task<City> AddAsync(City city)
         {
             await _dbContext.Cities.AddAsync(city);
-            await SaveAsync();
-
             return city;
         }
 
@@ -57,9 +55,7 @@ namespace VirtualBank.Data.Repositories
             {
                 _dbContext.Entry(existingCity).State = EntityState.Detached;
             }
-
             _dbContext.Entry(city).State = EntityState.Modified;
-            await SaveAsync();
 
             return city;
         }
@@ -73,11 +69,10 @@ namespace VirtualBank.Data.Repositories
             if (city != null)
             {
                 city.Disabled = true;
-                await SaveAsync();
 
                 isDeleted = true;
             }
-
+            
             return isDeleted;
         }
 

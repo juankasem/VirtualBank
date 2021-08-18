@@ -116,6 +116,7 @@ namespace VirtualBank.Api.Services
                         city.LastModifiedOn = DateTime.UtcNow;
 
                         var updatedCity = await _unitOfWork.Cities.UpdateAsync(city);
+
                         responseModel.Data = CreateCityResponse(updatedCity);
 
                        await _unitOfWork.CompleteAsync();
@@ -136,10 +137,10 @@ namespace VirtualBank.Api.Services
                 try
                 {
                     var createdCity = await _unitOfWork.Cities.AddAsync(CreateCity(request));
+
                     responseModel.Data = CreateCityResponse(createdCity);
 
                     await _unitOfWork.CompleteAsync();
-
                 }
                 catch (Exception ex)
                 {

@@ -17,13 +17,13 @@ namespace VirtualBank.Api.Services
     public class CreditCardsService : ICreditCardsService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IUnitOfWork _creditCardsRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
         public CreditCardsService(IHttpContextAccessor httpContextAccessor,
-                                 ICreditCardsRepository creditCardsRepo)
+                                 IUnitOfWork unitOfWork)
         {
             _httpContextAccessor = httpContextAccessor;
-            _creditCardsRepo = creditCardsRepo;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -36,7 +36,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CreditCardListResponse>();
 
-            var allCreditCards = await _creditCardsRepo.GetAllAsync();
+            var allCreditCards = await _unitOfWork.CreditCards.GetAllAsync();
 
             if (!allCreditCards.Any())
             {
@@ -64,7 +64,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CreditCardListResponse>();
 
-            var creditCards = await _creditCardsRepo.GetByIBANAsync(iban);
+            var creditCards = await _unitOfWork.CreditCards.GetByIBANAsync(iban);
 
             if (creditCards == null)
             {
@@ -94,7 +94,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CreditCardResponse>();
 
-            var creditCard = await _creditCardsRepo.FindByIdAsync(creditCardId);
+            var creditCard = await _unitOfWork.CreditCards.FindByIdAsync(creditCardId);
 
             if (creditCard == null)
             {
@@ -118,7 +118,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CreditCardResponse>();
 
-            var creditCard = await _creditCardsRepo.FindByAccountNoAsync(accountNo);
+            var creditCard = await _unitOfWork.CreditCards.FindByAccountNoAsync(accountNo);
 
             if (creditCard == null)
             {
@@ -141,7 +141,7 @@ namespace VirtualBank.Api.Services
         /// <returns></returns>
         public async Task<bool> ValidateCreditCardPINAsync(string creditCardNo, string pin, CancellationToken cancellationToken = default)
         {
-            var isValid = await _creditCardsRepo.ValidatePINAsync(creditCardNo, pin);
+            var isValid = await _unitOfWork.CreditCards.ValidatePINAsync(creditCardNo, pin);
 
             return isValid;
         }
@@ -160,7 +160,7 @@ namespace VirtualBank.Api.Services
 
             if (creditCardId != 0)
             {
-                var creditCard = await _creditCardsRepo.FindByIdAsync(creditCardId);
+                var creditCard = await _unitOfWork.CreditCards.FindByIdAsync(creditCardId);
 
                 try
                 {
@@ -172,8 +172,11 @@ namespace VirtualBank.Api.Services
                         creditCard.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                         creditCard.LastModifiedOn = DateTime.UtcNow;
 
-                        var updatedCreditCard = await _creditCardsRepo.UpdateAsync(creditCard);
+                        var updatedCreditCard = await _unitOfWork.CreditCards.UpdateAsync(creditCard);
+
                         responseModel.Data = CreateCreditCardResponse(updatedCreditCard);
+
+                        await _unitOfWork.CompleteAsync();
                     }
                     else
                     {
@@ -190,8 +193,10 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                   var createdCreditCard = await _creditCardsRepo.AddAsync(CreateCreditCard(request));
+                   var createdCreditCard = await _unitOfWork.CreditCards.AddAsync(CreateCreditCard(request));
                    responseModel.Data = CreateCreditCardResponse(createdCreditCard);
+
+                   await _unitOfWork.CompleteAsync();
                 }
                 catch (Exception ex)
                 {
@@ -213,11 +218,12 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CreditCardResponse>();
 
-            var creditCard = await _creditCardsRepo.FindByIdAsync(creditCardId);
+            var creditCard = await _unitOfWork.CreditCards.FindByIdAsync(creditCardId);
 
             if (creditCard != null)
             {
                 creditCard.Disabled = false;
+                await _unitOfWork.CompleteAsync();
             }
             else
             {
@@ -238,7 +244,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CreditCardResponse>();
 
-            var creditCard = await _creditCardsRepo.FindByIdAsync(creditCardId);
+            var creditCard = await _unitOfWork.CreditCards.FindByIdAsync(creditCardId);
 
             if (creditCard != null)
             {

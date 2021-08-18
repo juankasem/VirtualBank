@@ -12,5 +12,7 @@ namespace VirtualBank.Data.Interfaces
         Task<Country> AddAsync(Country country);
         Task<Country> UpdateAsync(Country country);
         Task<bool> RemoveAsync(int id);
+        Task<bool> CountryExistsAsync(int countryId);
+        Task<bool> CountryNameExistsAsync(string countryName);       
     }
 }

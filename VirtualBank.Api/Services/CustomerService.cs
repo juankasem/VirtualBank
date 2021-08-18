@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -13,29 +12,19 @@ using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
 using VirtualBank.Core.ApiResponseModels.CustomerApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
     public class CustomerService : ICustomerService
     {
-        private readonly VirtualBankDbContext _dbContext;
-        private readonly ICustomerRepository _customerRepo;
-        private readonly IAddressRepository _addressRepo;
-        private readonly IBankAccountRepository _bankAccountRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CustomerService(VirtualBankDbContext dbContext,
-                               ICustomerRepository customerRepo,
-                               IAddressRepository addressRepo,
-                               IBankAccountRepository bankAccountRepo,
+        public CustomerService(IUnitOfWork unitOfWork,
                                IHttpContextAccessor httpContextAccessor)
         {
-            _dbContext = dbContext;
-            _customerRepo = customerRepo;
-            _addressRepo = addressRepo;
-            _bankAccountRepo = bankAccountRepo;
+            _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -50,7 +39,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerListResponse>();
 
-            var allCustomers = await _customerRepo.GetAllAsync();
+            var allCustomers = await _unitOfWork.Customers.GetAllAsync();
 
             if (!allCustomers.Any())
             {
@@ -64,7 +53,7 @@ namespace VirtualBank.Api.Services
 
             foreach (var customer in customers)
             {
-                var address = await _addressRepo.FindByIdAsync(customer.AddressId);
+                var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
                 customerList.Add(CreateCustomerResponse(customer, address));
             }
 
@@ -86,7 +75,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerListResponse>();
 
-            var searchResult = await _customerRepo.SearchByNameAsync(searchTerm);
+            var searchResult = await _unitOfWork.Customers.SearchByNameAsync(searchTerm);
 
             if (!searchResult.Any())
             {
@@ -100,7 +89,7 @@ namespace VirtualBank.Api.Services
 
             foreach (var customer in customers)
             {
-                var address = await _addressRepo.FindByIdAsync(customer.AddressId);
+                var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
                 customerList.Add(CreateCustomerResponse(customer, address));
             }
 
@@ -120,7 +109,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
-            var customer = await _customerRepo.FindByIdAsync(customerId);
+            var customer = await _unitOfWork.Customers.FindByIdAsync(customerId);
 
             if (customer != null)
             {
@@ -128,7 +117,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _addressRepo.FindByIdAsync(customer.AddressId);
+            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
 
             responseModel.Data = CreateCustomerResponse(customer, address);
 
@@ -146,7 +135,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByAccountNoAsync(accountNo);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByAccountNoAsync(accountNo);
 
             if (bankAccount == null)
             {
@@ -154,7 +143,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var customer = await _customerRepo.FindByAccountNoAsync(accountNo);
+            var customer = await _unitOfWork.Customers.FindByAccountNoAsync(accountNo);
 
             if (customer == null)
             {
@@ -162,7 +151,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _addressRepo.FindByIdAsync(customer.AddressId);
+            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
 
 
             responseModel.Data = CreateCustomerResponse(customer, address);
@@ -181,7 +170,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIBANAsync(iban);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(iban);
 
             if (bankAccount == null)
             {
@@ -189,7 +178,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var customer = await _customerRepo.FindByIBANAsync(iban);
+            var customer = await _unitOfWork.Customers.FindByIBANAsync(iban);
 
             if (customer == null)
             {
@@ -197,7 +186,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _addressRepo.FindByIdAsync(customer.AddressId);
+            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
 
             responseModel.Data = CreateCustomerResponse(customer, address);
 
@@ -215,7 +204,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CustomerResponse>();
 
-            var customer = await _customerRepo.FindByCreditCardIdAsync(creditCardId);
+            var customer = await _unitOfWork.Customers.FindByCreditCardIdAsync(creditCardId);
 
             if (customer != null)
             {
@@ -223,7 +212,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _addressRepo.FindByIdAsync(customer.AddressId);
+            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
 
             responseModel.Data = CreateCustomerResponse(customer, address);
 
@@ -241,7 +230,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<RecipientCustomerResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIBANAsync(iban);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(iban);
 
             if (bankAccount == null)
             {
@@ -249,7 +238,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var customer = await _customerRepo.FindByIBANAsync(iban);
+            var customer = await _unitOfWork.Customers.FindByIBANAsync(iban);
 
             if (customer == null)
             {
@@ -282,7 +271,7 @@ namespace VirtualBank.Api.Services
 
             if (customerId != 0)
             {
-                var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.Disabled == false);
+                var customer = await _unitOfWork.Customers.FindByIdAsync(customerId);
 
                 try
                 {
@@ -300,8 +289,8 @@ namespace VirtualBank.Api.Services
                         customer.LastModifiedOn = DateTime.UtcNow;
                         customer.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
 
-                        await _customerRepo.UpdateAsync(customer);
-
+                        await _unitOfWork.Customers.UpdateAsync(customer);
+                        await _unitOfWork.CompleteAsync();
                     }
                     else
                     {
@@ -318,27 +307,21 @@ namespace VirtualBank.Api.Services
             {
                 var newCustomer = CreateCustomer(request);
 
-                var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
-
-                using (dbContextTransaction)
+                try
                 {
-                    try
-                    {
-                        var createdAddress = await _addressRepo.AddAsync(CreateAddress(request), _dbContext);
+                    var createdAddress = await _unitOfWork.Addresses.AddAsync(CreateAddress(request));
 
-                        newCustomer.AddressId = createdAddress.Id;
 
-                        var createdCustomer = await _customerRepo.AddAsync(newCustomer, _dbContext);
-                        responseModel.Data = CreateCustomerResponse(createdCustomer, createdAddress);
+                    var createdCustomer = await _unitOfWork.Customers.AddAsync(newCustomer);
+                    responseModel.Data = CreateCustomerResponse(createdCustomer, createdAddress);
 
-                        await dbContextTransaction.CommitAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        await dbContextTransaction.RollbackAsync();
-                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-                    }
+                    await _unitOfWork.CompleteTransactionAsync();
                 }
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+                }
+                
             }
 
             return responseModel;
@@ -354,14 +337,16 @@ namespace VirtualBank.Api.Services
         public async Task<Response> ActivateCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var responseModel = new Response();
-            var customer = await _customerRepo.FindByIdAsync(customerId);
+            var customer = await _unitOfWork.Customers.FindByIdAsync(customerId);
 
             try
             {
                 if (customer != null)
                 {
                     customer.Disabled = false;
-                    await _customerRepo.UpdateAsync(customer);
+                    await _unitOfWork.Customers.UpdateAsync(customer);
+
+                    await _unitOfWork.CompleteAsync();
                 }
             }
             catch (Exception ex)
@@ -382,14 +367,16 @@ namespace VirtualBank.Api.Services
         public async Task<Response> DeactivateCustomerAsync(int customerId, CancellationToken cancellationToken)
         {
             var responseModel = new Response();
-            var customer = await _customerRepo.FindByIdAsync(customerId);
+            var customer = await _unitOfWork.Customers.FindByIdAsync(customerId);
 
             try
             {
                 if (customer != null)
                 {
                     customer.Disabled = true;
-                    await _customerRepo.UpdateAsync(customer);
+                    await _unitOfWork.Customers.UpdateAsync(customer);
+
+                    await _unitOfWork.CompleteAsync();
                 }
             }
             catch (Exception ex)
@@ -408,7 +395,7 @@ namespace VirtualBank.Api.Services
         /// <returns></returns>
         public async Task<bool> CustomerExistsAsync(CreateCustomerRequest request)
         {
-            return await _customerRepo.CustomerExistsAsync(CreateCustomer(request));
+            return await _unitOfWork.Customers.CustomerExistsAsync(CreateCustomer(request));
         }
 
 

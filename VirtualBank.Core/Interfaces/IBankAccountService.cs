@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
+using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
-using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
+using VirtualBank.Core.ApiResponseModels.BankAccountApiResponses;
 
 namespace VirtualBank.Core.Interfaces
 {

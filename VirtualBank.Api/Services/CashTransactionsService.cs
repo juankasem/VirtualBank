@@ -14,7 +14,6 @@ using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Models;
-using VirtualBank.Data;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
@@ -115,17 +114,17 @@ namespace VirtualBank.Api.Services
                     cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderName, recipient));
                 }
 
-                else if (cashTransaction.Type == CashTransactionType.Deposit)
+                else switch (cashTransaction.Type)
                 {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, Enum.GetName(typeof(BankAssetType), cashTransaction.InitiatedBy), accountHolderName));
-                }
-                else if (cashTransaction.Type == CashTransactionType.Withdrawal)
-                {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderName, Enum.GetName(typeof(BankAssetType), cashTransaction.InitiatedBy)));
-                }
-                else if (cashTransaction.Type == CashTransactionType.CommissionFees)
-                {
-                    cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderName, "commission fees"));
+                    case CashTransactionType.Deposit:
+                        cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, Enum.GetName(typeof(BankAssetType), cashTransaction.InitiatedBy), accountHolderName));
+                        break;
+                    case CashTransactionType.Withdrawal:
+                        cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderName, Enum.GetName(typeof(BankAssetType), cashTransaction.InitiatedBy)));
+                        break;
+                    case CashTransactionType.CommissionFees:
+                        cashTransactionList.Add(CreateCashTransactionResponse(cashTransaction, iban, accountHolderName, "commission fees"));
+                        break;
                 }
             }
 
@@ -248,7 +247,7 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<CashTransactionResponse>> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-            var amountToWithdraw = request.DebitedFunds.Amount;
+            var amountToWithdraw = request.DebitedFunds.Amount.Value;
             var currency = request.DebitedFunds.Currency;
 
             try
@@ -281,10 +280,10 @@ namespace VirtualBank.Api.Services
                     }
                 }
 
-                if (amountToWithdraw <= fromAccount.AllowedBalanceToUse)
+                if (amountToWithdraw <= fromAccount.AllowedBalanceToUse.Value)
                 {
-                    fromAccount.Balance.Subtract(amountToWithdraw);
-                    fromAccount.AllowedBalanceToUse.Subtract(amountToWithdraw);
+                    fromAccount.Balance.Subtract(new Amount(amountToWithdraw));
+                    fromAccount.AllowedBalanceToUse.Subtract(new Amount(amountToWithdraw));
 
                     await _unitOfWork.BankAccounts.UpdateAsync(fromAccount);
 
@@ -374,7 +373,7 @@ namespace VirtualBank.Api.Services
 
                     //Deposit to recipient account
                     recipientAccount.Balance.Add(amountToTransfer);
-                    senderAccount.AllowedBalanceToUse.Add(recipientAccount.Balance);
+                    senderAccount.AllowedBalanceToUse.Add(amountToTransfer);
 
                     //Update recipient bank account
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
@@ -387,6 +386,7 @@ namespace VirtualBank.Api.Services
 
                     responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.From, sender, recipient);
 
+                    // Save changes
                     await _unitOfWork.CompleteTransactionAsync();
 
                     return responseModel;
@@ -465,7 +465,7 @@ namespace VirtualBank.Api.Services
                 if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
                 {
                     const decimal feesRate = (decimal) 0.0015;
-                    var fees = new Amount(amountToTransfer * feesRate);
+                    var fees = new Amount(amountToTransfer.Value * feesRate);
                     
                     //Deduct from sender account
                     senderAccount.Balance.Subtract(new Amount(amountToTransfer + fees));
@@ -474,11 +474,10 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.BankAccounts.UpdateAsync(senderAccount);
 
                     //Deposit to recipient account
-                    recipientAccount.Balance.Add(amountToTransfer);
-                    recipientAccount.AllowedBalanceToUse.Add(amountToTransfer);
+                    recipientAccount.Balance.Add(new Amount(amountToTransfer));
+                    recipientAccount.AllowedBalanceToUse.Add(new Amount(amountToTransfer));
 
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
-
 
                     //Create & Save transaction into db
                     var createdTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance, fees));
@@ -487,7 +486,7 @@ namespace VirtualBank.Api.Services
                     var recipient = await GetCustomerName(request.To);
 
                     responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.From, sender, recipient);
-
+                    
                     await _unitOfWork.CompleteTransactionAsync();
 
                     return responseModel;
@@ -512,7 +511,6 @@ namespace VirtualBank.Api.Services
         [NonAction]
         private CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, decimal senderBalance, decimal recipientBalance, decimal fees = 0)
         {
-
             return new CashTransaction()
             {
                 Type = request.Type,
@@ -535,9 +533,7 @@ namespace VirtualBank.Api.Services
 
         [NonAction]
         private static CashTransactionResponse CreateCashTransactionResponse(CashTransaction cashTransaction, string iban, string sender, string recipient)
-        {
-            var isTransferFees = cashTransaction.Type == CashTransactionType.CommissionFees;
-        
+        {        
 
             return new CashTransactionResponse(cashTransaction.From,
                                                cashTransaction.To,
@@ -546,7 +542,6 @@ namespace VirtualBank.Api.Services
                                                sender,
                                                recipient,
                                                cashTransaction.PaymentType,
-                                               isTransferFees ? "Transfer commission Fees" :
                                                 cashTransaction.From != iban ?
                                                 $"From: {sender}, Account No: {cashTransaction.From} "
                                                 :

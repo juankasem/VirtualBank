@@ -137,7 +137,6 @@ namespace VirtualBank.Api.Services
                 if (fastTransaction != null)
                 {
                     fastTransaction.AccountId = request.BankAccountId;
-                    fastTransaction.BranchId = request.BranchId;
                     fastTransaction.RecipientName = request.RecipientName;
                     fastTransaction.RecipientIBAN = request.RecipientIBAN;
                     fastTransaction.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
@@ -146,6 +145,7 @@ namespace VirtualBank.Api.Services
                     try
                     {
                         await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
+
                         await _unitOfWork.CompleteAsync();
                     }
                     catch (Exception ex)
@@ -212,7 +212,7 @@ namespace VirtualBank.Api.Services
         {
             if (transaction != null)
             {
-                var branch = await _unitOfWork.Branches.FindByIdAsync(transaction.BranchId);
+                var branch = await _unitOfWork.Branches.FindByIdAsync(transaction.Account.BranchId);
 
                 if (branch == null)
                 {
@@ -238,7 +238,6 @@ namespace VirtualBank.Api.Services
             return new FastTransaction()
             {
                 AccountId = request.BankAccountId,
-                BranchId = request.BranchId,
                 RecipientName = request.RecipientName,
                 RecipientIBAN = request.RecipientIBAN,
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name

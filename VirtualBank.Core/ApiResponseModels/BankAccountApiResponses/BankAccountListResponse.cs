@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Entities;
 
-namespace VirtualBank.Core.ApiResponseModels.AccountApiResponses
+namespace VirtualBank.Core.ApiResponseModels.BankAccountApiResponses
 {
     public class BankAccountListResponse
     {

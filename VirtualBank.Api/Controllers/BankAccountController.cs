@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Helpers.ErrorsHelper;
-using VirtualBank.Core.ApiRequestModels.AccountApiRequests;
+using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Entities;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -19,13 +18,13 @@ namespace VirtualBank.Api.Services
     {
 
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IAddressRepository _addressRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AddressService(IHttpContextAccessor httpContextAccessor,
-                              IAddressRepository addressRepository)
+                              IUnitOfWork unitOfWork)
         {
             _httpContextAccessor = httpContextAccessor;
-            _addressRepository = addressRepository;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -40,24 +39,20 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<AddressListResponse>();
 
-            var allAddresses = await _addressRepository.GetAllAsync();
+            var allAddresses = await _unitOfWork.Addresses.GetAllAsync();
 
-            if (allAddresses.Count() == 0)
+            if (allAddresses.Any())
             {
                 return responseModel;
             }
 
-            var addresses = allAddresses.OrderBy(a => a.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                  .Take(pageSize);
+            var addressList = allAddresses.OrderBy(a => a.CreatedAt).Skip((pageNumber - 1) * pageSize)
+                                                                    .Take(pageSize)
+                                                                    .Select(x => CreateAddressResponse(x))
+                                                                    .ToImmutableList();
 
-            var addressList = new List<AddressResponse>();
 
-            foreach (var address in addresses)
-            {
-                addressList.Add(CreateAddressResponse(address));
-            }
-
-            responseModel.Data = new AddressListResponse(addressList.ToImmutableList(), addressList.Count);
+            responseModel.Data = new AddressListResponse(addressList, addressList.Count);
 
             return responseModel;
         }
@@ -73,7 +68,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<AddressResponse>();
 
-            var address = await _addressRepository.FindByIdAsync(addressId);
+            var address = await _unitOfWork.Addresses.FindByIdAsync(addressId);
 
             if (address == null)
             {
@@ -101,7 +96,7 @@ namespace VirtualBank.Api.Services
            
             if (addressId != 0)
             {
-                var address = await _addressRepository.FindByIdAsync(addressId);
+                var address = await _unitOfWork.Addresses.FindByIdAsync(addressId);
 
                 if (address != null)
                 {
@@ -114,8 +109,10 @@ namespace VirtualBank.Api.Services
                     address.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     address.LastModifiedOn = DateTime.UtcNow;
 
-                   var updatedAddress = await _addressRepository.UpdateAsync(address);
+                   var updatedAddress = await _unitOfWork.Addresses.UpdateAsync(address);
                    responseModel.Data = CreateAddressResponse(updatedAddress);
+
+                   await _unitOfWork.CompleteAsync();
 
                 }
                 else
@@ -136,8 +133,10 @@ namespace VirtualBank.Api.Services
 
                 try
                 {
-                    var createdAddress =  await _addressRepository.AddAsync(CreateAddress(request));
+                    var createdAddress =  await _unitOfWork.Addresses.AddAsync(CreateAddress(request));
                     responseModel.Data = CreateAddressResponse(createdAddress);
+
+                    await _unitOfWork.CompleteAsync();
                 }
                 catch (Exception ex)
                 {
@@ -159,7 +158,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new Response();
 
-            var address = await _addressRepository.FindByIdAsync(addressId);
+            var address = await _unitOfWork.Addresses.FindByIdAsync(addressId);
 
             if (address == null)
             {
@@ -170,7 +169,8 @@ namespace VirtualBank.Api.Services
 
             try
             {
-                await _addressRepository.RemoveAsync(address.Id);
+                await _unitOfWork.Addresses.RemoveAsync(address.Id);
+                await _unitOfWork.CompleteAsync();
             }
             catch (Exception ex)
             {
@@ -191,7 +191,7 @@ namespace VirtualBank.Api.Services
         /// <returns></returns>
         public async Task<bool> AddressExistsAsync(int countryId, int cityId, int districtId, string street, string name)
         {
-            return await _addressRepository.AddressExistsAsync(countryId, cityId, districtId, street, name);
+            return await _unitOfWork.Addresses.AddressExistsAsync(countryId, cityId, districtId, street, name);
         }
 
 

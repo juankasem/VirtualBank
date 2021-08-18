@@ -1,8 +1,6 @@
 ﻿using System;
-using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
 using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
 using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.ApiResponseModels.CustomerApiResponses

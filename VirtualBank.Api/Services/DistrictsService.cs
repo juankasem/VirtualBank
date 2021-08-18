@@ -13,7 +13,6 @@ using VirtualBank.Core.ApiResponseModels.DistrictApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data.Interfaces;
-using VirtualBank.Data.Repositories;
 
 namespace VirtualBank.Api.Services
 {
@@ -120,6 +119,8 @@ namespace VirtualBank.Api.Services
 
                         var updatedDistrict = await _unitOfWork.Districts.UpdateAsync(district);
                         responseModel.Data = CreateDistrictResponse(updatedDistrict);
+
+                        await _unitOfWork.CompleteAsync();
                     }
                     else
                     {
@@ -138,6 +139,8 @@ namespace VirtualBank.Api.Services
                 {
                    var createdDistrict = await _unitOfWork.Districts.AddAsync(CreateDistrict(request));
                    responseModel.Data = CreateDistrictResponse(createdDistrict);
+
+                    await _unitOfWork.CompleteAsync();
                 }
                 catch (Exception ex)
                 {

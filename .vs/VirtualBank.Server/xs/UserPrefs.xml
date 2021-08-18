@@ -1,18 +1,21 @@
 ﻿<Properties GitUserInfo="UsingMD" StartupConfiguration="{E497C1BE-1055-4A1D-BDCE-C4A3ADC3C990}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="VirtualBank.Api/Services/CountriesService.cs">
+  <MonoDevelop.Ide.Workbench>
     <Files>
-      <File FileName="VirtualBank.Api/Services/AddressService.cs" Line="2" Column="1" />
-      <File FileName="VirtualBank.Api/Services/AuthService.cs" Line="1" Column="1" />
-      <File FileName="VirtualBank.Api/Services/BankAccountService.cs" Line="14" Column="35" />
-      <File FileName="VirtualBank.Core/Interfaces/IBankAccountService.cs" Line="7" Column="38" />
-      <File FileName="VirtualBank.Core/ApiResponseModels/BankAccountApiResponses/BankAccountListResponse.cs" Line="8" Column="37" />
-      <File FileName="VirtualBank.Core/ApiResponseModels/BankAccountApiResponses/BankAccountResponse.cs" Line="22" Column="1" />
-      <File FileName="VirtualBank.Core/ApiResponseModels/BankAccountApiResponses/RecipientBankAccountResponse.cs" Line="18" Column="42" />
-      <File FileName="VirtualBank.Core/Interfaces/IBranchService.cs" Line="1" Column="1" />
-      <File FileName="VirtualBank.Api/Services/BranchService.cs" Line="188" Column="1" NotebookId="1" />
-      <File FileName="VirtualBank.Api/Services/CashTransactionsService.cs" Line="393" Column="18" NotebookId="1" />
-      <File FileName="VirtualBank.Api/Services/CitiesService.cs" Line="143" Column="55" NotebookId="1" />
-      <File FileName="VirtualBank.Api/Services/CountriesService.cs" Line="139" Column="79" NotebookId="1" />
+      <File FileName="VirtualBank.Api/Services/CitiesService.cs" Line="143" Column="55" />
+      <File FileName="VirtualBank.Api/Services/CountriesService.cs" Line="109" Column="57" />
+      <File FileName="VirtualBank.Api/Services/CreditCardsService.cs" Line="32" Column="23" />
+      <File FileName="VirtualBank.Api/Services/CustomerService.cs" Line="8" Column="1" />
+      <File FileName="VirtualBank.Api/Services/DistrictsService.cs" />
+      <File FileName="VirtualBank.Api/Services/FastTransactionsService.cs" />
+      <File FileName="VirtualBank.Data/Interfaces/IUnitOfWork.cs" />
+      <File FileName="VirtualBank.Data/Repositories/UnitOfWork.cs" />
+      <File FileName="VirtualBank.Core/Models/Amount.cs" />
+      <File FileName="VirtualBank.Core/ApiResponseModels/CashTrasactionApiResponses/CashTransactionResponse.cs" Line="70" Column="21" />
+      <File FileName="VirtualBank.Api/Services/CashTransactionsService.cs" Line="355" Column="42" />
+      <File FileName="VirtualBank.Core/Interfaces/ICountriesService.cs" Line="16" Column="49" />
+      <File FileName="VirtualBank.Api/Controllers/CountriesController.cs" Line="1" Column="1" />
+      <File FileName="VirtualBank.Data/Repositories/CountriesRepository.cs" Line="89" Column="10" NotebookId="1" />
+      <File FileName="VirtualBank.Data/Interfaces/ICountriesRepository.cs" Line="16" Column="20" NotebookId="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -20,6 +23,7 @@
           <Node name="VirtualBank.Server" expanded="True">
             <Node name="VirtualBank.Api" expanded="True">
               <Node name="ActionResults" expanded="True" />
+              <Node name="Controllers" expanded="True" />
               <Node name="Filters" expanded="True" />
               <Node name="Helpers" expanded="True">
                 <Node name="ErrorsHelper" expanded="True" />
@@ -38,6 +42,7 @@
               </Node>
               <Node name="ApiResponseModels" expanded="True">
                 <Node name="BankAccountApiResponses" expanded="True" />
+                <Node name="CashTrasactionApiResponses" expanded="True" />
               </Node>
               <Node name="ApiRoutes" expanded="True" />
               <Node name="ArgumentChecks" expanded="True" />
