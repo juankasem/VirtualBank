@@ -19,9 +19,9 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
         public string RecipientLastName { get; set; }
 
-        public DebitedFunds DebitedFunds { get; set; }
+        public Money DebitedFunds { get; set; }
 
-        public DebitedFunds Fees { get; set; }
+        public Money Fees { get; set; }
 
         public string Description { get; set; }
 
@@ -38,8 +38,8 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
 
         public CreateCashTransactionRequest(CashTransactionType type, BankAssetType initiatedBy, string from, string to,
-                                            string recipientFirstName, string recipientLastName, DebitedFunds debitedFunds,
-                                            DebitedFunds fees, string description,PaymentType paymentType, DateTime transactionDate,
+                                            string recipientFirstName, string recipientLastName, Money debitedFunds,
+                                            Money fees, string description,PaymentType paymentType, DateTime transactionDate,
                                             string creditCardNo, string debitCardNo, string pin)
         {
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));

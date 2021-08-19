@@ -23,11 +23,6 @@ namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
         public string To { get; }
 
         /// <summary>
-        /// Amount of money
-        /// </summary>
-        public DebitedFunds DebitedFunds { get; set; }
-
-        /// <summary>
         /// sender full name
         /// </summary>
         public string Sender { get; }
@@ -36,6 +31,16 @@ namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
         /// recipient full name
         /// </summary>
         public string Recipient { get; }
+
+        /// <summary>
+        /// Amount of money
+        /// </summary>
+        public Money DebitedFunds { get; set; }
+
+        /// <summary>
+        /// Amount of transfer fees 
+        /// </summary>
+        public Money Fees { get; set; }
 
         /// <summary>
         /// payment for
@@ -62,13 +67,14 @@ namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
         /// </summary>
         public string CreatedBy { get; set; }
 
-        public CashTransactionResponse(string from, string to, DebitedFunds debitedFunds, string sender, string recipient, 
-                                       PaymentType paymentType, string description, BankAssetType initiatedBy,
-                                       decimal remainingBalance, DateTime createdOn, string createdBy)
+        public CashTransactionResponse(string from, string to, string sender, string recipient, Money debitedFunds, Money fees,
+                                       PaymentType paymentType, string description,BankAssetType initiatedBy, decimal remainingBalance,
+                                       DateTime createdOn, string createdBy)
         {
             From = from;
             To = to;
             DebitedFunds = Throw.ArgumentNullException.IfNull(debitedFunds, nameof(debitedFunds));
+            Fees = Throw.ArgumentNullException.IfNull(fees, nameof(fees));
             Sender = Throw.ArgumentNullException.IfNull(sender, nameof(sender));
             Recipient = Throw.ArgumentNullException.IfNull(recipient, nameof(recipient));
             PaymentType = Throw.ArgumentNullException.IfNull(paymentType, nameof(paymentType));

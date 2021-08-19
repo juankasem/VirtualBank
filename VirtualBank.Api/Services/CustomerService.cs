@@ -61,8 +61,7 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
-
+        
         /// <summary>
         /// Search customers by name
         /// </summary>

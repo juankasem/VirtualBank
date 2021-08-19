@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "uKW5xbUaajyYQpZrLSZN4SJa00sIvr5YvupBAA7CQVC+6idj37/zf663iU1K5fLkUM6oMerr+iic33NknaamOQ==",
+  "dgSpecHash": "Qp3xPZ0FHwf42VfBgQ8hSCCrLTzumM2hRLM9cVZCwW1H/oQbfx3eRqxO3LsDWswp/5l53Z8IOv4CC61Om1uLOQ==",
   "success": true,
   "projectFilePath": "/Users/juankasem/Projects/VirtualBank.Server/VirtualBank.Api/VirtualBank.Api.csproj",
   "expectedPackageFiles": [

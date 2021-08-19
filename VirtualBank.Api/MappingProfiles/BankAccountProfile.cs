@@ -1,6 +1,6 @@
 ﻿using System;
 using AutoMapper;
-using VirtualBank.Core.ApiResponseModels.AccountApiResponses;
+using VirtualBank.Core.ApiResponseModels.BankAccountApiResponses;
 using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Api.MappingProfiles
