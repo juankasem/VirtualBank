@@ -501,8 +501,7 @@ namespace VirtualBank.Api.Services
                 }
                 else
                 {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("transfer",
-                        "not enough balance to complete transfer"));
+                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("transfer", "not enough balance to complete transfer"));
 
                     return responseModel;
                 }
