@@ -55,21 +55,16 @@ namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
         /// <summary>
         /// remaining balance after transaction
         /// </summary>
-        public decimal RemainingBalance { get; }
+        public Money RemainingBalance { get; }
 
         /// <summary>
-        /// date & time of the transaction
+        /// creation info the transaction
         /// </summary>
-        public DateTime CreatedOn { get; }
+        public CreationInfo CreationInfo { get; }
 
-        /// <summary>
-        /// user who created the transaction
-        /// </summary>
-        public string CreatedBy { get; set; }
-
-        public CashTransactionResponse(string from, string to, string sender, string recipient, Money debitedFunds, Money fees,
-                                       PaymentType paymentType, string description,BankAssetType initiatedBy, decimal remainingBalance,
-                                       DateTime createdOn, string createdBy)
+        public CashTransactionResponse(string from, string to, string sender, string recipient, 
+                                        Money debitedFunds, Money fees,PaymentType paymentType, string description,
+                                        BankAssetType initiatedBy, Money remainingBalance, CreationInfo creationInfo)
         {
             From = from;
             To = to;
@@ -81,8 +76,7 @@ namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
             Description = Throw.ArgumentNullException.IfNull(description, nameof(description));
             InitiatedBy = Throw.ArgumentNullException.IfNull(initiatedBy, nameof(initiatedBy));
             RemainingBalance = Throw.ArgumentNullException.IfNull(remainingBalance, nameof(remainingBalance));
-            CreatedOn = Throw.ArgumentNullException.IfNull(createdOn, nameof(createdOn));
-            CreatedBy = Throw.ArgumentNullException.IfNull(createdBy, nameof(createdBy));
+            CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
         }
     }
 }

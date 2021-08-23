@@ -46,15 +46,14 @@ namespace VirtualBank.Api.Services
             ImmutableList<CountryResponse> countryList;
 
             if (includeCities)
-                countryList = countries.OrderBy(c => c.Name)
-                                       .Select(x => CreateCountryWithCitiesResponse(x))
-                                       .Select(x => x.Result)
+                countryList = countries.OrderBy(country => country.Name)
+                                       .Select(country => CreateCountryWithCitiesResponse(country).Result)
                                        .ToImmutableList();
 
             else
-              countryList = countries.OrderBy(c => c.Name)
-                                     .Select(x => CreateCountryResponse(x))
-                                     .ToImmutableList();
+                countryList = countries.OrderBy(country => country.Name)
+                                       .Select(country => CreateCountryResponse(country))
+                                       .ToImmutableList();
 
 
             responseModel.Data = new CountryListResponse(countryList, countryList.Count);
@@ -90,10 +89,10 @@ namespace VirtualBank.Api.Services
             }
 
             if (includeCities)
-             responseModel.Data = await CreateCountryWithCitiesResponse(country);
+                responseModel.Data = await CreateCountryWithCitiesResponse(country);
 
             else
-             responseModel.Data = CreateCountryResponse(country);
+                responseModel.Data = CreateCountryResponse(country);
 
             return responseModel;
         }
@@ -127,8 +126,8 @@ namespace VirtualBank.Api.Services
                     country.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     country.LastModifiedOn = DateTime.UtcNow;
 
-                   var updatedCountry = await _unitOfWork.Countries.UpdateAsync(country);
-                   responseModel.Data = CreateCountryResponse(updatedCountry);
+                    var updatedCountry = await _unitOfWork.Countries.UpdateAsync(country);
+                    responseModel.Data = CreateCountryResponse(updatedCountry);
 
                     await _unitOfWork.CompleteAsync();
                 }
@@ -137,7 +136,7 @@ namespace VirtualBank.Api.Services
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(country), $"country of id {countryId}: not found"));
                     return responseModel;
                 }
-            }  
+            }
             else
             {
                 try

@@ -43,7 +43,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var loanList = allLoans.OrderByDescending(l => l.CreatedAt).Skip((pageNumber - 1) * pageSize)
+            var loanList = allLoans.OrderByDescending(c => c.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                        .Take(pageSize)
                                                                        .Select(x => CreateLoanResponse(x))
                                                                        .ToImmutableList();

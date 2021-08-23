@@ -1,23 +1,20 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using VirtualBank.Core.ArgumentChecks;
+﻿using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.ApiRequestModels.CountryApiRequests
 {
     public class CreateCountryRequest
     {
-        [Required]
-        [MaxLength(150)]
         public string Name { get; set; }
 
-        [Required]
-        [MaxLength(8)]
         public string Code { get; set; }
+        public CreationInfo CreationInfo { get; set; }
 
-        public CreateCountryRequest(string name, string code)
+        public CreateCountryRequest(string name, string code, CreationInfo creationInfo)
         {
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
             Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
+            CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
         }
     }
 }

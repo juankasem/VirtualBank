@@ -51,7 +51,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
 
 
-            var cityList = cities.OrderBy(c => c.Name).Select(x => CreateCityResponse(x)).ToImmutableList();
+            var cityList = cities.OrderBy(c => c.Name).Select(city => CreateCityResponse(city)).ToImmutableList();
 
 
             responseModel.Data = new CityListResponse(cityList, cityList.Count);
@@ -119,7 +119,7 @@ namespace VirtualBank.Api.Services
 
                         responseModel.Data = CreateCityResponse(updatedCity);
 
-                       await _unitOfWork.CompleteAsync();
+                        await _unitOfWork.CompleteAsync();
                     }
                     else
                     {

@@ -46,22 +46,16 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var customers = allCustomers.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                            .Take(pageSize);
+            var customers = allCustomers.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
+                                                                            .Take(pageSize)
+                                                                            .Select(customer => CreateCustomerResponse(customer))
+                                                                            .ToImmutableList();
 
-            var customerList = new List<CustomerResponse>();
-
-            foreach (var customer in customers)
-            {
-                var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
-                customerList.Add(CreateCustomerResponse(customer, address));
-            }
-
-            responseModel.Data = new CustomerListResponse(customerList.ToImmutableList(), customerList.Count);
+            responseModel.Data = new CustomerListResponse(customers, customers.Count);
 
             return responseModel;
         }
-        
+
         /// <summary>
         /// Search customers by name
         /// </summary>
@@ -81,18 +75,12 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var customers = searchResult.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
-                                                                            .Take(pageSize);
+            var customers = searchResult.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
+                                                                            .Take(pageSize)
+                                                                            .Select(customer => CreateCustomerResponse(customer))
+                                                                            .ToImmutableList();
 
-            var customerList = new List<CustomerResponse>();
-
-            foreach (var customer in customers)
-            {
-                var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
-                customerList.Add(CreateCustomerResponse(customer, address));
-            }
-
-            responseModel.Data = new CustomerListResponse(customerList.ToImmutableList(), customerList.Count);
+            responseModel.Data = new CustomerListResponse(customers, customers.Count);
 
             return responseModel;
         }
@@ -116,9 +104,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
-
-            responseModel.Data = CreateCustomerResponse(customer, address);
+            responseModel.Data = CreateCustomerResponse(customer);
 
             return responseModel;
         }
@@ -150,10 +136,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
-
-
-            responseModel.Data = CreateCustomerResponse(customer, address);
+            responseModel.Data = CreateCustomerResponse(customer);
 
             return responseModel;
         }
@@ -185,9 +168,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
-
-            responseModel.Data = CreateCustomerResponse(customer, address);
+            responseModel.Data = CreateCustomerResponse(customer);
 
             return responseModel;
         }
@@ -211,9 +192,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var address = await _unitOfWork.Addresses.FindByIdAsync(customer.AddressId);
-
-            responseModel.Data = CreateCustomerResponse(customer, address);
+            responseModel.Data = CreateCustomerResponse(customer);
 
             return responseModel;
         }
@@ -304,15 +283,10 @@ namespace VirtualBank.Api.Services
             }
             else
             {
-                var newCustomer = CreateCustomer(request);
-
                 try
                 {
-                    var createdAddress = await _unitOfWork.Addresses.AddAsync(CreateAddress(request));
-
-
-                    var createdCustomer = await _unitOfWork.Customers.AddAsync(newCustomer);
-                    responseModel.Data = CreateCustomerResponse(createdCustomer, createdAddress);
+                    var createdCustomer = await _unitOfWork.Customers.AddAsync(CreateCustomer(request));
+                    responseModel.Data = CreateCustomerResponse(createdCustomer);
 
                     await _unitOfWork.CompleteTransactionAsync();
                 }
@@ -320,7 +294,6 @@ namespace VirtualBank.Api.Services
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
-                
             }
 
             return responseModel;
@@ -417,7 +390,8 @@ namespace VirtualBank.Api.Services
                     TaxNumber = request.TaxNumber,
                     BirthDate = request.BirthDate,
                     Address = request.Address,
-                    CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+                    CreatedBy = request.CreationInfo.CreatedBy,
+                    CreatedOn = request.CreationInfo.CreatedOn
                 };
             }
 
@@ -441,7 +415,7 @@ namespace VirtualBank.Api.Services
         }
 
 
-        private CustomerResponse CreateCustomerResponse(Customer customer, Address address)
+        private CustomerResponse CreateCustomerResponse(Customer customer)
         {
             if (customer != null)
             {
@@ -449,7 +423,7 @@ namespace VirtualBank.Api.Services
                                   customer.MiddleName != "" ? customer.MiddleName : ""
                                   + " " + customer.LastName;
 
-                var customerAddress = CreateAddressResponse(address);
+                var customerAddress = CreateAddressResponse(customer.Address);
 
                 return new CustomerResponse(customer.Id, fullName, customer.Nationality,
                                             customer.Gender, customer.BirthDate, customer.UserId, customerAddress);

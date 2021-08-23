@@ -2,6 +2,7 @@
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
 {
@@ -31,10 +32,11 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
 
         public Address Address { get; set; }
 
+        public CreationInfo CreationInfo { get; set; }
 
         public CreateCustomerRequest(string identificationNo, IdentificationType identificationType, string taxNumber,
-                                     string firstName, string middleName, string lastName, string fatherName,
-                                     string nationality, Gender gender, DateTime birthDate, string userId, Address address)
+                                     string firstName, string middleName, string lastName, string fatherName, string nationality,
+                                     Gender gender, DateTime birthDate, string userId, Address address, CreationInfo creationInfo)
         {
             IdentificationNo = Throw.ArgumentNullException.IfNull(identificationNo, nameof(identificationNo));
             IdentificationType = Throw.ArgumentNullException.IfNull(identificationType, nameof(identificationType));
@@ -44,10 +46,11 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
             LastName = Throw.ArgumentNullException.IfNull(lastName, nameof(lastName));
             FatherName = Throw.ArgumentNullException.IfNull(fatherName, nameof(fatherName));
             Nationality = Throw.ArgumentNullException.IfNull(nationality, nameof(nationality));
-            Gender= Throw.ArgumentNullException.IfNull(gender, nameof(gender));
+            Gender = Throw.ArgumentNullException.IfNull(gender, nameof(gender));
             BirthDate = Throw.ArgumentNullException.IfNull(birthDate, nameof(birthDate));
             UserId = Throw.ArgumentNullException.IfNull(userId, nameof(userId));
             Address = Throw.ArgumentNullException.IfNull(address, nameof(address));
+            CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
         }
     }
 }

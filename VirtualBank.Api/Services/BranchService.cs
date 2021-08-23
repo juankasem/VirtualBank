@@ -47,7 +47,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var branchList = branches.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+            var branchList = branches.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                          .Take(pageSize)
                                                                          .Select(x => CreateBranchResponse(x))
                                                                          .ToList();
@@ -77,7 +77,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var branchList = searchResult.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+            var branchList = searchResult.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                              .Take(pageSize)
                                                                              .Select(x => CreateBranchResponse(x))
                                                                              .ToImmutableList();

@@ -47,14 +47,13 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var fastTransactions = allFastTransactions.OrderByDescending(c => c.CreatedAt)
+            var fastTransactions = allFastTransactions.OrderByDescending(c => c.CreatedOn)
                                                       .Skip((pageNumber - 1) * pageSize)
                                                       .Take(pageSize)
-                                                      .Select(x => CreateFastTransactionResponse(x))
-                                                      .Select(t => t.Result)
+                                                      .Select(x => CreateFastTransactionResponse(x).Result)
                                                       .ToImmutableList();
-           
-                
+
+
             responseModel.Data = new FastTransactionListResponse(fastTransactions, fastTransactions.Count);
 
             return responseModel;
@@ -81,7 +80,7 @@ namespace VirtualBank.Api.Services
             }
 
 
-            var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedAt)
+            var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedOn)
                                                           .Skip((pageNumber - 1) * pageSize)
                                                           .Take(pageSize)
                                                           .Select(x => CreateFastTransactionResponse(x))
@@ -163,7 +162,7 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                   var createdFastTransaction = await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request));
+                    var createdFastTransaction = await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request));
 
                     responseModel.Data = await CreateFastTransactionResponse(createdFastTransaction);
 
@@ -221,7 +220,7 @@ namespace VirtualBank.Api.Services
 
                 var bankAccount = await _unitOfWork.BankAccounts.FindByIdAsync(transaction.AccountId);
 
-                if (bankAccount  == null)
+                if (bankAccount == null)
                 {
                     return null;
                 }
@@ -234,14 +233,14 @@ namespace VirtualBank.Api.Services
 
 
         private FastTransaction CreateFastTransaction(CreateFastTransactionRequest request)
-        {  
+        {
             return new FastTransaction()
             {
                 AccountId = request.BankAccountId,
                 RecipientName = request.RecipientName,
                 RecipientIBAN = request.RecipientIBAN,
                 CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
-            }; 
+            };
         }
 
         #endregion

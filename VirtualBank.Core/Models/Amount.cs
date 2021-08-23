@@ -11,7 +11,6 @@ namespace VirtualBank.Core.Models
 
 
         public Amount Add(Amount amount) => new Amount(Value + amount);
-
         public Amount Subtract(Amount amount) => new Amount(Value - amount);
 
         public static implicit operator decimal(Amount? amount) => amount?.Value ?? 0;

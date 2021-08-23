@@ -46,7 +46,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var addressList = allAddresses.OrderBy(a => a.CreatedAt).Skip((pageNumber - 1) * pageSize)
+            var addressList = allAddresses.OrderBy(a => a.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                     .Take(pageSize)
                                                                     .Select(x => CreateAddressResponse(x))
                                                                     .ToImmutableList();

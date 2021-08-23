@@ -53,7 +53,8 @@ namespace VirtualBank.Api.Services
                 return responseModel;
 
 
-            var districtList = districts.OrderBy(c => c.Name).Select(x => CreateDistrictResponse(x)).ToImmutableList();
+            var districtList = districts.OrderBy(district => district.Name).Select(district => CreateDistrictResponse(district))
+                                                                           .ToImmutableList();
 
 
             responseModel.Data = new DistrictListResponse(districtList, districtList.Count);
@@ -136,8 +137,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                   var createdDistrict = await _unitOfWork.Districts.AddAsync(CreateDistrict(request));
-                   responseModel.Data = CreateDistrictResponse(createdDistrict);
+                    var createdDistrict = await _unitOfWork.Districts.AddAsync(CreateDistrict(request));
+                    responseModel.Data = CreateDistrictResponse(createdDistrict);
 
                     await _unitOfWork.CompleteAsync();
                 }

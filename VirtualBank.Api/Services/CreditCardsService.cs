@@ -43,7 +43,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var creditCardList= allCreditCards.OrderByDescending(c => c.CreatedAt).Skip((pageNumber - 1) * pageSize)
+            var creditCardList= allCreditCards.OrderByDescending(c => c.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                                   .Take(pageSize)
                                                                                   .Select(c => CreateCreditCardResponse(c))
                                                                                   .ToImmutableList();
@@ -77,7 +77,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var creditCardList = creditCards.OrderByDescending(c => c.CreatedAt).Select(c => CreateCreditCardResponse(c)).ToImmutableList();
+            var creditCardList = creditCards.OrderByDescending(c => c.CreatedOn).Select(c => CreateCreditCardResponse(c)).ToImmutableList();
 
             responseModel.Data = new CreditCardListResponse(creditCardList, creditCardList.Count());
 
@@ -286,7 +286,7 @@ namespace VirtualBank.Api.Services
 
                 return new CreditCardResponse(creditCard.Id, creditCard.CreditCardNo, creditCardHolder,
                                               creditCard.BankAccount?.IBAN, creditCard.ExpirationDate,
-                                              creditCard.CreatedAt, (DateTime) creditCard.LastModifiedOn);
+                                              creditCard.CreatedOn, (DateTime) creditCard.LastModifiedOn);
             }
 
             return null;

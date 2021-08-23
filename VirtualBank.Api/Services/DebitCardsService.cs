@@ -54,7 +54,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var debitCards = allDebitCards.OrderByDescending(b => b.CreatedAt).Skip((pageNumber - 1) * pageSize)
+            var debitCards = allDebitCards.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                               .Take(pageSize);
 
             var debitCardList = new List<DebitCardResponse>();

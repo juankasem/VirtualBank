@@ -13,7 +13,7 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
         public AccountType Type { get; set; }
 
         public int CustomerId { get; set; }
-      
+
         public int BranchId { get; set; }
 
         public int CurrencyId { get; set; }
@@ -22,12 +22,14 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
 
         public Amount AllowedBalanceToUse { get; set; }
 
-        public Amount MinimumAllowedBalance { get; set; } 
+        public Amount MinimumAllowedBalance { get; set; }
+
+        public CreationInfo CreationInfo { get; set; }
 
 
         //constructor method
         public CreateBankAccountRequest(string accountNo, string iban, AccountType type, int customerId, int branchId,
-                                        int currencyId, Amount balance, Amount allowedBalanceToUse)
+                                        int currencyId, Amount balance, Amount allowedBalanceToUse, CreationInfo creationInfo)
         {
             AccountNo = Throw.ArgumentNullException.IfNull(accountNo, nameof(accountNo));
             IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
@@ -38,6 +40,7 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
             Balance = balance;
             AllowedBalanceToUse = allowedBalanceToUse;
             MinimumAllowedBalance = new Amount(1);
+            CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
         }
     }
 }

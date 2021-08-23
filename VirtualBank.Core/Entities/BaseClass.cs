@@ -14,7 +14,7 @@ namespace VirtualBank.Core.Entities
         public string CreatedBy { get; set; }
 
         [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedOn{ get; set; } 
 
         public string LastModifiedBy { get; set; }
 

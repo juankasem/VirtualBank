@@ -50,17 +50,12 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var bankAccountList = new List<BankAccountResponse>();   
+            var bankAccountList = bankAccounts.OrderBy(b => b.CreatedOn).Select(bankAccount => CreateBankAccountResponse(bankAccount,
+                                                                                               CreateBankAccountOwner(bankAccount),
+                                                                                              _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN).Result.CreatedOn))
+                                                                                              .ToImmutableList();
 
-            foreach (var bankAccount in bankAccounts)
-            {
-                var accountOwner = CreateBankAccountOwner(bankAccount);
-                var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
-
-                bankAccountList.Add(CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt));
-            }
-
-            responseModel.Data = new BankAccountListResponse(bankAccountList.ToImmutableList(), bankAccountList.Count);
+            responseModel.Data = new BankAccountListResponse(bankAccountList, bankAccountList.Count);
 
             return responseModel;
         }
@@ -87,7 +82,7 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
 
             return responseModel;
         }
@@ -115,7 +110,7 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
 
             return responseModel;
         }
@@ -143,7 +138,7 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedAt);
+            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
 
             return responseModel;
         }
@@ -232,7 +227,7 @@ namespace VirtualBank.Api.Services
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
                 }
-            } 
+            }
 
             return responseModel;
         }
@@ -318,28 +313,28 @@ namespace VirtualBank.Api.Services
                     switch (bankAccount.Currency.Code)
                     {
                         case "TL":
-                                try
+                            try
+                            {
+                                if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                 {
-                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
-                                    {
-                                      interestRate = 0.1525;
-                                    }
-                                    else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
-                                    {
-                                      interestRate = 0.17;
-                                    }
+                                    interestRate = 0.1525;
                                 }
-                                catch (Exception ex)
+                                else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
                                 {
-                                   responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-                                   return responseModel;
+                                    interestRate = 0.17;
                                 }
-                                break;
-                            
+                            }
+                            catch (Exception ex)
+                            {
+                                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+                                return responseModel;
+                            }
+                            break;
 
-                         case "USD":
-                             try
-                             {
+
+                        case "USD":
+                            try
+                            {
                                 if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                 {
                                     interestRate = 0.0085;
@@ -349,36 +344,36 @@ namespace VirtualBank.Api.Services
                                     interestRate = 0.01;
                                 }
                             }
-                             catch (Exception ex)
-                                {
+                            catch (Exception ex)
+                            {
                                 responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
                                 return responseModel;
                             }
-                                break;
+                            break;
 
 
                         case "EUR":
 
-                                try
+                            try
+                            {
+                                if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                 {
-                                    if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
-                                    {
-                                       interestRate = 0.035;
-                                    }
-                                    else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
-                                    {
-                                       interestRate = 0.05;
-                                    }
+                                    interestRate = 0.035;
                                 }
-                                catch (Exception ex)
+                                else if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays > 365 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 720)
                                 {
-                                 responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+                                    interestRate = 0.05;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
                                 return responseModel;
-                                }
+                            }
 
-                                break;
+                            break;
 
                         default:
                             return responseModel;
@@ -386,7 +381,7 @@ namespace VirtualBank.Api.Services
                     }
 
                     profit = deposit.Amount * (decimal)interestRate;
-                    bankAccount.Balance.Add(new Amount(deposit.Amount + profit)) ;                   
+                    bankAccount.Balance.Add(new Amount(deposit.Amount + profit));
                 }
             }
 
@@ -403,12 +398,12 @@ namespace VirtualBank.Api.Services
                                                bankAccount.AccountNo,
                                                bankAccount.IBAN,
                                                bankAccount.Type,
-                                               accountOwner,bankAccount.Branch.Code,
+                                               accountOwner, bankAccount.Branch.Code,
                                                bankAccount.Branch.Name,
                                                bankAccount.Balance,
                                                bankAccount.AllowedBalanceToUse,
                                                bankAccount.Currency,
-                                               bankAccount.CreatedAt,
+                                               bankAccount.CreatedOn,
                                                lastTransactionDate);
             }
 
@@ -421,7 +416,7 @@ namespace VirtualBank.Api.Services
             {
                 return new RecipientBankAccountResponse(bankAccount.AccountNo,
                                                         bankAccount.IBAN,
-                                                        accountOwner,bankAccount.Type,
+                                                        accountOwner, bankAccount.Type,
                                                         bankAccount.Branch.Name,
                                                         bankAccount.Branch.Address.City.Name,
                                                         bankAccount.Currency.Name);
@@ -450,7 +445,7 @@ namespace VirtualBank.Api.Services
         {
             return bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
         }
-      
+
         #endregion
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -29,16 +28,16 @@ namespace VirtualBank.Data.Repositories
         public async Task<IEnumerable<City>> GetByCountryIdAsync(int countryId)
         {
             return await _dbContext.Cities.Include(c => c.Country)
-                                          .Where(city => city.CountryId == countryId && !city.Disabled)
+                                          .Where(c => c.CountryId == countryId && !c.Disabled)
                                           .AsNoTracking().ToListAsync();
         }
 
 
         public async Task<City> FindByIdAsync(int id)
         {
-            return await _dbContext.Cities.Include(c => c.Country).FirstOrDefaultAsync(city => city.Id == id && !city.Disabled);                                                      
+            return await _dbContext.Cities.Include(c => c.Country).FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
         }
-       
+
 
         public async Task<City> AddAsync(City city)
         {
@@ -49,7 +48,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<City> UpdateAsync(City city)
         {
-            var existingCity = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == city.Id && !city.Disabled);
+            var existingCity = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == city.Id && !c.Disabled);
 
             if (existingCity != null)
             {
@@ -72,7 +71,7 @@ namespace VirtualBank.Data.Repositories
 
                 isDeleted = true;
             }
-            
+
             return isDeleted;
         }
 
@@ -86,6 +85,6 @@ namespace VirtualBank.Data.Repositories
         public async Task<bool> CityNameExists(int countryId, string cityName)
         {
             return await _dbContext.Cities.AnyAsync(c => c.CountryId == countryId && c.Name == cityName);
-        }   
+        }
     }
 }

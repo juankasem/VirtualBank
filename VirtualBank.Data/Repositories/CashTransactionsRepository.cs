@@ -52,7 +52,7 @@ namespace VirtualBank.Data.Repositories
         {
            return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
                                                           && !c.Disabled)
-                                                   .OrderByDescending(c => c.CreatedAt)
+                                                   .OrderByDescending(c => c.CreatedOn)
                                                    .FirstOrDefaultAsync();
         }
 
