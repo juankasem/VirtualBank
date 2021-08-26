@@ -6,7 +6,7 @@ using VirtualBank.Core.ApiResponseModels.UtilityPaymentApiResponses;
 
 namespace VirtualBank.Core.Interfaces
 {
-    public interface IUtilityPaymentInterface
+    public interface IUtilityPaymentService
     {
         Task<ApiResponse<UtilityPaymentListResponse>> GetAllUtilityPaymentsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 

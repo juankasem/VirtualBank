@@ -11,6 +11,7 @@ using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
+using VirtualBank.Core.Constants;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
@@ -29,6 +30,8 @@ namespace VirtualBank.Api.Controllers
         private readonly ICustomerService _customerService;
         private readonly UserManager<AppUser> _userManager;
         private readonly IActionResultMapper<BankAccountController> _actionResultMapper;
+
+        string admin = Enum.GetName(typeof(Roles), Roles.Admin);
 
         public BankAccountController(IBankAccountService bankAccountService,
                                      ICustomerService customerService,
@@ -100,7 +103,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-               var apiResponse = await _bankAccountService.GetBankAccountByIdAsync(accountId, cancellationToken);
+                var apiResponse = await _bankAccountService.GetBankAccountByIdAsync(accountId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -139,7 +142,7 @@ namespace VirtualBank.Api.Controllers
                 return NotFound(apiResponse);
             }
 
-            if (user.Id != customer?.Data?.UserId)
+            if (user.Id != customer.Data?.UserId)
             {
                 apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
 
@@ -240,19 +243,20 @@ namespace VirtualBank.Api.Controllers
         }
 
         // PUT api/v1/bank-account/5
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = RoleName.Administrator)]
         [HttpPut(ApiRoutes.BankAccounts.Post)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> AddOrEditBankAccount([FromRoute] int accountId, [FromBody] CreateBankAccountRequest request,
+        public async Task<IActionResult> AddOrEditBankAccount([FromRoute] int accountId,
+                                                              [FromBody] CreateBankAccountRequest request,
                                                               CancellationToken cancellationToken = default)
         {
             try
             {
-               var apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
+                var apiResponse = await _bankAccountService.AddOrEditBankAccountAsync(accountId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -270,7 +274,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // PUT api/v1/bank-account/activate/5
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = RoleName.Administrator)]
         [HttpPost(ApiRoutes.BankAccounts.Post)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
@@ -301,7 +305,7 @@ namespace VirtualBank.Api.Controllers
         }
 
         // PUT api/v1/bank-account/deactivate/5
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = RoleName.Administrator)]
         [HttpPost(ApiRoutes.BankAccounts.Deactivate)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]

@@ -251,7 +251,7 @@ namespace VirtualBank.Api.Services
             CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
-            var amountToWithdraw = request.DebitedFunds.Amount.Value;
+            var amountToWithdraw = request.DebitedFunds.Amount;
             var currency = request.DebitedFunds.Currency;
 
             try
@@ -284,7 +284,7 @@ namespace VirtualBank.Api.Services
                     }
                 }
 
-                if (amountToWithdraw <= fromAccount.AllowedBalanceToUse.Value)
+                if (amountToWithdraw <= fromAccount.AllowedBalanceToUse)
                 {
                     fromAccount.Balance.Subtract(new Amount(amountToWithdraw));
                     fromAccount.AllowedBalanceToUse.Subtract(new Amount(amountToWithdraw));
@@ -316,7 +316,6 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
         }
-
 
         /// <summary>
         /// Create a Transfer transaction in db (between acoounts in the same bank)
@@ -390,7 +389,7 @@ namespace VirtualBank.Api.Services
 
                     responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.From, sender, recipient);
 
-                    // Save changes
+                    // Save changes into db
                     await _unitOfWork.CompleteTransactionAsync();
 
                     return responseModel;
@@ -491,7 +490,7 @@ namespace VirtualBank.Api.Services
 
                     responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.From, sender, recipient, CreateMoney(fees, currency));
 
-                    await _unitOfWork.CompleteTransactionAsync();
+                    await _unitOfWork.CompleteTransactionAsync(); 
 
                     return responseModel;
                 }

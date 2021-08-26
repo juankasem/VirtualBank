@@ -217,9 +217,7 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var newBankAccount = CreateBankAccount(request);
-
-                    var createdBankAccount = await _bankAccountRepo.AddAsync(newBankAccount);
+                    var createdBankAccount = await _bankAccountRepo.AddAsync(CreateBankAccount(request));
 
                     responseModel.Data = CreateBankAccountResponse(createdBankAccount, CreateBankAccountOwner(createdBankAccount));
                 }
@@ -256,7 +254,6 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
 
         /// <summary>
         /// Deactivate bank account for for the specified id
@@ -335,7 +332,7 @@ namespace VirtualBank.Api.Services
                         case "USD":
                             try
                             {
-                                if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
+                                if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                 {
                                     interestRate = 0.0085;
                                 }
@@ -357,7 +354,7 @@ namespace VirtualBank.Api.Services
 
                             try
                             {
-                                if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 186 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
+                                if (DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays >= 180 && DateTime.UtcNow.Subtract(deposit.TransactionDate).TotalDays <= 365)
                                 {
                                     interestRate = 0.035;
                                 }
@@ -388,7 +385,6 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-
         #region private helper methods
         private static BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, DateTime? lastTransactionDate = null)
         {
@@ -398,7 +394,8 @@ namespace VirtualBank.Api.Services
                                                bankAccount.AccountNo,
                                                bankAccount.IBAN,
                                                bankAccount.Type,
-                                               accountOwner, bankAccount.Branch.Code,
+                                               accountOwner,
+                                               bankAccount.Branch.Code,
                                                bankAccount.Branch.Name,
                                                bankAccount.Balance,
                                                bankAccount.AllowedBalanceToUse,
@@ -416,7 +413,8 @@ namespace VirtualBank.Api.Services
             {
                 return new RecipientBankAccountResponse(bankAccount.AccountNo,
                                                         bankAccount.IBAN,
-                                                        accountOwner, bankAccount.Type,
+                                                        accountOwner,
+                                                        bankAccount.Type,
                                                         bankAccount.Branch.Name,
                                                         bankAccount.Branch.Address.City.Name,
                                                         bankAccount.Currency.Name);
@@ -437,7 +435,8 @@ namespace VirtualBank.Api.Services
                 AllowedBalanceToUse = request.Balance,
                 CurrencyId = request.CurrencyId,
                 Type = request.Type,
-                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+                CreatedBy = request.CreationInfo.CreatedBy,
+                CreatedOn = request.CreationInfo.CreatedOn
             };
         }
 

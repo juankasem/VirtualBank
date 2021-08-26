@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using VirtualBank.Core.Entities;
 
 namespace VirtualBank.Api
@@ -30,14 +32,12 @@ namespace VirtualBank.Api
                 logger.LogInformation("data seeded");
                 logger.LogInformation("Application started");
 
+                host.Run();
             }
             catch (System.Exception ex)
             {
-
                 logger.LogWarning(ex, "An error occured while seeding data");
             }
-
-            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

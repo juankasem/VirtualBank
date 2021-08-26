@@ -86,14 +86,14 @@ namespace VirtualBank.Api.Controllers
         // GET api/v1/cash-transactions/iban/TR123
         [HttpGet(ApiRoutes.CashTransactions.GetByIBAN)]
         [Cached(600)]
-        [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(PagedResponse<CashTransactionListResponse>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetBankAccountCashTransactions([FromRoute] string iban,
                                                                         [FromQuery] int lastDays,
-                                                                        [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,                                                                                                                                                             
+                                                                        [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
                                                                         [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
                                                                         CancellationToken cancellationToken = default)
         {
@@ -116,13 +116,13 @@ namespace VirtualBank.Api.Controllers
                     return Forbid();
                 }
 
-                apiResponse = await _cashTransactionsService.GetBankAccountCashTransactionsAsync(iban,lastDays, pageNumber, pageSize, cancellationToken);
+                apiResponse = await _cashTransactionsService.GetBankAccountCashTransactionsAsync(iban, lastDays, pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {
-                  var pagedApiResponse = new PagedResponse<CashTransactionListResponse>(apiResponse.Data);
+                    var pagedApiResponse = new PagedResponse<CashTransactionListResponse>(apiResponse.Data);
 
-                  return Ok(pagedApiResponse);
+                    return Ok(pagedApiResponse);
                 }
 
                 return BadRequest(apiResponse);
@@ -207,7 +207,7 @@ namespace VirtualBank.Api.Controllers
                     return NotFound(apiResponse);
                 }
 
-                if (user.Id != customer?.Data?.UserId)
+                if (user.Id != customer.Data?.UserId)
                 {
                     apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete transaction"));
                     return BadRequest(apiResponse);
@@ -311,7 +311,7 @@ namespace VirtualBank.Api.Controllers
                         apiResponse.AddError(ExceptionCreator.CreateBadRequestError($"Invalid PIN for Debit card of no: {request.DebitCardNo}"));
                         return BadRequest(apiResponse);
                     }
-                }  
+                }
 
                 switch (request.Type)
                 {

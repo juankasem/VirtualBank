@@ -14,7 +14,7 @@ using VirtualBank.Core.Interfaces;
 
 namespace VirtualBank.Api.Controllers
 {
-    public class DistrictsController : Controller
+    public class DistrictsController : ControllerBase
     {
         private readonly IDistrictsService _districtsService;
         private readonly IActionResultMapper<DistrictsController> _actionResultMapper;

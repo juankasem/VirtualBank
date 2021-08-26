@@ -14,7 +14,6 @@ namespace VirtualBank.Core.Entities
         public int DistrictId { get; set; }
         public District District { get; set; }
 
-
         [ForeignKey(nameof(City))]
         public int CityId { get; set; }
         public City City { get; set; }
