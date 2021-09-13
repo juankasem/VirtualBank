@@ -11,7 +11,7 @@ namespace VirtualBank.Data.Repositories
         private IDbContextTransaction _dbContextTransaction;
 
 
-        public IAddressRepository Addresses  { get; private set;}
+        public IAddressRepository Addresses { get; private set; }
 
         public IBankAccountRepository BankAccounts { get; private set; }
 
@@ -56,33 +56,44 @@ namespace VirtualBank.Data.Repositories
             UtilityPayments ??= new UtilityPaymentRepository(_dbContext);
         }
 
+        public IDbContextTransaction BeginTransaction()
+        {
+            return _dbContext.Database.BeginTransaction();
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _dbContext.Database.BeginTransactionAsync();
+        }
 
         public async Task<int> CompleteAsync()
         {
-           return await _dbContext.SaveChangesAsync();
+            return await _dbContext.SaveChangesAsync();
         }
 
 
         public async Task<int> CompleteTransactionAsync()
         {
-            try
+            using (_dbContextTransaction = await _dbContext.Database.BeginTransactionAsync())
             {
-                _dbContextTransaction = await _dbContext.Database.BeginTransactionAsync();
-                var affected = await _dbContext.SaveChangesAsync();
-                await _dbContextTransaction.CommitAsync();
+                try
+                {
+                    var affected = await _dbContext.SaveChangesAsync();
+                    await _dbContextTransaction.CommitAsync();
 
-                return affected;
-            }
-            catch 
-            {
-                await _dbContextTransaction.RollbackAsync();
-                throw;
+                    return affected;
+                }
+                catch
+                {
+                    await _dbContextTransaction.RollbackAsync();
+                    throw;
+                }
             }
         }
 
         public async void Dispose()
         {
-          await _dbContext.DisposeAsync();
+            await _dbContext.DisposeAsync();
         }
     }
 }

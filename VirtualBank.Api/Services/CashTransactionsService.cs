@@ -286,8 +286,8 @@ namespace VirtualBank.Api.Services
 
                 if (amountToWithdraw <= fromAccount.AllowedBalanceToUse)
                 {
-                    fromAccount.Balance.Subtract(new Amount(amountToWithdraw));
-                    fromAccount.AllowedBalanceToUse.Subtract(new Amount(amountToWithdraw));
+                    fromAccount.Balance.Subtract(amountToWithdraw);
+                    fromAccount.AllowedBalanceToUse.Subtract(amountToWithdraw);
 
                     await _unitOfWork.BankAccounts.UpdateAsync(fromAccount);
 
@@ -382,12 +382,12 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
 
                     //Create & Save transaction into db
-                    var createdTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance));
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance));
 
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
 
-                    responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.From, sender, recipient);
+                    responseModel.Data = CreateCashTransactionResponse(createdCashTransaction, request.From, sender, recipient);
 
                     // Save changes into db
                     await _unitOfWork.CompleteTransactionAsync();
@@ -483,14 +483,14 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
 
                     //Create & Save transaction into db
-                    var createdTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance, fees));
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance, fees));
 
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
 
-                    responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.From, sender, recipient, CreateMoney(fees, currency));
+                    responseModel.Data = CreateCashTransactionResponse(createdCashTransaction, request.From, sender, recipient, CreateMoney(fees, currency));
 
-                    await _unitOfWork.CompleteTransactionAsync(); 
+                    await _unitOfWork.CompleteTransactionAsync();
 
                     return responseModel;
                 }

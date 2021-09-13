@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace VirtualBank.Data.Interfaces
 {
@@ -30,6 +31,10 @@ namespace VirtualBank.Data.Interfaces
         ILoansRepository Loans { get; }
 
         IUtilityPaymentRepository UtilityPayments { get; }
+
+        IDbContextTransaction BeginTransaction();
+
+        Task<IDbContextTransaction> BeginTransactionAsync();
 
         Task<int> CompleteAsync();
 
