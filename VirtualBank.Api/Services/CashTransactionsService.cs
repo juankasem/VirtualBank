@@ -165,7 +165,6 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-
         /// <summary>
         /// Retrieve last transaction that occured the specified account(from or to)
         /// </summary>
@@ -221,12 +220,12 @@ namespace VirtualBank.Api.Services
                 await _unitOfWork.BankAccounts.UpdateAsync(toAccount);
 
                 //Add transaction to db & save changes 
-                var createdTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, 0, toAccount.Balance));
+                var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, 0, toAccount.Balance));
 
                 var depositor = await GetCustomerName(request.To);
                 var initiatedBy = GetInitiatedBy(request.InitiatedBy);
 
-                responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.To, initiatedBy, depositor);
+                responseModel.Data = CreateCashTransactionResponse(createdCashTransaction, request.To, initiatedBy, depositor);
 
                 await _unitOfWork.CompleteTransactionAsync();
 
@@ -291,12 +290,12 @@ namespace VirtualBank.Api.Services
 
                     await _unitOfWork.BankAccounts.UpdateAsync(fromAccount);
 
-                    var createdTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, 0));
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, 0));
 
                     var withDrawer = await GetCustomerName(request.From);
                     var initiatedBy = GetInitiatedBy(request.InitiatedBy);
 
-                    responseModel.Data = CreateCashTransactionResponse(createdTransaction, request.From, withDrawer, initiatedBy);
+                    responseModel.Data = CreateCashTransactionResponse(createdCashTransaction, request.From, withDrawer, initiatedBy);
 
                     await _unitOfWork.CompleteTransactionAsync();
 

@@ -32,9 +32,9 @@ namespace VirtualBank.Data.Interfaces
 
         IUtilityPaymentRepository UtilityPayments { get; }
 
-        IDbContextTransaction BeginTransaction();
+        IDbContextTransaction CreateTransaction();
 
-        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<IDbContextTransaction> CreateTransactionAsync();
 
         Task<int> CompleteAsync();
 

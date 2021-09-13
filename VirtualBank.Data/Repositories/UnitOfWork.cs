@@ -56,12 +56,12 @@ namespace VirtualBank.Data.Repositories
             UtilityPayments ??= new UtilityPaymentRepository(_dbContext);
         }
 
-        public IDbContextTransaction BeginTransaction()
+        public IDbContextTransaction CreateTransaction()
         {
             return _dbContext.Database.BeginTransaction();
         }
 
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        public async Task<IDbContextTransaction> CreateTransactionAsync()
         {
             return await _dbContext.Database.BeginTransactionAsync();
         }
