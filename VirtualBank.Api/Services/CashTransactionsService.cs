@@ -329,49 +329,63 @@ namespace VirtualBank.Api.Services
             var amountToTransfer = request.DebitedFunds.Amount;
             var currency = request.DebitedFunds.Currency;
 
-            try
+
+            var senderAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.From);
+            var recipientAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.To);
+
+            if (senderAccount == null)
             {
-                var senderAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.From);
-                var recipientAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.To);
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount), "sender account not found"));
+                return responseModel;
+            }
 
-                if (senderAccount == null)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount), "sender account not found"));
-                    return responseModel;
-                }
+            if (recipientAccount == null)
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount), "recipient account not found"));
+                return responseModel;
+            }
 
-                if (recipientAccount == null)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount), "recipient account not found"));
-                    return responseModel;
-                }
+            if (senderAccount.IBAN == recipientAccount.IBAN)
+            {
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("sender should send to a different bad account"));
+                return responseModel;
+            }
 
-                if (senderAccount.IBAN == recipientAccount.IBAN)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("sender should send to a different bad account"));
-                    return responseModel;
-                }
+            if (senderAccount.Type != AccountType.Current || senderAccount.Type != AccountType.Recurring)
+            {
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
+                return responseModel;
+            }
 
-                if (senderAccount.Type != AccountType.Current || senderAccount.Type != AccountType.Recurring)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
-                    return responseModel;
-                }
+            if (currency != senderAccount.Currency.Code)
+            {
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
+                return responseModel;
+            }
 
-                if (currency != senderAccount.Currency.Code)
+            using (var dbContextTransaction = await _unitOfWork.CreateTransactionAsync())
+            {
+                try
                 {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
-                    return responseModel;
-                }
+                    var debt = new Amount(0);
+                    var amountToSubtract = new Amount(amountToTransfer);
 
-                if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
-                {
+                    if (senderAccount.AllowedBalanceToUse - amountToSubtract < 0)
+                    {
+                        debt = amountToSubtract.Subtract(senderAccount.AllowedBalanceToUse);
+                        amountToSubtract = senderAccount.AllowedBalanceToUse;
+                    }
+
                     //Deduct from sender account
-                    senderAccount.Balance.Subtract(amountToTransfer);
-                    senderAccount.AllowedBalanceToUse.Subtract(amountToTransfer);
+                    senderAccount.Balance.Subtract(amountToSubtract);
+                    senderAccount.AllowedBalanceToUse.Subtract(amountToSubtract);
+
+                    if (debt > 0)
+                        senderAccount.Debt.Add(debt);
 
                     //Update sender bank account
                     await _unitOfWork.BankAccounts.UpdateAsync(senderAccount);
+                    await _unitOfWork.SaveAsync();
 
                     //Deposit to recipient account
                     recipientAccount.Balance.Add(amountToTransfer);
@@ -379,32 +393,28 @@ namespace VirtualBank.Api.Services
 
                     //Update recipient bank account
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
+                    await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
                     var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance));
+                    await _unitOfWork.SaveAsync();
 
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
 
                     responseModel.Data = CreateCashTransactionResponse(createdCashTransaction, request.From, sender, recipient);
 
-                    // Save changes into db
-                    await _unitOfWork.CompleteTransactionAsync();
+                    await dbContextTransaction.CommitAsync();
 
                     return responseModel;
                 }
-                else
+                catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("transfer", "not enough balance to complete transfer"));
+                    await dbContextTransaction.RollbackAsync();
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
                     return responseModel;
                 }
-            }
-            catch (Exception ex)
-            {
-                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-
-                return responseModel;
             }
         }
 
@@ -421,90 +431,100 @@ namespace VirtualBank.Api.Services
             var amountToTransfer = request.DebitedFunds.Amount;
             var currency = request.DebitedFunds.Currency;
 
-            try
+            var senderAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.From);
+
+            if (senderAccount == null)
             {
-                var senderAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.From);
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount), "sender account not found"));
+                return responseModel;
+            }
 
-                if (senderAccount == null)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderAccount), "sender account not found"));
-                    return responseModel;
-                }
+            var recipientAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.To);
 
-                var recipientAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.To);
+            if (recipientAccount == null)
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount), "recipient account not found"));
+                return responseModel;
+            }
 
-                if (recipientAccount == null)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientAccount), "recipient account not found"));
-                    return responseModel;
-                }
+            if (senderAccount.IBAN == recipientAccount.IBAN)
+            {
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError("sender should send to a different bad account"));
+                return responseModel;
+            }
 
-                if (senderAccount.IBAN == recipientAccount.IBAN)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("sender should send to a different bad account"));
-                    return responseModel;
-                }
+            if (recipientAccount.Owner.FirstName != request.RecipientFirstName ||
+                recipientAccount.Owner.LastName != request.RecipientLastName)
+            {
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(recipientAccount), "recipient name does not match account holder's name"));
+                return responseModel;
+            }
 
-                if (recipientAccount.Owner.FirstName != request.RecipientFirstName ||
-                    recipientAccount.Owner.LastName != request.RecipientLastName)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(recipientAccount), "recipient name does not match account holder's name"));
-                    return responseModel;
-                }
+            if (senderAccount.Type != AccountType.Current || senderAccount.Type != AccountType.Recurring)
+            {
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
+                return responseModel;
+            }
 
-                if (senderAccount.Type != AccountType.Current || senderAccount.Type != AccountType.Recurring)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderAccount.Type)} account type "));
-                    return responseModel;
-                }
+            if (currency != senderAccount.Currency.Code)
+            {
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
+                return responseModel;
+            }
 
-                if (currency != senderAccount.Currency.Code)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
-                    return responseModel;
-                }
-
-                if (amountToTransfer <= senderAccount.AllowedBalanceToUse)
+            using (var dbContextTransaction = await _unitOfWork.CreateTransactionAsync())
+            {
+                try
                 {
                     const decimal feesRate = (decimal)0.0015;
                     var fees = new Amount(amountToTransfer.Value * feesRate);
+                    var debt = new Amount(0);
+                    var amountToSubtract = new Amount(amountToTransfer + fees);
+
+                    if (senderAccount.AllowedBalanceToUse - amountToSubtract < 0)
+                    {
+                        debt = amountToSubtract.Subtract(senderAccount.AllowedBalanceToUse);
+                        amountToSubtract = senderAccount.AllowedBalanceToUse;
+                    }
 
                     //Deduct from sender account
-                    senderAccount.Balance.Subtract(new Amount(amountToTransfer + fees));
-                    senderAccount.AllowedBalanceToUse.Subtract(new Amount(amountToTransfer + fees));
+                    senderAccount.Balance.Subtract(amountToSubtract);
+                    senderAccount.AllowedBalanceToUse.Subtract(amountToSubtract);
+
+                    if (debt > 0)
+                        senderAccount.Debt.Add(debt);
 
                     await _unitOfWork.BankAccounts.UpdateAsync(senderAccount);
+                    await _unitOfWork.SaveAsync();
 
                     //Deposit to recipient account
                     recipientAccount.Balance.Add(amountToTransfer);
                     recipientAccount.AllowedBalanceToUse.Add(amountToTransfer);
 
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
+                    await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
                     var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderAccount.Balance, recipientAccount.Balance, fees));
+                    await _unitOfWork.SaveAsync();
 
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
 
                     responseModel.Data = CreateCashTransactionResponse(createdCashTransaction, request.From, sender, recipient, CreateMoney(fees, currency));
 
-                    await _unitOfWork.CompleteTransactionAsync();
+                    await dbContextTransaction.CommitAsync();
 
                     return responseModel;
+
                 }
-                else
+                catch (Exception ex)
                 {
-                    responseModel.AddError(ExceptionCreator.CreateBadRequestError("transfer", "not enough balance to complete transfer"));
+                    await dbContextTransaction.RollbackAsync();
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
                     return responseModel;
                 }
-            }
-            catch (Exception ex)
-            {
-                responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-
-                return responseModel;
             }
         }
 

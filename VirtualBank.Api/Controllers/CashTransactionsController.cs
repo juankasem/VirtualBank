@@ -191,7 +191,8 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> AddCashTransaction([FromBody] CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AddCashTransaction([FromBody] CreateCashTransactionRequest request,
+                                                            CancellationToken cancellationToken = default)
         {
             try
             {

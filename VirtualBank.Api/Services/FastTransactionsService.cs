@@ -145,7 +145,7 @@ namespace VirtualBank.Api.Services
                     {
                         await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
 
-                        await _unitOfWork.CompleteAsync();
+                        await _unitOfWork.SaveAsync();
                     }
                     catch (Exception ex)
                     {
@@ -166,7 +166,7 @@ namespace VirtualBank.Api.Services
 
                     responseModel.Data = await CreateFastTransactionResponse(createdFastTransaction);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {

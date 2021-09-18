@@ -39,7 +39,11 @@ namespace VirtualBank.Core.Entities
 
         [Required]
         [Column(TypeName = "decimal(8,2)")]
-        public Amount MinimumAllowedBalance { get; set; } 
+        public Amount MinimumAllowedBalance { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(8,2)")]
+        public Amount Debt { get; set; }
 
         [ForeignKey(nameof(Currency))]
         [Required]

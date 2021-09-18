@@ -36,7 +36,7 @@ namespace VirtualBank.Data.Interfaces
 
         Task<IDbContextTransaction> CreateTransactionAsync();
 
-        Task<int> CompleteAsync();
+        Task<int> SaveAsync();
 
         Task<int> CompleteTransactionAsync();
     }

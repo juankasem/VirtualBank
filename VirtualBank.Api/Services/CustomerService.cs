@@ -268,7 +268,7 @@ namespace VirtualBank.Api.Services
                         customer.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
 
                         await _unitOfWork.Customers.UpdateAsync(customer);
-                        await _unitOfWork.CompleteAsync();
+                        await _unitOfWork.SaveAsync();
                     }
                     else
                     {
@@ -318,7 +318,7 @@ namespace VirtualBank.Api.Services
                     customer.Disabled = false;
                     await _unitOfWork.Customers.UpdateAsync(customer);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
             }
             catch (Exception ex)
@@ -348,7 +348,7 @@ namespace VirtualBank.Api.Services
                     customer.Disabled = true;
                     await _unitOfWork.Customers.UpdateAsync(customer);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
             }
             catch (Exception ex)

@@ -120,7 +120,7 @@ namespace VirtualBank.Api.Services
                         var updatedDistrict = await _unitOfWork.Districts.UpdateAsync(district);
                         responseModel.Data = CreateDistrictResponse(updatedDistrict);
 
-                        await _unitOfWork.CompleteAsync();
+                        await _unitOfWork.SaveAsync();
                     }
                     else
                     {
@@ -140,7 +140,7 @@ namespace VirtualBank.Api.Services
                     var createdDistrict = await _unitOfWork.Districts.AddAsync(CreateDistrict(request));
                     responseModel.Data = CreateDistrictResponse(createdDistrict);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {

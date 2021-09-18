@@ -93,7 +93,7 @@ namespace VirtualBank.Api.Services
         public async Task<ApiResponse<AddressResponse>> AddOrEditAddressAsync(int addressId, CreateAddressRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<AddressResponse>();
-           
+
             if (addressId != 0)
             {
                 var address = await _unitOfWork.Addresses.FindByIdAsync(addressId);
@@ -109,10 +109,10 @@ namespace VirtualBank.Api.Services
                     address.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     address.LastModifiedOn = DateTime.UtcNow;
 
-                   var updatedAddress = await _unitOfWork.Addresses.UpdateAsync(address);
-                   responseModel.Data = CreateAddressResponse(updatedAddress);
+                    var updatedAddress = await _unitOfWork.Addresses.UpdateAsync(address);
+                    responseModel.Data = CreateAddressResponse(updatedAddress);
 
-                   await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
 
                 }
                 else
@@ -133,10 +133,10 @@ namespace VirtualBank.Api.Services
 
                 try
                 {
-                    var createdAddress =  await _unitOfWork.Addresses.AddAsync(CreateAddress(request));
+                    var createdAddress = await _unitOfWork.Addresses.AddAsync(CreateAddress(request));
                     responseModel.Data = CreateAddressResponse(createdAddress);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {
@@ -170,7 +170,7 @@ namespace VirtualBank.Api.Services
             try
             {
                 await _unitOfWork.Addresses.RemoveAsync(address.Id);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
             }
             catch (Exception ex)
             {

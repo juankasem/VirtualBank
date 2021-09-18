@@ -129,7 +129,7 @@ namespace VirtualBank.Api.Services
                     var updatedCountry = await _unitOfWork.Countries.UpdateAsync(country);
                     responseModel.Data = CreateCountryResponse(updatedCountry);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 else
                 {
@@ -145,7 +145,7 @@ namespace VirtualBank.Api.Services
 
                     responseModel.Data = CreateCountryResponse(addedCountry);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {

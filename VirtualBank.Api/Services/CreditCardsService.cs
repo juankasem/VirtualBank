@@ -43,7 +43,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var creditCardList= allCreditCards.OrderByDescending(c => c.CreatedOn).Skip((pageNumber - 1) * pageSize)
+            var creditCardList = allCreditCards.OrderByDescending(c => c.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                                   .Take(pageSize)
                                                                                   .Select(c => CreateCreditCardResponse(c))
                                                                                   .ToImmutableList();
@@ -68,7 +68,7 @@ namespace VirtualBank.Api.Services
 
             if (creditCards == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError( $"credit card of IBAN: {iban}: not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError($"credit card of IBAN: {iban}: not found"));
                 return responseModel;
             }
 
@@ -176,7 +176,7 @@ namespace VirtualBank.Api.Services
 
                         responseModel.Data = CreateCreditCardResponse(updatedCreditCard);
 
-                        await _unitOfWork.CompleteAsync();
+                        await _unitOfWork.SaveAsync();
                     }
                     else
                     {
@@ -193,10 +193,10 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                   var createdCreditCard = await _unitOfWork.CreditCards.AddAsync(CreateCreditCard(request));
-                   responseModel.Data = CreateCreditCardResponse(createdCreditCard);
+                    var createdCreditCard = await _unitOfWork.CreditCards.AddAsync(CreateCreditCard(request));
+                    responseModel.Data = CreateCreditCardResponse(createdCreditCard);
 
-                   await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {
@@ -223,7 +223,7 @@ namespace VirtualBank.Api.Services
             if (creditCard != null)
             {
                 creditCard.Disabled = false;
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
             }
             else
             {
@@ -286,7 +286,7 @@ namespace VirtualBank.Api.Services
 
                 return new CreditCardResponse(creditCard.Id, creditCard.CreditCardNo, creditCardHolder,
                                               creditCard.BankAccount?.IBAN, creditCard.ExpirationDate,
-                                              creditCard.CreatedOn, (DateTime) creditCard.LastModifiedOn);
+                                              creditCard.CreatedOn, (DateTime)creditCard.LastModifiedOn);
             }
 
             return null;

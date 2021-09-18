@@ -26,7 +26,7 @@ namespace VirtualBank.Api.Services
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
-       
+
         }
 
 
@@ -169,7 +169,7 @@ namespace VirtualBank.Api.Services
 
                     responseModel.Data = CreateBranchResponse(updatedBranch);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 else
                 {
@@ -181,7 +181,7 @@ namespace VirtualBank.Api.Services
             {
                 var newAddress = CreateAddress(request);
                 var newBranch = CreateBranch(request);
-               
+
                 try
                 {
                     await _unitOfWork.Addresses.AddAsync(newAddress);
@@ -222,7 +222,7 @@ namespace VirtualBank.Api.Services
 
             try
             {
-             bool isDeleted = await _unitOfWork.Branches.RemoveAsync(branch.Id);
+                bool isDeleted = await _unitOfWork.Branches.RemoveAsync(branch.Id);
 
                 if (!isDeleted)
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError("Unexpected error"));

@@ -119,7 +119,7 @@ namespace VirtualBank.Api.Services
 
                         responseModel.Data = CreateCityResponse(updatedCity);
 
-                        await _unitOfWork.CompleteAsync();
+                        await _unitOfWork.SaveAsync();
                     }
                     else
                     {
@@ -140,7 +140,7 @@ namespace VirtualBank.Api.Services
 
                     responseModel.Data = CreateCityResponse(createdCity);
 
-                    await _unitOfWork.CompleteAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {

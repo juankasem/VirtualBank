@@ -24,6 +24,8 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
 
         public Amount MinimumAllowedBalance { get; set; }
 
+        public Amount Debt { get; set; } = new Amount(0);
+
         public CreationInfo CreationInfo { get; set; }
 
 
@@ -40,6 +42,7 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
             Balance = balance;
             AllowedBalanceToUse = allowedBalanceToUse;
             MinimumAllowedBalance = new Amount(1);
+            Debt = new Amount(0);
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
         }
     }
