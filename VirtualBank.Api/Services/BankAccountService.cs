@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -399,6 +398,7 @@ namespace VirtualBank.Api.Services
                                                bankAccount.Branch.Name,
                                                bankAccount.Balance,
                                                bankAccount.AllowedBalanceToUse,
+                                               bankAccount.Debt,
                                                bankAccount.Currency,
                                                bankAccount.CreatedOn,
                                                lastTransactionDate);
@@ -433,6 +433,7 @@ namespace VirtualBank.Api.Services
                 BranchId = request.BranchId,
                 Balance = request.Balance,
                 AllowedBalanceToUse = request.Balance,
+                Debt = new Amount(0),
                 CurrencyId = request.CurrencyId,
                 Type = request.Type,
                 CreatedBy = request.CreationInfo.CreatedBy,

@@ -79,7 +79,6 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-
             var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedOn)
                                                           .Skip((pageNumber - 1) * pageSize)
                                                           .Take(pageSize)
@@ -92,7 +91,6 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
 
         /// <summary>
         /// Retrieve fast transaction by id
@@ -144,7 +142,6 @@ namespace VirtualBank.Api.Services
                     try
                     {
                         await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
-
                         await _unitOfWork.SaveAsync();
                     }
                     catch (Exception ex)
@@ -163,10 +160,9 @@ namespace VirtualBank.Api.Services
                 try
                 {
                     var createdFastTransaction = await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request));
+                    await _unitOfWork.SaveAsync();
 
                     responseModel.Data = await CreateFastTransactionResponse(createdFastTransaction);
-
-                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {

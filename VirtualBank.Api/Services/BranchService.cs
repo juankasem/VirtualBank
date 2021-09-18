@@ -166,10 +166,9 @@ namespace VirtualBank.Api.Services
                     branch.LastModifiedOn = DateTime.UtcNow;
 
                     var updatedBranch = await _unitOfWork.Branches.UpdateAsync(branch);
+                    await _unitOfWork.SaveAsync();
 
                     responseModel.Data = CreateBranchResponse(updatedBranch);
-
-                    await _unitOfWork.SaveAsync();
                 }
                 else
                 {
@@ -179,18 +178,13 @@ namespace VirtualBank.Api.Services
             }
             else
             {
-                var newAddress = CreateAddress(request);
-                var newBranch = CreateBranch(request);
-
                 try
                 {
-                    await _unitOfWork.Addresses.AddAsync(newAddress);
-
-                    var createdBranch = await _unitOfWork.Branches.AddAsync(newBranch);
+                    var createdBranch = await _unitOfWork.Branches.AddAsync(CreateBranch(request));
 
                     responseModel.Data = CreateBranchResponse(createdBranch);
 
-                    await _unitOfWork.CompleteTransactionAsync();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {
@@ -200,7 +194,6 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
 
         /// <summary>
         /// disable branch

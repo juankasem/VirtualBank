@@ -26,6 +26,8 @@ namespace VirtualBank.Core.ApiResponseModels.BankAccountApiResponses
 
         public Amount AllowedBalanceToUse { get; }
 
+        public Amount Debt { get; }
+
         public Currency Currency { get; }
 
         public DateTime CreatedOn { get; }
@@ -34,7 +36,7 @@ namespace VirtualBank.Core.ApiResponseModels.BankAccountApiResponses
 
         public BankAccountResponse(int id, string accountNo, string iban, AccountType type, string accountOwner,
                                    string branchCode, string branchName, Amount balance, Amount allowedBalanceToUse,
-                                   Currency currency, DateTime createdOn, DateTime? lastTransactionDate = null)
+                                   Amount debt, Currency currency, DateTime createdOn, DateTime? lastTransactionDate = null)
         {
             Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             AccountNo = Throw.ArgumentNullException.IfNull(accountNo, nameof(accountNo));
@@ -45,6 +47,7 @@ namespace VirtualBank.Core.ApiResponseModels.BankAccountApiResponses
             BranchName = Throw.ArgumentNullException.IfNull(branchName, nameof(branchName));
             Balance = balance;
             AllowedBalanceToUse = allowedBalanceToUse;
+            Debt = debt;
             Currency = Throw.ArgumentNullException.IfNull(currency, nameof(currency));
             CreatedOn = Throw.ArgumentNullException.IfNull(createdOn, nameof(createdOn));
             LastTransactionDate = lastTransactionDate;

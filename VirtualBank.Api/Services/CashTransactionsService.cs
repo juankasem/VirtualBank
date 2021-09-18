@@ -388,8 +388,17 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Deposit to recipient account
-                    recipientAccount.Balance.Add(amountToTransfer);
-                    senderAccount.AllowedBalanceToUse.Add(amountToTransfer);
+                    var recipientDebt = recipientAccount.Debt;
+                    var amountToAdd = new Amount(amountToTransfer - recipientDebt);
+
+                    if (amountToTransfer > recipientDebt)
+                    {
+                        recipientAccount.Debt.Subtract(recipientDebt);
+                        recipientAccount.Balance.Add(amountToAdd);
+                        recipientAccount.AllowedBalanceToUse.Add(amountToAdd);
+                    }
+                    else
+                        recipientAccount.Debt.Subtract(amountToTransfer);
 
                     //Update recipient bank account
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
@@ -498,8 +507,17 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Deposit to recipient account
-                    recipientAccount.Balance.Add(amountToTransfer);
-                    recipientAccount.AllowedBalanceToUse.Add(amountToTransfer);
+                    var recipientDebt = recipientAccount.Debt;
+                    var amountToAdd = new Amount(amountToTransfer - recipientDebt);
+
+                    if (amountToTransfer > recipientDebt)
+                    {
+                        recipientAccount.Debt.Subtract(recipientDebt);
+                        recipientAccount.Balance.Add(amountToAdd);
+                        recipientAccount.AllowedBalanceToUse.Add(amountToAdd);
+                    }
+                    else
+                        recipientAccount.Debt.Subtract(amountToTransfer);
 
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientAccount);
                     await _unitOfWork.SaveAsync();
