@@ -13,14 +13,12 @@ namespace VirtualBank.Api.Controllers
         private readonly IUtilityPaymentService _utilityPaymentService;
         private readonly UserManager<AppUser> _userManager;
 
-        public UtilityPaymentController(IUtilityPaymentService utilityPaymentService, 
+        public UtilityPaymentController(IUtilityPaymentService utilityPaymentService,
                                         UserManager<AppUser> userManager)
         {
             _utilityPaymentService = utilityPaymentService;
             _userManager = userManager;
         }
-
-        
 
     }
 }

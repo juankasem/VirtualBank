@@ -5,14 +5,14 @@ namespace VirtualBank.Core.Models
 {
     public class ModificationInfo
     {
-        public DateTime ModifiedOn { get; }
         public string ModifiedBy { get; set; }
+        public DateTime LastModifiedOn { get; }
 
-        public ModificationInfo(string modifiedBy, DateTime modifiedOn)
+        public ModificationInfo(string modifiedBy, DateTime lastModifiedOn)
         {
             ModifiedBy = Throw.ArgumentException.IfNullOrWhiteSpace(modifiedBy, nameof(modifiedBy));
-            Throw.ArgumentException.IfDefault(modifiedOn, nameof(modifiedOn));
-            modifiedOn = Throw.ArgumentException.IfLocalOrUnspecified(modifiedOn, nameof(modifiedOn));
+            Throw.ArgumentException.IfDefault(lastModifiedOn, nameof(lastModifiedOn));
+            LastModifiedOn = Throw.ArgumentException.IfLocalOrUnspecified(lastModifiedOn, nameof(lastModifiedOn));
         }
     }
 }

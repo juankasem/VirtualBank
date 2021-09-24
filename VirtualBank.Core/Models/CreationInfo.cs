@@ -7,7 +7,6 @@ namespace VirtualBank.Core.Models
     {
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; }
-    
 
         public CreationInfo(string createdBy, DateTime createdOn)
         {

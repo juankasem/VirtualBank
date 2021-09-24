@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.FastTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.FastTransactionApiResponses;
@@ -16,18 +17,19 @@ namespace VirtualBank.Api.Services
 {
     public class FastTransactionsService : IFastTransactionsService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IFastTransactionsMapper _fastTransactionsMapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-
-        public FastTransactionsService(IHttpContextAccessor httpContextAccessor,
-                                     IUnitOfWork unitOfWork)
+        public FastTransactionsService(IUnitOfWork unitOfWork,
+                                       IFastTransactionsMapper fastTransactionsMapper,
+                                       IHttpContextAccessor httpContextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
+            _fastTransactionsMapper = fastTransactionsMapper;
+            _httpContextAccessor = httpContextAccessor;
 
         }
-
 
         /// <summary>
         /// Retrieve all fast transactions
@@ -50,15 +52,13 @@ namespace VirtualBank.Api.Services
             var fastTransactions = allFastTransactions.OrderByDescending(c => c.CreatedOn)
                                                       .Skip((pageNumber - 1) * pageSize)
                                                       .Take(pageSize)
-                                                      .Select(x => CreateFastTransactionResponse(x).Result)
+                                                      .Select(x => _fastTransactionsMapper.MapToResponseModel(x))
                                                       .ToImmutableList();
 
-
-            responseModel.Data = new FastTransactionListResponse(fastTransactions, fastTransactions.Count);
+            responseModel.Data = new(fastTransactions, fastTransactions.Count);
 
             return responseModel;
         }
-
 
         /// <summary>
         /// Retrieve fast transactions that are associated to the account
@@ -82,12 +82,10 @@ namespace VirtualBank.Api.Services
             var fastTransactions = accountFastTransactions.OrderByDescending(c => c.CreatedOn)
                                                           .Skip((pageNumber - 1) * pageSize)
                                                           .Take(pageSize)
-                                                          .Select(x => CreateFastTransactionResponse(x))
-                                                          .Select(t => t.Result)
+                                                          .Select(x => _fastTransactionsMapper.MapToResponseModel(x))
                                                           .ToImmutableList();
 
-
-            responseModel.Data = new FastTransactionListResponse(fastTransactions, fastTransactions.Count);
+            responseModel.Data = new(fastTransactions, fastTransactions.Count);
 
             return responseModel;
         }
@@ -102,15 +100,15 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<FastTransactionResponse>();
 
-            var transaction = await _unitOfWork.FastTransactions.FindByIdAsync(id);
+            var fastTransaction = await _unitOfWork.FastTransactions.FindByIdAsync(id);
 
-            if (transaction == null)
+            if (fastTransaction == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(transaction)));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(fastTransaction)));
                 return responseModel;
             }
 
-            responseModel.Data = await CreateFastTransactionResponse(transaction);
+            responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(fastTransaction));
 
             return responseModel;
         }
@@ -133,25 +131,32 @@ namespace VirtualBank.Api.Services
 
                 if (fastTransaction != null)
                 {
-                    fastTransaction.AccountId = request.BankAccountId;
+                    fastTransaction.BankAccountId = request.BankAccountId;
                     fastTransaction.RecipientName = request.RecipientName;
                     fastTransaction.RecipientIBAN = request.RecipientIBAN;
-                    fastTransaction.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
-                    fastTransaction.LastModifiedOn = DateTime.UtcNow;
+                    fastTransaction.LastModifiedBy = request.ModificationInfo.ModifiedBy;
+                    fastTransaction.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
                     try
                     {
-                        await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
+                        var updatedFastTransaction = await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
                         await _unitOfWork.SaveAsync();
+
+                        responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(updatedFastTransaction));
+
+                        return responseModel;
                     }
                     catch (Exception ex)
                     {
                         responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                        return responseModel;
                     }
                 }
                 else
                 {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(fastTransaction)));
+
                     return responseModel;
                 }
             }
@@ -162,15 +167,17 @@ namespace VirtualBank.Api.Services
                     var createdFastTransaction = await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request));
                     await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = await CreateFastTransactionResponse(createdFastTransaction);
+                    responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(createdFastTransaction));
+
+                    return responseModel;
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
-
-            return responseModel;
         }
 
         /// <summary>
@@ -203,41 +210,16 @@ namespace VirtualBank.Api.Services
 
 
         #region private helper methods
-        private async Task<FastTransactionResponse> CreateFastTransactionResponse(FastTransaction transaction)
-        {
-            if (transaction != null)
+
+        private FastTransaction CreateFastTransaction(CreateFastTransactionRequest request) =>
+            new()
             {
-                var branch = await _unitOfWork.Branches.FindByIdAsync(transaction.Account.BranchId);
-
-                if (branch == null)
-                {
-                    return null;
-                }
-
-                var bankAccount = await _unitOfWork.BankAccounts.FindByIdAsync(transaction.AccountId);
-
-                if (bankAccount == null)
-                {
-                    return null;
-                }
-
-                return new FastTransactionResponse(transaction.Id, bankAccount.IBAN, branch.Name, transaction.RecipientName, transaction.RecipientIBAN);
-            }
-
-            return null;
-        }
-
-
-        private FastTransaction CreateFastTransaction(CreateFastTransactionRequest request)
-        {
-            return new FastTransaction()
-            {
-                AccountId = request.BankAccountId,
+                BankAccountId = request.BankAccountId,
                 RecipientName = request.RecipientName,
                 RecipientIBAN = request.RecipientIBAN,
-                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+                CreatedBy = request.CreationInfo.CreatedBy,
+                CreatedOn = request.CreationInfo.CreatedOn
             };
-        }
 
         #endregion
     }

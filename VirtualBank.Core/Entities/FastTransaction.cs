@@ -6,15 +6,14 @@ namespace VirtualBank.Core.Entities
 {
     public class FastTransaction : BaseClass
     {
-        [ForeignKey(nameof(Account))]
+        [ForeignKey(nameof(BankAccount))]
         [Required]
-        public int AccountId { get; set; }
-        public BankAccount Account { get; set; }
+        public int BankAccountId { get; set; }
+        public BankAccount BankAccount { get; set; }
 
         [Required]
         [MaxLength(50)]
         public string RecipientName { get; set; }
-
 
         [Required]
         [MaxLength(150)]

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -99,7 +97,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-               var apiResponse = await _addressService.AddOrEditAddressAsync(addressId, request, cancellationToken);
+                var apiResponse = await _addressService.AddOrEditAddressAsync(addressId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

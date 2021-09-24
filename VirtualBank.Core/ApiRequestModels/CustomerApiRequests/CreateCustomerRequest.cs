@@ -30,13 +30,13 @@ namespace VirtualBank.Core.ApiRequestModels.CustomerApiRequests
 
         public string UserId { get; set; }
 
-        public Address Address { get; set; }
+        public Entities.Address Address { get; set; }
 
         public CreationInfo CreationInfo { get; set; }
 
         public CreateCustomerRequest(string identificationNo, IdentificationType identificationType, string taxNumber,
                                      string firstName, string middleName, string lastName, string fatherName, string nationality,
-                                     Gender gender, DateTime birthDate, string userId, Address address, CreationInfo creationInfo)
+                                     Gender gender, DateTime birthDate, string userId, Entities.Address address, CreationInfo creationInfo)
         {
             IdentificationNo = Throw.ArgumentNullException.IfNull(identificationNo, nameof(identificationNo));
             IdentificationType = Throw.ArgumentNullException.IfNull(identificationType, nameof(identificationType));

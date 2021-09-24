@@ -1,4 +1,4 @@
-﻿using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.ArgumentChecks;
 
 namespace VirtualBank.Core.Models
 {

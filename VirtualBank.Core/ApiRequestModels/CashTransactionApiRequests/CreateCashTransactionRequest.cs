@@ -35,12 +35,16 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
 
         public string? PIN { get; set; }
 
-       public CreationInfo CreationInfo { get; set; }
+        public CreationInfo CreationInfo { get; set; }
+
+        public ModificationInfo ModificationInfo { get; set; }
+
 
         public CreateCashTransactionRequest(CashTransactionType type, BankAssetType initiatedBy, string from, string to,
                                             string recipientFirstName, string recipientLastName, Money debitedFunds,
-                                            Money fees, string description,PaymentType paymentType, DateTime transactionDate,
-                                            string creditCardNo, string debitCardNo, string pin, CreationInfo creationInfo)
+                                            Money fees, string description, PaymentType paymentType, DateTime transactionDate,
+                                            string creditCardNo, string debitCardNo, string pin,
+                                            CreationInfo creationInfo, ModificationInfo modificationInfo)
         {
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
             InitiatedBy = Throw.ArgumentNullException.IfNull(initiatedBy, nameof(initiatedBy));
@@ -57,6 +61,7 @@ namespace VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests
             DebitCardNo = debitCardNo;
             PIN = pin;
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
+            ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
         }
     }
-}   
+}

@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Cache;
@@ -13,7 +12,6 @@ using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.LoanApiResponses;
 using VirtualBank.Core.ApiRoutes;
 using VirtualBank.Core.Constants;
-using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -45,8 +43,8 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllLoans([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
-                                                      [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
-                                                      CancellationToken cancellationToken = default)
+                                                     [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
+                                                     CancellationToken cancellationToken = default)
         {
             try
             {
@@ -97,6 +95,7 @@ namespace VirtualBank.Api.Controllers
                 return _actionResultMapper.Map(exception);
             }
         }
+
 
         // GET: api/v1/loan/customer/5
         [HttpGet(ApiRoutes.Loans.GetByCustomerId)]

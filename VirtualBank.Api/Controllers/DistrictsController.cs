@@ -59,7 +59,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AddOrEditDistrict([FromRoute] int districtId, [FromBody] CreateDistrictRequest request,
-                                                      CancellationToken cancellationToken = default)
+                                                           CancellationToken cancellationToken = default)
         {
             var apiResponse = new Response();
 
@@ -77,7 +77,6 @@ namespace VirtualBank.Api.Controllers
 
                 else if (apiResponse.Errors[0].Code == StatusCodes.Status404NotFound)
                     return NotFound(apiResponse);
-
 
 
                 return BadRequest(apiResponse);

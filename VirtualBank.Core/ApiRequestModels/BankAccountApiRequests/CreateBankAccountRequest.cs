@@ -28,8 +28,6 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
 
         public CreationInfo CreationInfo { get; set; }
 
-
-        //constructor method
         public CreateBankAccountRequest(string accountNo, string iban, AccountType type, int customerId, int branchId,
                                         int currencyId, Amount balance, Amount allowedBalanceToUse, CreationInfo creationInfo)
         {

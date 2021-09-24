@@ -1,6 +1,7 @@
 ﻿using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Models;
+using Address = VirtualBank.Core.Entities.Address;
 
 namespace VirtualBank.Core.ApiRequestModels.BranchApiRequests
 {

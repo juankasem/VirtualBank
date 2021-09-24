@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Cache;
-using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiRoutes;
@@ -28,7 +27,8 @@ namespace VirtualBank.Api.Controllers
         public CitiesController(ICountriesService countriesService,
                                 ICitiesService citiesService,
                                 IActionResultMapper<CitiesController> actionResultMapper)
-        {;
+        {
+            ;
             _countriesService = countriesService;
             _citiesService = citiesService;
             _actionResultMapper = actionResultMapper;
@@ -101,7 +101,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-               var apiResponse = await _citiesService.AddOrEditCityAsync(cityId, request, cancellationToken);
+                var apiResponse = await _citiesService.AddOrEditCityAsync(cityId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

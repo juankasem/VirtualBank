@@ -21,7 +21,7 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<IEnumerable<FastTransaction>> GetAll()
         {
-            return await _dbContext.FastTransactions.Include(f => f.Account)
+            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => !f.Disabled)
                                                     .AsNoTracking().ToListAsync();
@@ -29,23 +29,23 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<IEnumerable<FastTransaction>> GetByAccountId(int accountId)
         {
-            return await _dbContext.FastTransactions.Include(f => f.Account)
+            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
                                                     .ThenInclude(f => f.Branch)
-                                                    .Where(f => f.AccountId == accountId && !f.Disabled)
+                                                    .Where(f => f.BankAccountId == accountId && !f.Disabled)
                                                     .AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<FastTransaction>> GetByIBAN(string iban)
         {
-            return await _dbContext.FastTransactions.Include(f => f.Account)
+            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
                                                     .ThenInclude(f => f.Branch)
-                                                    .Where(f => f.Account.IBAN == iban && !f.Disabled)
+                                                    .Where(f => f.BankAccount.IBAN == iban && !f.Disabled)
                                                     .AsNoTracking().ToListAsync();
         }
 
         public async Task<FastTransaction> FindByIdAsync(int id)
         {
-            return await _dbContext.FastTransactions.Include(f => f.Account)
+            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => f.Id == id && !f.Disabled)
                                                     .FirstOrDefaultAsync();

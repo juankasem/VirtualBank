@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.ActionResults;
 using VirtualBank.Api.Cache;
@@ -28,7 +27,7 @@ namespace VirtualBank.Api.Controllers
         private readonly IBranchService _branchService;
         private readonly IActionResultMapper<BranchController> _actionResultMapper;
 
-        public BranchController(IBranchService branchService,           
+        public BranchController(IBranchService branchService,
                                 IActionResultMapper<BranchController> actionResultMapper)
         {
             _branchService = branchService;
@@ -46,7 +45,7 @@ namespace VirtualBank.Api.Controllers
                                                       [FromQuery] int cityId,
                                                       [FromQuery] int districtId,
                                                       [FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
-                                                      [FromQuery] int pageSize = PagingConstants.DefaultPageSize,       
+                                                      [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
                                                       CancellationToken cancellationToken = default)
         {
             try
@@ -171,7 +170,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-               var apiResponse = await _branchService.AddOrEditBranchAsync(branchId, request, cancellationToken);
+                var apiResponse = await _branchService.AddOrEditBranchAsync(branchId, request, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);

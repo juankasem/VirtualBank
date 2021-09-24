@@ -144,12 +144,12 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetLatestTransfers([FromRoute] string iban,
+        public async Task<IActionResult> GetBankAccountLatestTransfers([FromRoute] string iban,
                                                             CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = new ApiResponse<LastCashTransactionListResponse>();
+                var apiResponse = new ApiResponse<LatestTransferListResponse>();
 
                 var user = await _userManager.GetUserAsync(User);
                 var customer = await _customerService.GetCustomerByIBANAsync(iban, cancellationToken);
@@ -166,7 +166,7 @@ namespace VirtualBank.Api.Controllers
                     return BadRequest(apiResponse);
                 }
 
-                apiResponse = await _cashTransactionsService.GetLatestTransfersAsync(iban, cancellationToken);
+                apiResponse = await _cashTransactionsService.GetBankAccountLatestTransfersAsync(iban, cancellationToken);
 
                 if (apiResponse.Success)
                 {

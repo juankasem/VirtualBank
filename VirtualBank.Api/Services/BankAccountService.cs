@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.BankAccountApiResponses;
-using VirtualBank.Core.Entities;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Models;
@@ -18,17 +18,17 @@ namespace VirtualBank.Api.Services
 {
     public class BankAccountService : IBankAccountService
     {
-        private readonly IBankAccountRepository _bankAccountRepo;
-        private readonly ICashTransactionsRepository _cashTransactionsRepo;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBankAccountMapper _bankAccountMapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BankAccountService(IBankAccountRepository bankAccountRepo,
-                                  ICashTransactionsRepository cashTransactionsRepo,
+        public BankAccountService(IUnitOfWork unitOfWork,
+                                  IBankAccountMapper bankAccountMapper,
                                   IHttpContextAccessor httpContextAccessor)
         {
-            _bankAccountRepo = bankAccountRepo;
-            _cashTransactionsRepo = cashTransactionsRepo;
+            _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
+            _bankAccountMapper = bankAccountMapper;
         }
 
 
@@ -42,19 +42,20 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountListResponse>();
 
-            var bankAccounts = await _bankAccountRepo.GetByCustomerId(customerId);
+            var bankAccounts = await _unitOfWork.BankAccounts.GetByCustomerId(customerId);
 
             if (!bankAccounts.Any())
             {
                 return responseModel;
             }
 
-            var bankAccountList = bankAccounts.OrderBy(b => b.CreatedOn).Select(bankAccount => CreateBankAccountResponse(bankAccount,
+            var bankAccountList = bankAccounts.OrderBy(b => b.CreatedOn)
+                                              .Select(bankAccount => _bankAccountMapper.MapToBankAccount(bankAccount,
                                                                                                CreateBankAccountOwner(bankAccount),
-                                                                                              _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN).Result.CreatedOn))
+                                                                                              _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN).Result.CreatedOn))
                                                                                               .ToImmutableList();
 
-            responseModel.Data = new BankAccountListResponse(bankAccountList, bankAccountList.Count);
+            responseModel.Data = new(bankAccountList, bankAccountList.Count);
 
             return responseModel;
         }
@@ -70,7 +71,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIdAsync(accountId);
 
             if (bankAccount == null)
             {
@@ -79,9 +80,9 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = CreateBankAccountOwner(bankAccount);
-            var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
+            var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
+            responseModel.Data = new(_bankAccountMapper.MapToBankAccount(bankAccount, accountOwner, lastTransaction.CreatedOn));
 
             return responseModel;
         }
@@ -97,7 +98,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByAccountNoAsync(accountNo);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByAccountNoAsync(accountNo);
 
             if (bankAccount == null)
             {
@@ -107,9 +108,9 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = CreateBankAccountOwner(bankAccount);
-            var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
+            var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
+            responseModel.Data = new(_bankAccountMapper.MapToBankAccount(bankAccount, accountOwner, lastTransaction.CreatedOn));
 
             return responseModel;
         }
@@ -125,7 +126,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIBANAsync(iban);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(iban);
 
 
             if (bankAccount == null)
@@ -135,9 +136,9 @@ namespace VirtualBank.Api.Services
             }
 
             var accountOwner = CreateBankAccountOwner(bankAccount);
-            var lastTransaction = await _cashTransactionsRepo.GetLastAsync(bankAccount.IBAN);
+            var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = CreateBankAccountResponse(bankAccount, accountOwner, lastTransaction.CreatedOn);
+            responseModel.Data = new(_bankAccountMapper.MapToBankAccount(bankAccount, accountOwner, lastTransaction.CreatedOn));
 
             return responseModel;
         }
@@ -154,7 +155,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<RecipientBankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIBANAsync(request.IBAN);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.IBAN);
 
             if (bankAccount == null)
             {
@@ -171,7 +172,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateRecipientBankAccountResponse(bankAccount, accountOwner);
+            responseModel.Data = new(_bankAccountMapper.MapToRecipientBankAccount(bankAccount, accountOwner));
 
             return responseModel;
         }
@@ -191,7 +192,7 @@ namespace VirtualBank.Api.Services
 
             if (accountId > 0)
             {
-                var bankaccount = await _bankAccountRepo.FindByIdAsync(accountId);
+                var bankaccount = await _unitOfWork.BankAccounts.FindByIdAsync(accountId);
 
                 if (bankaccount != null)
                 {
@@ -202,9 +203,10 @@ namespace VirtualBank.Api.Services
                     bankaccount.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
                     bankaccount.LastModifiedOn = DateTime.UtcNow;
 
-                    var updatedBankAccount = await _bankAccountRepo.UpdateAsync(bankaccount);
+                    var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
+                    await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = CreateBankAccountResponse(updatedBankAccount, CreateBankAccountOwner(updatedBankAccount));
+                    responseModel.Data = new(_bankAccountMapper.MapToBankAccount(updatedBankAccount, CreateBankAccountOwner(updatedBankAccount)));
                 }
                 else
                 {
@@ -216,9 +218,10 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var createdBankAccount = await _bankAccountRepo.AddAsync(CreateBankAccount(request));
+                    var createdBankAccount = await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
+                    await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = CreateBankAccountResponse(createdBankAccount, CreateBankAccountOwner(createdBankAccount));
+                    responseModel.Data = new(_bankAccountMapper.MapToBankAccount(createdBankAccount, CreateBankAccountOwner(createdBankAccount)));
                 }
                 catch (Exception ex)
                 {
@@ -240,7 +243,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIdAsync(accountId);
 
             if (bankAccount != null)
             {
@@ -264,16 +267,15 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIdAsync(accountId);
 
             if (bankAccount != null)
             {
                 bankAccount.Disabled = true;
+
             }
             else
-            {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(bankAccount)));
-            }
 
             return responseModel;
         }
@@ -289,7 +291,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<BankAccountResponse>();
 
-            var bankAccount = await _bankAccountRepo.FindByIdAsync(accountId);
+            var bankAccount = await _unitOfWork.BankAccounts.FindByIdAsync(accountId);
 
             if (bankAccount == null)
             {
@@ -299,7 +301,7 @@ namespace VirtualBank.Api.Services
 
             if (bankAccount.Type == AccountType.Savings)
             {
-                var deposits = await _cashTransactionsRepo.GetDepositsByIBANAsync(bankAccount.IBAN);
+                var deposits = await _unitOfWork.CashTransactions.GetDepositsByIBANAsync(bankAccount.IBAN);
 
                 foreach (var deposit in deposits)
                 {
@@ -385,47 +387,10 @@ namespace VirtualBank.Api.Services
         }
 
         #region private helper methods
-        private static BankAccountResponse CreateBankAccountResponse(BankAccount bankAccount, string accountOwner, DateTime? lastTransactionDate = null)
+
+        private Core.Entities.BankAccount CreateBankAccount(CreateBankAccountRequest request)
         {
-            if (bankAccount != null)
-            {
-                return new BankAccountResponse(bankAccount.Id,
-                                               bankAccount.AccountNo,
-                                               bankAccount.IBAN,
-                                               bankAccount.Type,
-                                               accountOwner,
-                                               bankAccount.Branch.Code,
-                                               bankAccount.Branch.Name,
-                                               bankAccount.Balance,
-                                               bankAccount.AllowedBalanceToUse,
-                                               bankAccount.Debt,
-                                               bankAccount.Currency,
-                                               bankAccount.CreatedOn,
-                                               lastTransactionDate);
-            }
-
-            return null;
-        }
-
-        private static RecipientBankAccountResponse CreateRecipientBankAccountResponse(BankAccount bankAccount, string accountOwner)
-        {
-            if (bankAccount != null)
-            {
-                return new RecipientBankAccountResponse(bankAccount.AccountNo,
-                                                        bankAccount.IBAN,
-                                                        accountOwner,
-                                                        bankAccount.Type,
-                                                        bankAccount.Branch.Name,
-                                                        bankAccount.Branch.Address.City.Name,
-                                                        bankAccount.Currency.Name);
-            }
-
-            return null;
-        }
-
-        private BankAccount CreateBankAccount(CreateBankAccountRequest request)
-        {
-            return new BankAccount()
+            return new()
             {
                 AccountNo = Guid.NewGuid().ToString(),
                 IBAN = request.IBAN,
@@ -441,10 +406,7 @@ namespace VirtualBank.Api.Services
             };
         }
 
-        private static string CreateBankAccountOwner(BankAccount bankAccount)
-        {
-            return bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
-        }
+        private static string CreateBankAccountOwner(Core.Entities.BankAccount bankAccount) => bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
 
         #endregion
     }

@@ -4,15 +4,16 @@ using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Core.ApiResponseModels.CashTrasactionApiResponses
 {
-    public class CashTransactionListResponse
+    public class LatestTransferListResponse
     {
-        public ImmutableList<CashTransaction> CashTransactions { get; }
+        public ImmutableList<LatestTransfer> LatestTransfers { get; }
 
         public int TotalCount { get; }
 
-        public CashTransactionListResponse(ImmutableList<CashTransaction> cashTransactions, int totalCount)
+
+        public LatestTransferListResponse(ImmutableList<LatestTransfer> latestTransfers, int totalCount)
         {
-            CashTransactions = cashTransactions.IsEmpty ? ImmutableList<CashTransaction>.Empty : cashTransactions;
+            LatestTransfers = latestTransfers.IsEmpty ? ImmutableList<LatestTransfer>.Empty : latestTransfers;
             TotalCount = Throw.ArgumentOutOfRangeException.IfLessThan(totalCount, 0, nameof(totalCount));
         }
     }

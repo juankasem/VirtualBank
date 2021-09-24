@@ -1,18 +1,18 @@
 ﻿using System.Collections.Immutable;
 using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Core.ApiResponseModels.BankAccountApiResponses
 {
     public class BankAccountListResponse
     {
-        public ImmutableList<BankAccountResponse> BankAccounts { get; }
+        public ImmutableList<BankAccount> BankAccounts { get; }
 
         public int TotalCount { get; }
 
-
-        public BankAccountListResponse(ImmutableList<BankAccountResponse> bankAccounts, int totalCount)
+        public BankAccountListResponse(ImmutableList<BankAccount> bankAccounts, int totalCount)
         {
-            BankAccounts = bankAccounts.IsEmpty ? ImmutableList<BankAccountResponse>.Empty : bankAccounts;
+            BankAccounts = bankAccounts.IsEmpty ? ImmutableList<BankAccount>.Empty : bankAccounts;
             TotalCount = Throw.ArgumentOutOfRangeException.IfLessThan(totalCount, 0, nameof(totalCount));
         }
     }
