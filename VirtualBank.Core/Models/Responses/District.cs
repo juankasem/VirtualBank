@@ -5,11 +5,14 @@ namespace VirtualBank.Core.Models.Responses
     public class District
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public City City { get; set; }
-        public CreationInfo CreationInfo { get; }
-        public ModificationInfo ModificationInfo { get; }
 
+        public string Name { get; set; }
+
+        public City City { get; set; }
+
+        public CreationInfo CreationInfo { get; }
+
+        public ModificationInfo ModificationInfo { get; }
 
         public District(int id, string name, City city, CreationInfo creationInfo, ModificationInfo modificationInfo)
         {

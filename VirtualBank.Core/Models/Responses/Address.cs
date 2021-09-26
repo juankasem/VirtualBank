@@ -5,13 +5,21 @@ namespace VirtualBank.Core.Models.Responses
     public class Address
     {
         public int Id { get; }
+
         public string Name { get; }
+
         public string Street { get; }
+
         public string PostalCode { get; }
+
         public District AddressDistrict { get; }
+
         public City AddressCity { get; }
+
         public Country AddressCountry { get; }
+
         public CreationInfo CreationInfo { get; }
+
         public ModificationInfo ModificationInfo { get; }
 
         public Address(int id, string name, string street, string postalCode,

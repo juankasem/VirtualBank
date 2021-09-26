@@ -5,11 +5,17 @@ namespace VirtualBank.Core.Models.Responses
     public class Branch
     {
         public int Id { get; }
+
         public string Code { get; }
+
         public string Name { get; }
+
         public string Phone { get; }
+
         public Address Address { get; }
+
         public CreationInfo CreationInfo { get; }
+
         public ModificationInfo ModificationInfo { get; }
 
         public Branch(int id, string code, string name, string phone, Address address,

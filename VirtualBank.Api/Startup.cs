@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using VirtualBank.Api.Factories;
 using VirtualBank.Api.Filters;
 using VirtualBank.Api.Installers;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Api.Services;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Data;
@@ -67,35 +68,9 @@ namespace VirtualBank.Api
             services.AddSingleton<IActionResultProvider, ActionResultProvider>();
             services.AddHttpContextAccessor();
 
-
-            // Add repositories
-            services.AddScoped<IBankAccountRepository, BankAccountRepository>();
-            services.AddScoped<IBranchRepository, BranchRepository>();
-            services.AddScoped<IBranchRepository, BranchRepository>();
-            services.AddScoped<ICountriesRepository, CountriesRepository>();
-            services.AddScoped<ICitiesRepository, CitiesRepository>();
-            services.AddScoped<ICashTransactionsRepository, CashTransactionsRepository>();
-            services.AddScoped<IFastTransactionsRepository, FastTransactionsRepository>();
-            services.AddScoped<ILoansRepository, LoansRepository>();
-            services.AddScoped<IUtilityPaymentRepository, UtilityPaymentRepository>();
-
-
-            // Add services
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IBankAccountService, BankAccountService>();
-            services.AddScoped<IBranchService, BranchService>();
-            services.AddScoped<ICountriesService, CountriesService>();
-            services.AddScoped<ICitiesService, CitiesService>();
-            services.AddScoped<ICashTransactionsService, CashTransactionsService>();
-            services.AddScoped<ICreditCardsService, CreditCardsService>();
-            services.AddScoped<ICustomerService, CustomerService>();
-            services.AddScoped<IDistrictsService, DistrictsService>();
-            services.AddScoped<IDebitCardsService, DebitCardsService>();
-            services.AddScoped<IFastTransactionsService, FastTransactionsService>();
-            services.AddScoped<ILoansService, LoansService>();
-            services.AddScoped<IMailService, MailService>();
-            services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            AddMappers(services);
+            AddRepositories(services);
+            AddServices(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -122,6 +97,55 @@ namespace VirtualBank.Api
             });
 
             //serviceProvider.ConfigureDatabseContext().GetAwaiter().GetResult();
+        }
+
+        private void AddMappers(IServiceCollection services)
+        {
+            services.AddScoped<IAddressMapper, AddressMapper>();
+            services.AddScoped<IBankAccountMapper, BankAccountMapper>();
+            services.AddScoped<IBranchMapper, BranchMapper>();
+            services.AddScoped<IDistrictMapper, DistrictMapper>();
+            services.AddScoped<ICashTransactionsMapper, CashTransactionsMapper>();
+            services.AddScoped<ICountryMapper, CountryMapper>();
+            services.AddScoped<ICustomerMapper, CustomerMapper>();
+            services.AddScoped<IFastTransactionsMapper, FastTransactionsMapper>();
+        }
+
+        private void AddRepositories(IServiceCollection services)
+        {
+            services.AddScoped<IAddressRepository, AddressRepository>();
+            services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+            services.AddScoped<IBranchRepository, BranchRepository>();
+            services.AddScoped<ICitiesRepository, CitiesRepository>();
+            services.AddScoped<ICountriesRepository, CountriesRepository>();
+            services.AddScoped<ICashTransactionsRepository, CashTransactionsRepository>();
+            services.AddScoped<ICreditCardsRepository, CreditCardsRepository>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IDebitCardsRepository, DebitCardsRepository>();
+            services.AddScoped<IDistrictsRepository, DistrictsRepository>();
+            services.AddScoped<IFastTransactionsRepository, FastTransactionsRepository>();
+            services.AddScoped<ILoansRepository, LoansRepository>();
+            services.AddScoped<IUtilityPaymentRepository, UtilityPaymentRepository>();
+        }
+
+        private void AddServices(IServiceCollection services)
+        {
+            services.AddScoped<IAddressService, AddressService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IBankAccountService, BankAccountService>();
+            services.AddScoped<IBranchService, BranchService>();
+            services.AddScoped<ICountriesService, CountriesService>();
+            services.AddScoped<ICitiesService, CitiesService>();
+            services.AddScoped<ICashTransactionsService, CashTransactionsService>();
+            services.AddScoped<ICreditCardsService, CreditCardsService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IDistrictsService, DistrictsService>();
+            services.AddScoped<IDebitCardsService, DebitCardsService>();
+            services.AddScoped<IFastTransactionsService, FastTransactionsService>();
+            services.AddScoped<ILoansService, LoansService>();
+            services.AddScoped<IMailService, MailService>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }
 }

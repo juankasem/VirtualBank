@@ -1,20 +1,15 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Enums;
+﻿using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Core.ApiResponseModels.CustomerApiResponses
 {
     public class RecipientCustomerResponse
     {
-        public string FirstName { get; }
-     
-        public string LastName { get;  }
+        public RecipientCustomer RecipientCustomer { get; }
 
-        public RecipientCustomerResponse(string firstName, string lastName)
+        public RecipientCustomerResponse(RecipientCustomer recipientCustomer)
         {
-            FirstName = Throw.ArgumentNullException.IfNull(firstName, nameof(firstName));
-            LastName = Throw.ArgumentNullException.IfNull(lastName, nameof(lastName));
+            RecipientCustomer = Throw.ArgumentNullException.IfNull(recipientCustomer, nameof(recipientCustomer));
         }
     }
 }

@@ -6,6 +6,7 @@ namespace VirtualBank.Core.Models
     public class ModificationInfo
     {
         public string ModifiedBy { get; set; }
+
         public DateTime LastModifiedOn { get; }
 
         public ModificationInfo(string modifiedBy, DateTime lastModifiedOn)

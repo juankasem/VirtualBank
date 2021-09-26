@@ -3,11 +3,10 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.CustomerApiRequests;
 using VirtualBank.Core.ApiResponseModels;
-using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
 using VirtualBank.Core.ApiResponseModels.CustomerApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
@@ -18,13 +17,13 @@ namespace VirtualBank.Api.Services
     public class CustomerService : ICustomerService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICustomerMapper _customerMapper;
 
         public CustomerService(IUnitOfWork unitOfWork,
-                               IHttpContextAccessor httpContextAccessor)
+                               ICustomerMapper customerMapper)
         {
             _unitOfWork = unitOfWork;
-            _httpContextAccessor = httpContextAccessor;
+            _customerMapper = customerMapper;
         }
 
         /// <summary>
@@ -47,10 +46,10 @@ namespace VirtualBank.Api.Services
 
             var customers = allCustomers.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                             .Take(pageSize)
-                                                                            .Select(customer => CreateCustomerResponse(customer))
+                                                                            .Select(customer => _customerMapper.MapToResponseModel(customer))
                                                                             .ToImmutableList();
 
-            responseModel.Data = new CustomerListResponse(customers, customers.Count);
+            responseModel.Data = new(customers, customers.Count);
 
             return responseModel;
         }
@@ -76,10 +75,10 @@ namespace VirtualBank.Api.Services
 
             var customers = searchResult.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                             .Take(pageSize)
-                                                                            .Select(customer => CreateCustomerResponse(customer))
+                                                                            .Select(customer => _customerMapper.MapToResponseModel(customer))
                                                                             .ToImmutableList();
 
-            responseModel.Data = new CustomerListResponse(customers, customers.Count);
+            responseModel.Data = new(customers, customers.Count);
 
             return responseModel;
         }
@@ -103,7 +102,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateCustomerResponse(customer);
+            responseModel.Data = new(_customerMapper.MapToResponseModel(customer));
 
             return responseModel;
         }
@@ -135,7 +134,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateCustomerResponse(customer);
+            responseModel.Data = new(_customerMapper.MapToResponseModel(customer));
 
             return responseModel;
         }
@@ -167,7 +166,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateCustomerResponse(customer);
+            responseModel.Data = new(_customerMapper.MapToResponseModel(customer));
 
             return responseModel;
         }
@@ -191,7 +190,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateCustomerResponse(customer);
+            responseModel.Data = new(_customerMapper.MapToResponseModel(customer));
 
             return responseModel;
         }
@@ -223,7 +222,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateRecipientCustomerResponse(customer);
+            responseModel.Data = new(_customerMapper.MapToRecipientCustomerResponseModel(customer));
 
             return responseModel;
         }
@@ -263,21 +262,24 @@ namespace VirtualBank.Api.Services
                         customer.Nationality = request.Nationality;
                         customer.Address = request.Address;
                         customer.BirthDate = request.BirthDate;
-                        customer.LastModifiedOn = DateTime.UtcNow;
-                        customer.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
+                        customer.LastModifiedBy = request.ModificationInfo.ModifiedBy;
+                        customer.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
-                        await _unitOfWork.Customers.UpdateAsync(customer);
+                        var updatedCustomer = await _unitOfWork.Customers.UpdateAsync(customer);
                         await _unitOfWork.SaveAsync();
+
+                        responseModel.Data = new(_customerMapper.MapToResponseModel(updatedCustomer));
                     }
                     else
                     {
                         responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"customer of id: {customerId} not found"));
-                        return responseModel;
                     }
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
             else
@@ -285,13 +287,15 @@ namespace VirtualBank.Api.Services
                 try
                 {
                     var createdCustomer = await _unitOfWork.Customers.AddAsync(CreateCustomer(request));
-                    responseModel.Data = CreateCustomerResponse(createdCustomer);
+                    await _unitOfWork.SaveAsync();
 
-                    await _unitOfWork.CompleteTransactionAsync();
+                    responseModel.Data = new(_customerMapper.MapToResponseModel(createdCustomer));
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
 
@@ -319,13 +323,20 @@ namespace VirtualBank.Api.Services
 
                     await _unitOfWork.SaveAsync();
                 }
+                else
+                {
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"customer of id: {customerId} not found"));
+                }
+
+                return responseModel;
+
             }
             catch (Exception ex)
             {
                 responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-            }
 
-            return responseModel;
+                return responseModel;
+            }
         }
 
 
@@ -349,13 +360,20 @@ namespace VirtualBank.Api.Services
 
                     await _unitOfWork.SaveAsync();
                 }
+                else
+                {
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(customer), $"customer of id: {customerId} not found"));
+
+                }
+
+                return responseModel;
             }
             catch (Exception ex)
             {
                 responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-            }
 
-            return responseModel;
+                return responseModel;
+            }
         }
 
 
@@ -408,49 +426,6 @@ namespace VirtualBank.Api.Services
                     CityId = request.Address.CityId,
                     CountryId = request.Address.CountryId
                 };
-            }
-
-            return null;
-        }
-
-
-        private CustomerResponse CreateCustomerResponse(Customer customer)
-        {
-            if (customer != null)
-            {
-                string fullName = customer.FirstName + " " +
-                                  customer.MiddleName != "" ? customer.MiddleName : ""
-                                  + " " + customer.LastName;
-
-                var customerAddress = CreateAddressResponse(customer.Address);
-
-                return new CustomerResponse(customer.Id, fullName, customer.Nationality,
-                                            customer.Gender, customer.BirthDate, customer.UserId, customerAddress);
-            }
-
-            return null;
-        }
-
-
-        private RecipientCustomerResponse CreateRecipientCustomerResponse(Customer customer)
-        {
-            return new RecipientCustomerResponse(customer.FirstName, customer.LastName);
-        }
-
-        private AddressResponse CreateAddressResponse(Address address)
-        {
-            if (address != null)
-            {
-                return new AddressResponse(address.Id,
-                                           address.Name,
-                                           address.DistrictId,
-                                           address.District.Name,
-                                           address.CityId,
-                                           address.City.Name,
-                                           address.CountryId,
-                                           address.Country.Name,
-                                           address.Street,
-                                           address.PostalCode);
             }
 
             return null;
