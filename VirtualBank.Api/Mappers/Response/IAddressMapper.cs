@@ -1,4 +1,6 @@
-using VirtualBank.Core.Entities;
+using System;
+using VirtualBank.Core.Models;
+using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -9,9 +11,29 @@ namespace VirtualBank.Api.Mappers.Response
 
     public class AddressMapper : IAddressMapper
     {
-        public Address MapToResponseModel(Core.Entities.Address address)
+        private readonly IDistrictMapper _districtMapper;
+        private readonly ICityMapper _cityMapper;
+        private readonly ICountryMapper _countryMapper;
+
+        public AddressMapper(IDistrictMapper districtMapper, ICityMapper cityMapper, ICountryMapper countryMapper)
         {
-            throw new System.NotImplementedException();
+            _districtMapper = districtMapper;
+            _cityMapper = cityMapper;
+            _countryMapper = countryMapper;
         }
+        public Address MapToResponseModel(Core.Entities.Address address) =>
+            new(address.Id,
+                address.Name,
+                address.Street,
+                address.PostalCode,
+                _districtMapper.MapToAddressDistrict(address.District),
+                _cityMapper.MapToAddressCity(address.City),
+                _countryMapper.MapToAddressCountry(address.Country),
+                CreateCreationInfo(address.CreatedBy, address.CreatedOn),
+                CreateModificationInfo(address.LastModifiedBy, address.LastModifiedOn));
+
+        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
+
+        private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
     }
 }

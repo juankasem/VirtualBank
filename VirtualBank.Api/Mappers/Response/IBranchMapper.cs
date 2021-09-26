@@ -1,4 +1,6 @@
-﻿using VirtualBank.Core.Models.Responses;
+﻿using System;
+using VirtualBank.Core.Models;
+using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -9,9 +11,24 @@ namespace VirtualBank.Api.Mappers.Response
 
     public class BranchMapper : IBranchMapper
     {
-        public Branch MapToResponseModel(Core.Entities.Branch branch)
+        private readonly IAddressMapper _addressMapper;
+
+        public BranchMapper(IAddressMapper addressMapper)
         {
-            throw new System.NotImplementedException();
+            _addressMapper = addressMapper;
         }
+        public Branch MapToResponseModel(Core.Entities.Branch branch) =>
+            new(
+             branch.Id,
+             branch.Code,
+             branch.Name,
+             branch.Phone,
+             _addressMapper.MapToResponseModel(branch.Address),
+             CreateCreationInfo(branch.CreatedBy, branch.CreatedOn),
+             CreateModificationInfo(branch.LastModifiedBy, branch.LastModifiedOn));
+
+        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
+
+        private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
     }
 }

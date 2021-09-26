@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.BranchApiRequests;
 using VirtualBank.Core.ApiResponseModels;
-using VirtualBank.Core.ApiResponseModels.AddressApiResponses;
 using VirtualBank.Core.ApiResponseModels.BranchApiResponses;
 using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
@@ -18,17 +18,18 @@ namespace VirtualBank.Api.Services
 
     public class BranchService : IBranchService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IBranchMapper _branchMapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public BranchService(IUnitOfWork unitOfWork,
+                             IBranchMapper branchMapper,
                              IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
+            _branchMapper = branchMapper;
             _httpContextAccessor = httpContextAccessor;
-
         }
-
 
         /// <summary>
         /// Retrieve all branches
@@ -49,10 +50,10 @@ namespace VirtualBank.Api.Services
 
             var branchList = branches.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                          .Take(pageSize)
-                                                                         .Select(x => CreateBranchResponse(x))
-                                                                         .ToList();
+                                                                         .Select(branch => _branchMapper.MapToResponseModel(branch))
+                                                                         .ToImmutableList();
 
-            responseModel.Data = new BranchListResponse(branchList.ToImmutableList(), branchList.Count);
+            responseModel.Data = new(branchList, branchList.Count);
 
             return responseModel;
         }
@@ -79,7 +80,7 @@ namespace VirtualBank.Api.Services
 
             var branchList = searchResult.OrderByDescending(b => b.CreatedOn).Skip((pageNumber - 1) * pageSize)
                                                                              .Take(pageSize)
-                                                                             .Select(x => CreateBranchResponse(x))
+                                                                             .Select(branch => _branchMapper.MapToResponseModel(branch))
                                                                              .ToImmutableList();
 
             responseModel.Data = new BranchListResponse(branchList, branchList.Count);
@@ -106,7 +107,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateBranchResponse(branch);
+            responseModel.Data = new(_branchMapper.MapToResponseModel(branch));
 
             return responseModel;
         }
@@ -130,7 +131,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateBranchResponse(branch);
+            responseModel.Data = new(_branchMapper.MapToResponseModel(branch));
 
             return responseModel;
         }
@@ -162,13 +163,13 @@ namespace VirtualBank.Api.Services
                     branch.Name = request.Name;
                     branch.Code = request.Code;
                     branch.Address = request.Address;
-                    branch.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
-                    branch.LastModifiedOn = DateTime.UtcNow;
+                    branch.LastModifiedBy = request.ModificationInfo.ModifiedBy;
+                    branch.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
                     var updatedBranch = await _unitOfWork.Branches.UpdateAsync(branch);
                     await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = CreateBranchResponse(updatedBranch);
+                    responseModel.Data = new(_branchMapper.MapToResponseModel(updatedBranch));
                 }
                 else
                 {
@@ -182,7 +183,7 @@ namespace VirtualBank.Api.Services
                 {
                     var createdBranch = await _unitOfWork.Branches.AddAsync(CreateBranch(request));
 
-                    responseModel.Data = CreateBranchResponse(createdBranch);
+                    responseModel.Data = new(_branchMapper.MapToResponseModel(createdBranch));
 
                     await _unitOfWork.SaveAsync();
                 }
@@ -253,7 +254,10 @@ namespace VirtualBank.Api.Services
                     Code = request.Code,
                     Phone = request.Phone,
                     Address = CreateAddress(request),
-                    CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+                    CreatedBy = request.CreationInfo.CreatedBy,
+                    CreatedOn = request.CreationInfo.CreatedOn,
+                    LastModifiedBy = request.ModificationInfo.ModifiedBy,
+                    LastModifiedOn = request.ModificationInfo.LastModifiedOn
                 };
             }
 
@@ -275,31 +279,6 @@ namespace VirtualBank.Api.Services
                     Street = address?.Street,
                     PostalCode = address?.PostalCode
                 };
-            }
-
-            return null;
-        }
-
-        private BranchResponse CreateBranchResponse(Branch branch)
-        {
-            if (branch != null)
-            {
-                var branchAddress = CreateAddressResponse(branch?.Address);
-                return new BranchResponse(branch.Id, branch.Name, branch.Code, branch.Phone, branchAddress);
-            }
-
-            return null;
-        }
-
-        private static AddressResponse CreateAddressResponse(Address address)
-        {
-            if (address != null)
-            {
-                return new AddressResponse(address.Id, address.Name,
-                                           address.DistrictId, address.District?.Name,
-                                           address.CityId, address.City?.Name,
-                                           address.CountryId, address.Country?.Name,
-                                           address.Street, address.PostalCode);
             }
 
             return null;

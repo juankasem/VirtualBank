@@ -50,7 +50,7 @@ namespace VirtualBank.Api.Services
             }
 
             var bankAccountList = bankAccounts.OrderBy(b => b.CreatedOn)
-                                              .Select(bankAccount => _bankAccountMapper.MapToBankAccount(bankAccount,
+                                              .Select(bankAccount => _bankAccountMapper.MapToResponseModel(bankAccount,
                                                                                                CreateBankAccountOwner(bankAccount),
                                                                                               _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN).Result.CreatedOn))
                                                                                               .ToImmutableList();
@@ -82,7 +82,7 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = new(_bankAccountMapper.MapToBankAccount(bankAccount, accountOwner, lastTransaction.CreatedOn));
+            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, accountOwner, lastTransaction.CreatedOn));
 
             return responseModel;
         }
@@ -110,7 +110,7 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = new(_bankAccountMapper.MapToBankAccount(bankAccount, accountOwner, lastTransaction.CreatedOn));
+            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, accountOwner, lastTransaction.CreatedOn));
 
             return responseModel;
         }
@@ -138,7 +138,7 @@ namespace VirtualBank.Api.Services
             var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = new(_bankAccountMapper.MapToBankAccount(bankAccount, accountOwner, lastTransaction.CreatedOn));
+            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, accountOwner, lastTransaction.CreatedOn));
 
             return responseModel;
         }
@@ -206,7 +206,7 @@ namespace VirtualBank.Api.Services
                     var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
                     await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_bankAccountMapper.MapToBankAccount(updatedBankAccount, CreateBankAccountOwner(updatedBankAccount)));
+                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(updatedBankAccount, CreateBankAccountOwner(updatedBankAccount)));
                 }
                 else
                 {
@@ -221,7 +221,7 @@ namespace VirtualBank.Api.Services
                     var createdBankAccount = await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
                     await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_bankAccountMapper.MapToBankAccount(createdBankAccount, CreateBankAccountOwner(createdBankAccount)));
+                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(createdBankAccount, CreateBankAccountOwner(createdBankAccount)));
                 }
                 catch (Exception ex)
                 {
