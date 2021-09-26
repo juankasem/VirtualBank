@@ -28,7 +28,12 @@ namespace VirtualBank.Core.ApiRequestModels.AddressApiRequests
         [Required]
         public CreationInfo CreationInfo { get; set; }
 
-        public CreateAddressRequest(string name, int districtId, int cityId, int countryId, string street, string postalCode, CreationInfo creationInfo)
+        [Required]
+        public ModificationInfo ModificationInfo { get; set; }
+
+
+        public CreateAddressRequest(string name, int districtId, int cityId, int countryId, string street, string postalCode,
+                                    CreationInfo creationInfo, ModificationInfo modificationInfo)
         {
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
             DistrictId = Throw.ArgumentNullException.IfNull(districtId, nameof(districtId));
@@ -37,6 +42,7 @@ namespace VirtualBank.Core.ApiRequestModels.AddressApiRequests
             Street = street;
             PostalCode = postalCode;
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
+            ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
         }
     }
 }
