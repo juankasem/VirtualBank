@@ -373,40 +373,13 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var debt = new Amount(0);
-                    var amountToSubtract = new Amount(amountToTransfer);
-
-                    if (senderBankAccount.AllowedBalanceToUse - amountToSubtract < 0)
-                    {
-                        debt = amountToSubtract.Subtract(senderBankAccount.AllowedBalanceToUse);
-                        amountToSubtract = senderBankAccount.AllowedBalanceToUse;
-                    }
-
-                    //Deduct from sender account
-                    senderBankAccount.Balance.Subtract(amountToSubtract);
-                    senderBankAccount.AllowedBalanceToUse.Subtract(amountToSubtract);
-
-                    if (debt > 0)
-                        senderBankAccount.Debt.Add(debt);
-
                     //Update sender bank account
+                    senderBankAccount = UpdateSenderBankAccount(senderBankAccount, amountToTransfer);
                     await _unitOfWork.BankAccounts.UpdateAsync(senderBankAccount);
                     await _unitOfWork.SaveAsync();
 
-                    //Deposit to recipient account
-                    var recipientDebt = recipientBankAccount.Debt;
-                    var amountToAdd = new Amount(amountToTransfer - recipientDebt);
-
-                    if (amountToTransfer > recipientDebt)
-                    {
-                        recipientBankAccount.Debt.Subtract(recipientDebt);
-                        recipientBankAccount.Balance.Add(amountToAdd);
-                        recipientBankAccount.AllowedBalanceToUse.Add(amountToAdd);
-                    }
-                    else
-                        recipientBankAccount.Debt.Subtract(amountToTransfer);
-
                     //Update recipient bank account
+                    recipientBankAccount = UpdateRecipientBankAccount(recipientBankAccount, amountToTransfer);
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientBankAccount);
                     await _unitOfWork.SaveAsync();
 
@@ -458,7 +431,7 @@ namespace VirtualBank.Api.Services
 
             if (recipientBankAccount == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientBankAccount), "recipient's bank account not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientBankAccount), "Recipient's bank account not found"));
                 return responseModel;
             }
 
@@ -471,41 +444,13 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    const decimal feesRate = (decimal)0.0015;
-                    var fees = new Amount(amountToTransfer.Value * feesRate);
-                    var debt = new Amount(0);
-                    var amountToSubtract = new Amount(amountToTransfer + fees);
-
-                    if (senderBankAccount.AllowedBalanceToUse - amountToSubtract < 0)
-                    {
-                        debt = amountToSubtract.Subtract(senderBankAccount.AllowedBalanceToUse);
-                        amountToSubtract = senderBankAccount.AllowedBalanceToUse;
-                    }
-
-                    //Deduct from sender account
-                    senderBankAccount.Balance.Subtract(amountToSubtract);
-                    senderBankAccount.AllowedBalanceToUse.Subtract(amountToSubtract);
-
-                    if (debt > 0)
-                        senderBankAccount.Debt.Add(debt);
-
+                    var fees = GetFees(amountToTransfer);
+                    senderBankAccount = UpdateSenderBankAccount(senderBankAccount, amountToTransfer, true);
                     await _unitOfWork.BankAccounts.UpdateAsync(senderBankAccount);
                     await _unitOfWork.SaveAsync();
 
-                    //Deposit to recipient account
-                    var recipientDebt = recipientBankAccount.Debt;
-                    var amountToAdd = new Amount(amountToTransfer - recipientDebt);
-
-                    if (amountToTransfer > recipientDebt)
-                    {
-                        recipientBankAccount.Debt.Subtract(recipientDebt);
-                        recipientBankAccount.Balance.Add(amountToAdd);
-                        recipientBankAccount.AllowedBalanceToUse.Add(amountToAdd);
-                    }
-                    else
-                        recipientBankAccount.Debt.Subtract(amountToTransfer);
-
                     //Update recipient bank account
+                    recipientBankAccount = UpdateRecipientBankAccount(recipientBankAccount, amountToTransfer);
                     await _unitOfWork.BankAccounts.UpdateAsync(recipientBankAccount);
                     await _unitOfWork.SaveAsync();
 
@@ -589,6 +534,51 @@ namespace VirtualBank.Api.Services
             }
 
             return responseModel;
+        }
+
+        private static Core.Entities.BankAccount UpdateSenderBankAccount(Core.Entities.BankAccount senderBankAccount, Amount amountToTransfer, bool isEFT = false)
+        {
+            var fees = isEFT ? GetFees(amountToTransfer) : new Amount(0);
+            var debt = new Amount(0);
+            var amountToSubtract = new Amount(amountToTransfer + fees);
+
+            if (senderBankAccount.AllowedBalanceToUse - amountToSubtract < 0)
+            {
+                debt = amountToSubtract.Subtract(senderBankAccount.AllowedBalanceToUse);
+                amountToSubtract = senderBankAccount.AllowedBalanceToUse;
+            }
+
+            //Deduct from sender account
+            senderBankAccount.Balance.Subtract(amountToSubtract);
+            senderBankAccount.AllowedBalanceToUse.Subtract(amountToSubtract);
+
+            if (debt > 0)
+                senderBankAccount.Debt.Add(debt);
+
+            return senderBankAccount;
+        }
+
+        private static Core.Entities.BankAccount UpdateRecipientBankAccount(Core.Entities.BankAccount recipientBankAccount, Amount amountToTransfer)
+        {
+            var recipientDebt = recipientBankAccount.Debt;
+            var amountToAdd = new Amount(amountToTransfer - recipientDebt);
+
+            if (amountToTransfer > recipientDebt)
+            {
+                recipientBankAccount.Debt.Subtract(recipientDebt);
+                recipientBankAccount.Balance.Add(amountToAdd);
+                recipientBankAccount.AllowedBalanceToUse.Add(amountToAdd);
+            }
+            else
+                recipientBankAccount.Debt.Subtract(amountToTransfer);
+
+            return recipientBankAccount;
+        }
+
+        private static Amount GetFees(Amount amountToTransfer)
+        {
+            const decimal feesRate = (decimal)0.0015;
+            return new Amount(amountToTransfer.Value * feesRate);
         }
 
 

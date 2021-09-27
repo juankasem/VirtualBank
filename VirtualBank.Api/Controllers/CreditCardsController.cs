@@ -123,7 +123,7 @@ namespace VirtualBank.Api.Controllers
         {
             try
             {
-               var apiResponse = await _creditCardsService.GetCreditCardByIdAsync(creditCardId, cancellationToken);
+                var apiResponse = await _creditCardsService.GetCreditCardByIdAsync(creditCardId, cancellationToken);
 
                 if (apiResponse.Success)
                     return Ok(apiResponse);
@@ -162,7 +162,7 @@ namespace VirtualBank.Api.Controllers
                 return NotFound(apiResponse);
             }
 
-            if (user.Id != customer?.Data?.UserId)
+            if (user.Id != customer?.Data?.Customer?.UserId)
             {
                 apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
                 return BadRequest(apiResponse);
@@ -213,7 +213,7 @@ namespace VirtualBank.Api.Controllers
                 return NotFound(apiResponse);
             }
 
-            if (user.Id != customer?.Data?.UserId)
+            if (user.Id != customer?.Data?.Customer?.UserId)
             {
                 apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
 

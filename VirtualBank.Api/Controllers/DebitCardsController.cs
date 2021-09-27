@@ -155,7 +155,7 @@ namespace VirtualBank.Api.Controllers
                 return NotFound(apiResponse);
             }
 
-            if (user.Id != customer?.Data?.UserId)
+            if (user.Id != customer?.Data?.Customer?.UserId)
             {
                 apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
 
@@ -205,7 +205,7 @@ namespace VirtualBank.Api.Controllers
                 return NotFound(apiResponse);
             }
 
-            if (user.Id != customer?.Data?.UserId)
+            if (user.Id != customer?.Data?.Customer?.UserId)
             {
                 apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete this operation"));
                 return BadRequest(apiResponse);

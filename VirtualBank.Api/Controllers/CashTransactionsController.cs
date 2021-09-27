@@ -110,7 +110,7 @@ namespace VirtualBank.Api.Controllers
                     return NotFound(apiResponse);
                 }
 
-                if (user.Id != customer?.Data?.UserId)
+                if (user.Id != customer?.Data?.Customer?.UserId)
                 {
                     apiResponse.AddError(ExceptionCreator.CreateForbiddenError(nameof(user), "user is not authorized to perform operation"));
                     return Forbid();
@@ -160,7 +160,7 @@ namespace VirtualBank.Api.Controllers
                     return NotFound(apiResponse);
                 }
 
-                if (user.Id != customer?.Data?.UserId)
+                if (user.Id != customer?.Data?.Customer?.UserId)
                 {
                     apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to perform operation"));
                     return BadRequest(apiResponse);
@@ -207,7 +207,7 @@ namespace VirtualBank.Api.Controllers
                     return NotFound(apiResponse);
                 }
 
-                if (user.Id != customer.Data?.UserId)
+                if (user.Id != customer.Data?.Customer?.UserId)
                 {
                     apiResponse.AddError(ExceptionCreator.CreateBadRequestError(nameof(user), "user is not authorized to complete transaction"));
                     return BadRequest(apiResponse);
