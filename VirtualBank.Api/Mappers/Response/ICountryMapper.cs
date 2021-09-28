@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System;
 using VirtualBank.Core.Models;
 using VirtualBank.Core.Models.Responses;
@@ -6,20 +7,21 @@ namespace VirtualBank.Api.Mappers.Response
 {
     public interface ICountryMapper
     {
-        Country MapToResponseModel(VirtualBank.Core.Entities.Country country);
+        Country MapToResponseModel(Core.Entities.Country country, ImmutableList<Country.City> cities = null);
 
-        Address.Country MapToAddressCountry(VirtualBank.Core.Entities.Country country);
+        Address.Country MapToAddressCountry(Core.Entities.Country country);
     }
 
     public class CountryMapper : ICountryMapper
     {
-        public Country MapToResponseModel(Core.Entities.Country country) =>
+        public Country MapToResponseModel(Core.Entities.Country country, ImmutableList<Country.City> cities = null) =>
         new(
             country.Id,
             country.Name,
             country.Code,
             CreateCreationInfo(country.CreatedBy, country.CreatedOn),
-            CreateModificationInfo(country.LastModifiedBy, country.LastModifiedOn)
+            CreateModificationInfo(country.LastModifiedBy, country.LastModifiedOn),
+            cities != null ? cities : ImmutableList<Country.City>.Empty
         );
 
         public Address.Country MapToAddressCountry(Core.Entities.Country country) =>

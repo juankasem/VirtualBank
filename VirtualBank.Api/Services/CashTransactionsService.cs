@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;

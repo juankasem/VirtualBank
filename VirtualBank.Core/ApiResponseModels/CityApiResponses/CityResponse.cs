@@ -1,21 +1,15 @@
 ﻿using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Core.ApiResponseModels.CityApiResponses
 {
     public class CityResponse
     {
-        public int Id { get; }
+        public City City { get; }
 
-        public int CountryId { get; }
-
-        public string Name { get; }
-
-
-        public CityResponse(int id, int countryId, string name)
+        public CityResponse(City city)
         {
-            Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
-            CountryId = Throw.ArgumentNullException.IfNull(countryId, nameof(countryId));
-            Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
+            City = Throw.ArgumentNullException.IfNull(city, nameof(city));
         }
     }
 }

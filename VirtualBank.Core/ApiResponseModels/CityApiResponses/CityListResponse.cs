@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Core.ApiResponseModels.CityApiResponses
 {
     public class CityListResponse
     {
-        public ImmutableList<CityResponse> Cities { get; }
+        public ImmutableList<City> Cities { get; }
 
         public int TotalCount { get; }
 
-
-        public CityListResponse(ImmutableList<CityResponse> cities, int totalCount)
+        public CityListResponse(ImmutableList<City> cities, int totalCount)
         {
-            Cities = cities.IsEmpty ? ImmutableList<CityResponse>.Empty : cities;
+            Cities = cities.IsEmpty ? ImmutableList<City>.Empty : cities;
             TotalCount = Throw.ArgumentOutOfRangeException.IfLessThan(totalCount, 0, nameof(totalCount));
         }
     }

@@ -4,8 +4,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.CityApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CityApiResponses;
@@ -18,13 +18,12 @@ namespace VirtualBank.Api.Services
     public class CitiesService : ICitiesService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
+        private readonly ICityMapper _cityMapper;
         public CitiesService(IUnitOfWork unitOfWork,
-                             IHttpContextAccessor httpContextAccessor)
+                             ICityMapper cityMapper)
         {
             _unitOfWork = unitOfWork;
-            _httpContextAccessor = httpContextAccessor;
+            _cityMapper = cityMapper;
         }
 
         /// <summary>
@@ -51,10 +50,10 @@ namespace VirtualBank.Api.Services
                 return responseModel;
 
 
-            var cityList = cities.OrderBy(c => c.Name).Select(city => CreateCityResponse(city)).ToImmutableList();
+            var cityList = cities.OrderBy(c => c.Name).Select(city => _cityMapper.MapToResponseModel(city)).ToImmutableList();
 
 
-            responseModel.Data = new CityListResponse(cityList, cityList.Count);
+            responseModel.Data = new(cityList, cityList.Count);
 
             return responseModel;
         }
@@ -79,7 +78,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateCityResponse(city);
+            responseModel.Data = new(_cityMapper.MapToResponseModel(city));
 
             return responseModel;
         }
@@ -112,24 +111,25 @@ namespace VirtualBank.Api.Services
                     {
                         city.CountryId = request.CountryId;
                         city.Name = request.Name;
-                        city.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
-                        city.LastModifiedOn = DateTime.UtcNow;
+                        city.LastModifiedBy = request.ModificationInfo.ModifiedBy;
+                        city.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
                         var updatedCity = await _unitOfWork.Cities.UpdateAsync(city);
 
-                        responseModel.Data = CreateCityResponse(updatedCity);
+                        responseModel.Data = new(_cityMapper.MapToResponseModel(updatedCity));
 
                         await _unitOfWork.SaveAsync();
                     }
                     else
                     {
                         responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(city), $"city of Id: { cityId} not found"));
-                        return responseModel;
                     }
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
             else
@@ -138,13 +138,15 @@ namespace VirtualBank.Api.Services
                 {
                     var createdCity = await _unitOfWork.Cities.AddAsync(CreateCity(request));
 
-                    responseModel.Data = CreateCityResponse(createdCity);
+                    responseModel.Data = new(_cityMapper.MapToResponseModel(createdCity));
 
                     await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
 
@@ -165,25 +167,14 @@ namespace VirtualBank.Api.Services
 
 
         #region private helper methods
-        private City CreateCity(CreateCityRequest request)
-        {
-            return new City()
-            {
-                CountryId = request.CountryId,
-                Name = request.Name,
-                CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
-            };
-        }
-
-        private static CityResponse CreateCityResponse(City city)
-        {
-            if (city != null)
-            {
-                return new CityResponse(city.Id, city.CountryId, city.Name);
-            }
-
-            return null;
-        }
+        private City CreateCity(CreateCityRequest request) =>
+           new()
+           {
+               CountryId = request.CountryId,
+               Name = request.Name,
+               CreatedBy = request.CreationInfo.CreatedBy,
+               CreatedOn = request.CreationInfo.CreatedOn
+           };
 
         #endregion
     }

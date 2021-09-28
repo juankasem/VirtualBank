@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.AddressApiRequests;
@@ -19,18 +18,13 @@ namespace VirtualBank.Api.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAddressMapper _addressMapper;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
 
         public AddressService(IUnitOfWork unitOfWork,
-                              IAddressMapper addressMapper,
-                              IHttpContextAccessor httpContextAccessor)
+                              IAddressMapper addressMapper)
 
         {
             _unitOfWork = unitOfWork;
             _addressMapper = addressMapper;
-            _httpContextAccessor = httpContextAccessor;
-
         }
 
         /// <summary>
@@ -123,8 +117,6 @@ namespace VirtualBank.Api.Services
                 else
                 {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(address), $"address id: {addressId} not found"));
-
-                    return responseModel;
                 }
             }
             else

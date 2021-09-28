@@ -3,14 +3,13 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
-using VirtualBank.Core.ApiResponseModels.CityApiResponses;
 using VirtualBank.Core.ApiResponseModels.CountryApiResponse;
-using VirtualBank.Core.Entities;
 using VirtualBank.Core.Interfaces;
+using VirtualBank.Core.Models.Responses;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
@@ -18,13 +17,17 @@ namespace VirtualBank.Api.Services
     public class CountriesService : ICountriesService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICountryMapper _countryMapper;
+        private readonly ICityMapper _cityMapper;
+
 
         public CountriesService(IUnitOfWork unitOfWork,
-                                IHttpContextAccessor httpContextAccessor)
+                                ICountryMapper countryMapper,
+                                ICityMapper cityMapper)
         {
             _unitOfWork = unitOfWork;
-            _httpContextAccessor = httpContextAccessor;
+            _countryMapper = countryMapper;
+            _cityMapper = cityMapper;
         }
 
         /// <summary>
@@ -43,20 +46,22 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            ImmutableList<CountryResponse> countryList;
+            ImmutableList<Country> countryList;
 
             if (includeCities)
                 countryList = countries.OrderBy(country => country.Name)
-                                       .Select(country => CreateCountryWithCitiesResponse(country).Result)
+                                       .Select(country => _countryMapper.MapToResponseModel(country,
+                                       _unitOfWork.Cities.GetByCountryIdAsync(country.Id).Result.OrderBy(c => c.Name).Select(city => ToCountryCity(city))
+                                       .ToImmutableList()))
                                        .ToImmutableList();
 
             else
                 countryList = countries.OrderBy(country => country.Name)
-                                       .Select(country => CreateCountryResponse(country))
+                                       .Select(country => _countryMapper.MapToResponseModel(country))
                                        .ToImmutableList();
 
 
-            responseModel.Data = new CountryListResponse(countryList, countryList.Count);
+            responseModel.Data = new(countryList, countryList.Count);
 
             return responseModel;
         }
@@ -73,7 +78,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<CountryResponse>();
 
-            Country country = null;
+            Core.Entities.Country country = null;
 
             if (includeCities)
                 country = await _unitOfWork.Countries.FindByIdWithCitiesAsync(countryId);
@@ -88,11 +93,17 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
+            //TODO: Retrieve list of country cities
             if (includeCities)
-                responseModel.Data = await CreateCountryWithCitiesResponse(country);
-
+            {
+                var cities =
+                responseModel.Data = new(_countryMapper.MapToResponseModel(country,
+                _unitOfWork.Cities.GetByCountryIdAsync(country.Id).Result.OrderBy(c => c.Name)
+                                                                         .Select(city => ToCountryCity(city))
+                                                                         .ToImmutableList()));
+            }
             else
-                responseModel.Data = CreateCountryResponse(country);
+                responseModel.Data = new(_countryMapper.MapToResponseModel(country));
 
             return responseModel;
         }
@@ -123,27 +134,32 @@ namespace VirtualBank.Api.Services
                 {
                     country.Name = request.Name;
                     country.Code = request.Code;
-                    country.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
-                    country.LastModifiedOn = DateTime.UtcNow;
+                    country.LastModifiedBy = request.ModificationInfo.ModifiedBy;
+                    country.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
-                    var updatedCountry = await _unitOfWork.Countries.UpdateAsync(country);
-                    responseModel.Data = CreateCountryResponse(updatedCountry);
+                    try
+                    {
+                        var updatedCountry = await _unitOfWork.Countries.UpdateAsync(country);
+                        responseModel.Data = new(_countryMapper.MapToResponseModel(updatedCountry));
 
-                    await _unitOfWork.SaveAsync();
+                        await _unitOfWork.SaveAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+                    }
                 }
                 else
-                {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(country), $"country of id {countryId}: not found"));
-                    return responseModel;
-                }
+
             }
             else
             {
                 try
                 {
-                    var addedCountry = await _unitOfWork.Countries.AddAsync(CreateCountry(request));
+                    var createdCountry = await _unitOfWork.Countries.AddAsync(CreateCountry(request));
 
-                    responseModel.Data = CreateCountryResponse(addedCountry);
+                    responseModel.Data = new(_countryMapper.MapToResponseModel(createdCountry));
 
                     await _unitOfWork.SaveAsync();
                 }
@@ -151,6 +167,7 @@ namespace VirtualBank.Api.Services
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
+                    return responseModel;
                 }
             }
 
@@ -159,54 +176,23 @@ namespace VirtualBank.Api.Services
 
 
         #region private helper methods
-        private Country CreateCountry(CreateCountryRequest request)
+        private Core.Entities.Country CreateCountry(CreateCountryRequest request)
         {
             if (request != null)
             {
-                return new Country()
+                return new()
                 {
                     Name = request.Name,
                     Code = request.Code,
-                    CreatedBy = _httpContextAccessor.HttpContext.User.Identity.Name
+                    CreatedBy = request.CreationInfo.CreatedBy,
                 };
             }
 
             return null;
         }
 
-        private static CountryResponse CreateCountryResponse(Country country)
-        {
-            if (country != null)
-            {
-                return new CountryResponse(country.Id, country.Name, country.Code, null);
-            }
-
-            return null;
-        }
-
-        private async Task<CountryResponse> CreateCountryWithCitiesResponse(Country country)
-        {
-            if (country != null)
-            {
-                var cities = await _unitOfWork.Cities.GetByCountryIdAsync(country.Id);
-
-                var cityList = cities.OrderBy(c => c.Name).Select(c => CreateCityResponse(c)).ToImmutableList();
-
-                return new CountryResponse(country.Id, country.Name, country.Code, cityList);
-            }
-
-            return null;
-        }
-
-        private static CityResponse CreateCityResponse(City city)
-        {
-            if (city != null)
-            {
-                return new CityResponse(city.Id, city.CountryId, city.Name);
-            }
-
-            return null;
-        }
+        private static Country.City ToCountryCity(Core.Entities.City city) =>
+         new(city.Id, city.Name);
 
         #endregion
     }

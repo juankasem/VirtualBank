@@ -151,6 +151,7 @@ namespace VirtualBank.Api.Services
             if (await BranchExists(request.Address.CountryId, request.Address.CityId, request.Name))
             {
                 responseModel.AddError(ExceptionCreator.CreateBadRequestError("branch", $"branch name: {request.Name} already exists"));
+
                 return responseModel;
             }
 
@@ -166,15 +167,23 @@ namespace VirtualBank.Api.Services
                     branch.LastModifiedBy = request.ModificationInfo.ModifiedBy;
                     branch.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
-                    var updatedBranch = await _unitOfWork.Branches.UpdateAsync(branch);
-                    await _unitOfWork.SaveAsync();
+                    try
+                    {
+                        var updatedBranch = await _unitOfWork.Branches.UpdateAsync(branch);
+                        await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_branchMapper.MapToResponseModel(updatedBranch));
+                        responseModel.Data = new(_branchMapper.MapToResponseModel(updatedBranch));
+                    }
+                    catch (Exception ex)
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                        return responseModel;
+                    }
                 }
                 else
                 {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch), $"branch of Id: {branchId} not found"));
-                    return responseModel;
                 }
             }
             else
@@ -190,6 +199,8 @@ namespace VirtualBank.Api.Services
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
 
