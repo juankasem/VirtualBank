@@ -98,6 +98,7 @@ namespace VirtualBank.Api.Services
             if (await _unitOfWork.Cities.CityNameExists(request.CountryId, request.Name))
             {
                 responseModel.AddError(ExceptionCreator.CreateBadRequestError("city", "city name does already exist"));
+
                 return responseModel;
             }
 
@@ -105,32 +106,29 @@ namespace VirtualBank.Api.Services
             {
                 var city = await _unitOfWork.Cities.FindByIdAsync(cityId);
 
-                try
+                if (city != null)
                 {
-                    if (city != null)
-                    {
-                        city.CountryId = request.CountryId;
-                        city.Name = request.Name;
-                        city.LastModifiedBy = request.ModificationInfo.ModifiedBy;
-                        city.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
+                    city.CountryId = request.CountryId;
+                    city.Name = request.Name;
+                    city.LastModifiedBy = request.ModificationInfo.ModifiedBy;
+                    city.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
+                    try
+                    {
                         var updatedCity = await _unitOfWork.Cities.UpdateAsync(city);
+                        await _unitOfWork.SaveAsync();
 
                         responseModel.Data = new(_cityMapper.MapToResponseModel(updatedCity));
-
-                        await _unitOfWork.SaveAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(city), $"city of Id: { cityId} not found"));
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                        return responseModel;
                     }
                 }
-                catch (Exception ex)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-
-                    return responseModel;
-                }
+                else
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(city), $"city of Id: {cityId} not found"));
             }
             else
             {

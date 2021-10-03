@@ -164,8 +164,8 @@ namespace VirtualBank.Api.Services
                     branch.Name = request.Name;
                     branch.Code = request.Code;
                     branch.Address = request.Address;
-                    branch.LastModifiedBy = request.ModificationInfo.ModifiedBy;
-                    branch.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
+                    branch.LastModifiedBy = request.CreationInfo.CreatedBy;
+                    branch.LastModifiedOn = request.CreationInfo.CreatedOn;
 
                     try
                     {
@@ -267,8 +267,8 @@ namespace VirtualBank.Api.Services
                     Address = CreateAddress(request),
                     CreatedBy = request.CreationInfo.CreatedBy,
                     CreatedOn = request.CreationInfo.CreatedOn,
-                    LastModifiedBy = request.ModificationInfo.ModifiedBy,
-                    LastModifiedOn = request.ModificationInfo.LastModifiedOn
+                    LastModifiedBy = request.CreationInfo.CreatedBy,
+                    LastModifiedOn = request.CreationInfo.CreatedOn
                 };
             }
 
@@ -281,15 +281,16 @@ namespace VirtualBank.Api.Services
             {
                 var address = request.Address;
 
-                return new Address()
-                {
-                    Name = address.Name,
-                    DistrictId = address.DistrictId,
-                    CityId = address.CityId,
-                    CountryId = address.CountryId,
-                    Street = address?.Street,
-                    PostalCode = address?.PostalCode
-                };
+                return new(address.Name,
+                            address.DistrictId,
+                            address.CityId,
+                            address.CountryId,
+                            address.Street != null ? address.Street : null,
+                            address.PostalCode != null ? address.PostalCode : null,
+                            request.CreationInfo.CreatedBy,
+                            request.CreationInfo.CreatedOn,
+                            request.CreationInfo.CreatedBy,
+                            request.CreationInfo.CreatedOn);
             }
 
             return null;

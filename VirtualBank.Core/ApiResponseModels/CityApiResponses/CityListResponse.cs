@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Models.Responses;
+using VirtualBank.Core.Domain.Models;
 
 namespace VirtualBank.Core.ApiResponseModels.CityApiResponses
 {
@@ -9,6 +9,7 @@ namespace VirtualBank.Core.ApiResponseModels.CityApiResponses
         public ImmutableList<City> Cities { get; }
 
         public int TotalCount { get; }
+
 
         public CityListResponse(ImmutableList<City> cities, int totalCount)
         {

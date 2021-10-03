@@ -28,15 +28,19 @@ namespace VirtualBank.Api.Validators
                     .WithMessage("Account type is required");
 
 
-            RuleFor(x => x.CustomerId)
+            RuleFor(x => x.Owner)
                     .NotNull()
-                    .GreaterThan(0)
                     .WithMessage("Customer is required");
 
 
-            RuleFor(x => x.CurrencyId)
+            RuleFor(x => x.Branch)
                     .NotNull()
-                    .GreaterThan(0)
+                    .WithMessage("Branch is required");
+
+
+
+            RuleFor(x => x.Currency)
+                    .NotNull()
                     .WithMessage("Currency is required");
 
 

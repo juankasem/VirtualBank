@@ -7,22 +7,26 @@ namespace VirtualBank.Api.Mappers.Response
 {
     public interface ICashTransactionsMapper
     {
-        CashTransaction MapToResponseModel(Core.Entities.CashTransaction cashTransaction, string iban, string sender, string recipient, Money fees = null);
+        CashTransaction MapToResponseModel(Core.Domain.Models.CashTransaction cashTransaction, string iban, string sender, string recipient, Money fees = null);
 
-        LatestTransfer MapToLatestTransferResponseModel(string toAccount, string recipient, Amount amount, DateTime createdOn);
+        LatestTransfer MapToLatestTransferResponseModel(Core.Domain.Models.CashTransaction cashTransaction, string recipient);
     }
 
     public class CashTransactionsMapper : ICashTransactionsMapper
     {
-        public CashTransaction MapToResponseModel(Core.Entities.CashTransaction cashTransaction, string iban, string sender, string recipient, Money fees = null) =>
+        public CashTransaction MapToResponseModel(Core.Domain.Models.CashTransaction cashTransaction,
+                                                  string iban, string sender,
+                                                  string recipient, Money fees = null) =>
             new(cashTransaction.Id,
+                cashTransaction.ReferenceNo,
+                cashTransaction.InitiatedBy,
                 cashTransaction.From,
                 cashTransaction.To,
                 sender,
                 recipient,
                 cashTransaction.From != iban
-                    ? CreateDebitedFunds(cashTransaction.Amount, cashTransaction.Currency)
-                    : CreateDebitedFunds(-cashTransaction.Amount, cashTransaction.Currency),
+                    ? CreateDebitedFunds(cashTransaction.DebitedFunds.Amount, cashTransaction.DebitedFunds.Currency)
+                    : CreateDebitedFunds(new Amount(-cashTransaction.DebitedFunds.Amount), cashTransaction.DebitedFunds.Currency),
                 fees ?? CreateMoney(new Amount(0), string.Empty),
                 cashTransaction.PaymentType,
                 cashTransaction.From != iban ? $"From: {sender}, Account No: {cashTransaction.From} "
@@ -30,21 +34,32 @@ namespace VirtualBank.Api.Mappers.Response
                     ? $"{cashTransaction.InitiatedBy} purchase: card No: {cashTransaction.DebitCardNo}, {recipient}"
                     : $"{cashTransaction.InitiatedBy} purchase: card No: {cashTransaction.CreditCardNo}, {recipient}"
                 : $"{cashTransaction.To}--{recipient}, {cashTransaction.Description}",
-                cashTransaction.InitiatedBy,
                 cashTransaction.From != iban
-                    ? CreateMoney(new Amount(cashTransaction.RecipientRemainingBalance), cashTransaction.Currency)
-                    : CreateMoney(new Amount(cashTransaction.SenderRemainingBalance), cashTransaction.Currency),
-                CreateCreationInfo(cashTransaction.CreatedBy, cashTransaction.CreatedOn));
+                    ? cashTransaction.RecipientRemainingBalance
+                    : cashTransaction.SenderRemainingBalance,
+                cashTransaction.TransactionDate,
+                cashTransaction.CreationInfo,
+                cashTransaction.ModificationInfo,
+                cashTransaction.CreditCardNo != null ? cashTransaction.CreditCardNo : null,
+                cashTransaction.DebitCardNo != null ? cashTransaction.DebitCardNo : null
+                );
 
 
-        public LatestTransfer MapToLatestTransferResponseModel(string toAccount, string recipient,
-                                                               Amount amount, DateTime createdOn) =>
-            new(toAccount, recipient, amount, createdOn);
+        public LatestTransfer MapToLatestTransferResponseModel(Core.Domain.Models.CashTransaction cashTransaction, string recipient) =>
+            new(cashTransaction.To,
+                recipient,
+                new Amount(cashTransaction.DebitedFunds.Amount),
+                cashTransaction.TransactionDate,
+                cashTransaction.CreationInfo,
+                cashTransaction.ModificationInfo);
 
-        private static Money CreateDebitedFunds(decimal amount, string currency) => new(new Amount(amount), currency);
+        private static Money CreateDebitedFunds(Amount amount, string currency) => new(amount, currency);
 
         private static Money CreateMoney(Amount amount, string currency) => new(amount, currency);
 
         private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
+
+        private static ModificationInfo CreateModificationInfo(string modifiedBy, DateTime modifiedOn) => new(modifiedBy, modifiedOn);
+
     }
 }

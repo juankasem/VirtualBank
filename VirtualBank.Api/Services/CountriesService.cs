@@ -9,7 +9,7 @@ using VirtualBank.Core.ApiRequestModels.CountryApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.CountryApiResponse;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Core.Models.Responses;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services

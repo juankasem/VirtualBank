@@ -1,13 +1,20 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.Entities
 {
-#nullable enable
     public class CashTransaction : BaseClass
     {
+        /// <summary>
+        /// unique reference number
+        /// </summary>
+        [Required]
+        public string ReferenceNo { get; set; }
+
         /// <summary>
         /// transaction type
         /// </summary>
@@ -21,19 +28,16 @@ namespace VirtualBank.Core.Entities
         public BankAssetType InitiatedBy { get; set; }
 
         /// <summary>
-        /// unique reference number
-        /// </summary>
-        public string ReferenceNo { get; set; }
-
-        /// <summary>
         /// IBAN of bank account of the sender
         /// </summary>
+        [Required]
         [MaxLength(150)]
         public string From { get; set; }
 
         /// <summary>
         /// IBAN of bank account of the recipient
         /// </summary>
+        [Required]
         [MaxLength(150)]
         public string To { get; set; }
 
@@ -41,7 +45,7 @@ namespace VirtualBank.Core.Entities
         /// amount of credited funds
         /// </summary>
         [Required]
-        [Column(TypeName="decimal(8,2)")]
+        [Column(TypeName = "decimal(8,2)")]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -92,16 +96,65 @@ namespace VirtualBank.Core.Entities
         /// <summary>
         /// debit card number
         /// </summary>
+#nullable enable
         public string? CreditCardNo { get; set; }
-        
+
         /// <summary>
         /// debit card number
         /// </summary>
+#nullable enable
         public string? DebitCardNo { get; set; }
+
 
         public CashTransaction()
         {
             ReferenceNo = $"{Guid.NewGuid().ToString().Replace("-", "").Substring(1, 27)}";
         }
+
+        public CashTransaction(string referenceNo, CashTransactionType type, BankAssetType initiatedBy, string from, string to,
+                               decimal amount, string currency, decimal senderRemainingBalance, decimal recipientRemainingBalance,
+                               decimal fees, string description, PaymentType paymentType, DateTime transactionDate,
+                               string createdBy, DateTime createdOn, string lastModifiedBy, DateTime lastModifiedOn,
+                               string? creditCardNo, string? debitCardNo)
+        {
+            ReferenceNo = referenceNo;
+            Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
+            InitiatedBy = Throw.ArgumentNullException.IfNull(initiatedBy, nameof(initiatedBy));
+            From = Throw.ArgumentNullException.IfNull(from, nameof(from));
+            To = Throw.ArgumentNullException.IfNull(to, nameof(to));
+            Amount = Throw.ArgumentOutOfRangeException.IfLessThan(amount, 0, nameof(amount));
+            Currency = Throw.ArgumentNullException.IfNull(currency, nameof(currency));
+            SenderRemainingBalance = Throw.ArgumentOutOfRangeException.IfLessThan(senderRemainingBalance, 0, nameof(senderRemainingBalance));
+            RecipientRemainingBalance = Throw.ArgumentOutOfRangeException.IfLessThan(recipientRemainingBalance, 0, nameof(recipientRemainingBalance));
+            Fees = Throw.ArgumentOutOfRangeException.IfLessThan(fees, 0, nameof(fees));
+            Description = Throw.ArgumentNullException.IfNull(description, nameof(description));
+            PaymentType = Throw.ArgumentNullException.IfNull(paymentType, nameof(paymentType));
+            TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));
+            CreatedBy = Throw.ArgumentNullException.IfNull(createdBy, nameof(createdBy));
+            CreatedOn = Throw.ArgumentNullException.IfNull(createdOn, nameof(createdOn));
+            LastModifiedBy = Throw.ArgumentNullException.IfNull(lastModifiedBy, nameof(lastModifiedBy));
+            LastModifiedOn = Throw.ArgumentNullException.IfNull(lastModifiedOn, nameof(lastModifiedOn));
+            CreditCardNo = creditCardNo;
+            DebitCardNo = debitCardNo;
+        }
+
+        public Core.Domain.Models.CashTransaction ToDomainModel() =>
+             new Core.Domain.Models.CashTransaction(Id,
+                                                    ReferenceNo,
+                                                    Type,
+                                                    InitiatedBy,
+                                                    From,
+                                                    To,
+                                                    new Money(new Amount(Amount), Currency),
+                                                    new Money(new Amount(Fees), Currency),
+                                                    PaymentType,
+                                                    Description,
+                                                    new Money(new Amount(SenderRemainingBalance), Currency),
+                                                    new Money(new Amount(RecipientRemainingBalance), Currency),
+                                                    TransactionDate,
+                                                    new CreationInfo(CreatedBy, CreatedOn),
+                                                    new ModificationInfo(LastModifiedBy, LastModifiedOn),
+                                                    CreditCardNo ?? null,
+                                                    DebitCardNo ?? null);
     }
 }

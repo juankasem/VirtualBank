@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Data.Repositories
@@ -20,8 +20,10 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<IEnumerable<CashTransaction>> GetAllAsync()
         {
-            return await _dbContext.CashTransactions.Where(c => c.Disabled == false)
-                                                    .AsNoTracking().ToListAsync();
+            return await _dbContext.CashTransactions.Where(c => !c.Disabled)
+                                                    .Select(c => c.ToDomainModel())
+                                                    .AsNoTracking()
+                                                    .ToListAsync();
         }
 
 
@@ -30,48 +32,53 @@ namespace VirtualBank.Data.Repositories
             return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
                                                                 && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays
                                                                 && !c.Disabled)
-                                                    .AsNoTracking().ToListAsync();
+                                                    .Select(c => c.ToDomainModel())
+                                                    .AsNoTracking()
+                                                    .ToListAsync();
         }
 
 
-        public async Task<IEnumerable<CashTransaction>> GetLastByIBANAsync(string iban)
-        {
-            return await _dbContext.CashTransactions.Where(c => c.From == iban && !c.Disabled)
-                                                    .AsNoTracking().ToListAsync();
-        }
+        public async Task<IEnumerable<CashTransaction>> GetLastByIBANAsync(string iban) =>
+               await _dbContext.CashTransactions.Where(c => c.From == iban && !c.Disabled)
+                                                .Select(c => c.ToDomainModel())
+                                                .AsNoTracking()
+                                                .ToListAsync();
 
 
-        public async Task<IEnumerable<CashTransaction>> GetDepositsByIBANAsync(string iban)
-        {
-            return await _dbContext.CashTransactions.Where(c => c.To == iban && !c.Disabled)
-                                                    .AsNoTracking().ToListAsync();
-        }
+
+        public async Task<IEnumerable<CashTransaction>> GetDepositsByIBANAsync(string iban) =>
+               await _dbContext.CashTransactions.Where(c => c.To == iban && !c.Disabled)
+                                                .Select(c => c.ToDomainModel())
+                                                .AsNoTracking()
+                                                .ToListAsync();
 
 
-        public async Task<CashTransaction> GetLastAsync(string iban)
-        {
-            return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
-                                                           && !c.Disabled)
-                                                    .OrderByDescending(c => c.CreatedOn)
-                                                    .FirstOrDefaultAsync();
-        }
+        public async Task<CashTransaction> GetLastAsync(string iban) =>
+               await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban) && !c.Disabled)
+                                                .Select(c => c.ToDomainModel())
+                                                .OrderByDescending(c => c.ModificationInfo.LastModifiedOn)
+                                                .FirstOrDefaultAsync();
 
 
-        public async Task<CashTransaction> FindByIdAsync(int id)
-        {
-            return await _dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
-        }
+
+        public async Task<CashTransaction> FindByIdAsync(int id) =>
+               await _dbContext.CashTransactions.Where(c => c.Id == id && !c.Disabled)
+                                                .Select(c => c.ToDomainModel())
+                                                .FirstOrDefaultAsync();
 
 
-        public async Task<CashTransaction> FindByIBANAsync(string iban)
-        {
-            return await _dbContext.CashTransactions.FirstOrDefaultAsync(c => (c.From == iban || c.To == iban) && !c.Disabled);
-        }
+
+        public async Task<CashTransaction> FindByIBANAsync(string iban) =>
+               await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban) && !c.Disabled)
+                                                .Select(c => c.ToDomainModel())
+                                                .FirstOrDefaultAsync();
+
 
 
         public async Task<CashTransaction> AddAsync(CashTransaction transaction)
         {
-            await _dbContext.CashTransactions.AddAsync(transaction);
+            await _dbContext.CashTransactions.AddAsync(transaction.ToEntity(transaction.SenderRemainingBalance.Amount.Value,
+                                                                            transaction.RecipientRemainingBalance.Amount.Value));
 
             return transaction;
         }
@@ -86,7 +93,10 @@ namespace VirtualBank.Data.Repositories
                 _dbContext.Entry(existingCashTransaction).State = EntityState.Detached;
             }
 
-            _dbContext.Entry(transaction).State = EntityState.Modified;
+            var entity = transaction.ToEntity(transaction.SenderRemainingBalance.Amount.Value,
+                                              transaction.RecipientRemainingBalance.Amount.Value);
+
+            _dbContext.Entry(entity).State = EntityState.Modified;
 
             return transaction;
         }

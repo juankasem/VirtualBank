@@ -33,7 +33,6 @@ namespace VirtualBank.Core.ApiResponseModels.CustomerApiResponses
             Gender = Throw.ArgumentNullException.IfNull(gender, nameof(gender));
             BirthDate = Throw.ArgumentNullException.IfNull(birthDate, nameof(birthDate));
             Address = Throw.ArgumentNullException.IfNull(address, nameof(address));
-
         }
     }
 }

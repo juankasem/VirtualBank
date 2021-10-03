@@ -1,8 +1,9 @@
 using System;
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.Models.Responses
+namespace VirtualBank.Core.Domain.Models
 {
     public class Customer
     {
@@ -23,6 +24,7 @@ namespace VirtualBank.Core.Models.Responses
         public CreationInfo CreationInfo { get; }
 
         public ModificationInfo ModificationInfo { get; }
+
 
         public Customer(int id, string fullName, string nationality, Gender gender,
                         DateTime birthDate, string userId, Address address,

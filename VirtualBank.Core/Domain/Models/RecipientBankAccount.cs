@@ -1,7 +1,8 @@
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.Models.Responses
+namespace VirtualBank.Core.Domain.Models
 {
     public class RecipientBankAccount
     {

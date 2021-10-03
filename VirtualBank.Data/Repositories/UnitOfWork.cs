@@ -56,20 +56,11 @@ namespace VirtualBank.Data.Repositories
             UtilityPayments ??= new UtilityPaymentRepository(_dbContext);
         }
 
-        public IDbContextTransaction CreateTransaction()
-        {
-            return _dbContext.Database.BeginTransaction();
-        }
+        public IDbContextTransaction CreateTransaction() => _dbContext.Database.BeginTransaction();
 
-        public async Task<IDbContextTransaction> CreateTransactionAsync()
-        {
-            return await _dbContext.Database.BeginTransactionAsync();
-        }
+        public async Task<IDbContextTransaction> CreateTransactionAsync() => await _dbContext.Database.BeginTransactionAsync();
 
-        public async Task<int> SaveAsync()
-        {
-            return await _dbContext.SaveChangesAsync();
-        }
+        public async Task<int> SaveAsync() => await _dbContext.SaveChangesAsync();
 
 
         public async Task<int> CompleteTransactionAsync()
@@ -91,9 +82,6 @@ namespace VirtualBank.Data.Repositories
             }
         }
 
-        public async void Dispose()
-        {
-            await _dbContext.DisposeAsync();
-        }
+        public async void Dispose() => await _dbContext.DisposeAsync();
     }
 }

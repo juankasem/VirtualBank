@@ -1,22 +1,15 @@
-﻿using System;
-using VirtualBank.Core.ArgumentChecks;
+﻿using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Domain.Models;
 
 namespace VirtualBank.Core.ApiResponseModels.DistrictApiResponses
 {
     public class DistrictResponse
     {
-        public int Id { get; set; }
+        public District District { get; }
 
-        public int CityId { get; set; }
-
-        public string Name { get; }
-
-        public DistrictResponse(int id, int cityId, string name)
+        public DistrictResponse(District district)
         {
-            Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
-            CityId = Throw.ArgumentNullException.IfNull(cityId, nameof(cityId));
-            Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
+            District = Throw.ArgumentNullException.IfNull(district, nameof(district));
         }
-
     }
 }

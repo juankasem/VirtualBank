@@ -54,6 +54,7 @@ namespace VirtualBank.Data.Repositories
             {
                 _dbContext.Entry(existingCity).State = EntityState.Detached;
             }
+
             _dbContext.Entry(city).State = EntityState.Modified;
 
             return city;
@@ -76,15 +77,8 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<bool> CityExists(int cityId)
-        {
-            return await _dbContext.Cities.AnyAsync(c => c.Id == cityId);
-        }
+        public async Task<bool> CityExists(int cityId) => await _dbContext.Cities.AnyAsync(c => c.Id == cityId);
 
-
-        public async Task<bool> CityNameExists(int countryId, string cityName)
-        {
-            return await _dbContext.Cities.AnyAsync(c => c.CountryId == countryId && c.Name == cityName);
-        }
+        public async Task<bool> CityNameExists(int countryId, string cityName) => await _dbContext.Cities.AnyAsync(c => c.CountryId == countryId && c.Name == cityName);
     }
 }

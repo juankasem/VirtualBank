@@ -1,24 +1,26 @@
 using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.Models.Responses
+namespace VirtualBank.Core.Domain.Models
 {
-    public class District
+    public class City
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public City City { get; set; }
+        public Country Country { get; }
 
         public CreationInfo CreationInfo { get; }
 
         public ModificationInfo ModificationInfo { get; }
 
-        public District(int id, string name, City city, CreationInfo creationInfo, ModificationInfo modificationInfo)
+
+        public City(int id, string name, Country country, CreationInfo creationInfo, ModificationInfo modificationInfo)
         {
             Id = id;
             Name = Throw.ArgumentException.IfDefault(name, nameof(name));
-            City = Throw.ArgumentException.IfDefault(city, nameof(city));
+            Country = Throw.ArgumentException.IfDefault(country, nameof(country));
             CreationInfo = Throw.ArgumentException.IfDefault(creationInfo, nameof(creationInfo));
             ModificationInfo = Throw.ArgumentException.IfDefault(modificationInfo, nameof(modificationInfo));
         }

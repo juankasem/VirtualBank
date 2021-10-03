@@ -108,37 +108,40 @@ namespace VirtualBank.Api.Services
                     address.LastModifiedBy = request.ModificationInfo.ModifiedBy;
                     address.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
-                    var updatedAddress = await _unitOfWork.Addresses.UpdateAsync(address);
+                    try
+                    {
+                        var updatedAddress = await _unitOfWork.Addresses.UpdateAsync(address);
+                        await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_addressMapper.MapToResponseModel(updatedAddress));
+                        responseModel.Data = new(_addressMapper.MapToResponseModel(updatedAddress));
+                    }
+                    catch (Exception ex)
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
-                    await _unitOfWork.SaveAsync();
+                        return responseModel;
+                    }
                 }
                 else
-                {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(address), $"address id: {addressId} not found"));
-                }
             }
             else
             {
                 if (await AddressExistsAsync(request.CountryId, request.CityId, request.DistrictId, request.Street, request.Name))
-                {
                     responseModel.AddError(ExceptionCreator.CreateBadRequestError("address", "naddress name does already exist"));
-
-                    return responseModel;
-                }
 
                 try
                 {
                     var createdAddress = await _unitOfWork.Addresses.AddAsync(CreateAddress(request));
+                    await _unitOfWork.SaveAsync();
 
                     responseModel.Data = new(_addressMapper.MapToResponseModel(createdAddress));
-
-                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
 
@@ -193,27 +196,18 @@ namespace VirtualBank.Api.Services
 
 
         #region private helper methods
-        private Address CreateAddress(CreateAddressRequest request)
-        {
-            if (request != null)
-            {
-                return new Address()
-                {
-                    Name = request.Name,
-                    DistrictId = request.DistrictId,
-                    CityId = request.CityId,
-                    CountryId = request.CountryId,
-                    Street = request.Street,
-                    PostalCode = request.PostalCode,
-                    CreatedBy = request.CreationInfo.CreatedBy,
-                    CreatedOn = request.CreationInfo.CreatedOn,
-                    LastModifiedBy = request.ModificationInfo.ModifiedBy,
-                    LastModifiedOn = request.ModificationInfo.LastModifiedOn
-                };
-            }
-
-            return null;
-        }
+        private Address CreateAddress(CreateAddressRequest request) =>
+        new(request.Name,
+           request.DistrictId,
+           request.CityId,
+           request.CountryId,
+           request.Street,
+           request.PostalCode,
+           request.CreationInfo.CreatedBy,
+           request.CreationInfo.CreatedOn,
+           request.ModificationInfo.ModifiedBy,
+           request.ModificationInfo.LastModifiedOn
+           );
 
         #endregion
     }

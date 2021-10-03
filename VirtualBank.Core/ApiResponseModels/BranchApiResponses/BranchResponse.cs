@@ -1,5 +1,5 @@
 ﻿using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Models.Responses;
+using VirtualBank.Core.Domain.Models;
 
 namespace VirtualBank.Core.ApiResponseModels.BranchApiResponses
 {

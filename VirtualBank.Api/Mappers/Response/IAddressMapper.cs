@@ -1,6 +1,6 @@
 using System;
 using VirtualBank.Core.Models;
-using VirtualBank.Core.Models.Responses;
+using VirtualBank.Core.Domain.Models;
 
 namespace VirtualBank.Api.Mappers.Response
 {

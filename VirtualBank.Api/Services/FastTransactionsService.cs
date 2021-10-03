@@ -143,7 +143,6 @@ namespace VirtualBank.Api.Services
                         await _unitOfWork.SaveAsync();
 
                         responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(updatedFastTransaction));
-
                     }
                     catch (Exception ex)
                     {
@@ -153,9 +152,7 @@ namespace VirtualBank.Api.Services
                     }
                 }
                 else
-                {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(fastTransaction)));
-                }
             }
             else
             {

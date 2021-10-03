@@ -49,11 +49,11 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var bankAccountList = bankAccounts.OrderBy(b => b.CreatedOn)
+            var bankAccountList = bankAccounts.OrderBy(b => b.CreationInfo.CreatedOn)
                                               .Select(bankAccount => _bankAccountMapper.MapToResponseModel(bankAccount,
-                                                                                               CreateBankAccountOwner(bankAccount),
-                                                                                              _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN).Result.CreatedOn))
-                                                                                              .ToImmutableList();
+                                                                                       _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN)
+                                                                                       .Result.CreationInfo.CreatedOn))
+                                                                                       .ToImmutableList();
 
             responseModel.Data = new(bankAccountList, bankAccountList.Count);
 
@@ -79,10 +79,9 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, accountOwner, lastTransaction.CreatedOn));
+            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, lastTransaction.CreationInfo.CreatedOn));
 
             return responseModel;
         }
@@ -107,10 +106,9 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, accountOwner, lastTransaction.CreatedOn));
+            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, lastTransaction.CreationInfo.CreatedOn));
 
             return responseModel;
         }
@@ -135,10 +133,9 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var accountOwner = CreateBankAccountOwner(bankAccount);
             var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
 
-            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, accountOwner, lastTransaction.CreatedOn));
+            responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, lastTransaction.CreationInfo.CreatedOn));
 
             return responseModel;
         }
@@ -163,16 +160,15 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var accountOwner = CreateBankAccountOwner(bankAccount);
             var recipientName = request.RecipientName;
 
-            if (accountOwner != recipientName)
+            if (bankAccount.Owner.FullName != recipientName)
             {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientName), $"Recipient name: {recipientName} not found"));
                 return responseModel;
             }
 
-            responseModel.Data = new(_bankAccountMapper.MapToRecipientBankAccount(bankAccount, accountOwner));
+            responseModel.Data = new(_bankAccountMapper.MapToRecipientBankAccount(bankAccount));
 
             return responseModel;
         }
@@ -196,23 +192,32 @@ namespace VirtualBank.Api.Services
 
                 if (bankaccount != null)
                 {
-                    bankaccount.IBAN = request.IBAN;
-                    bankaccount.CurrencyId = request.CurrencyId;
-                    bankaccount.Balance = request.Balance;
-                    bankaccount.Type = request.Type;
-                    bankaccount.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
-                    bankaccount.LastModifiedOn = DateTime.UtcNow;
+                    try
+                    {
+                        bankaccount.AccountNo = request.AccountNo;
+                        bankaccount.IBAN = request.IBAN;
+                        bankaccount.Owner = MapToBankAccountOwner(request.Owner.Id, request.Owner.FullName);
+                        bankaccount.AccountBranch = MapToBankAccountBranch(request.Branch.Id, request.Branch.Code, request.Branch.Name, request.Branch.Address.AddressCity.Name);
+                        bankaccount.AccountCurrency = MapToBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol);
+                        bankaccount.Balance = request.Balance;
+                        bankaccount.Type = request.Type;
+                        bankaccount.ModificationInfo = CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
 
-                    var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
-                    await _unitOfWork.SaveAsync();
+                        var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
+                        await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(updatedBankAccount, CreateBankAccountOwner(updatedBankAccount)));
+                        responseModel.Data = new(_bankAccountMapper.MapToResponseModel(updatedBankAccount, updatedBankAccount.LastTransactionDate));
+                    }
+                    catch (Exception ex)
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                        return responseModel;
+                    }
                 }
                 else
-                {
                     responseModel.AddError(ExceptionCreator.CreateNotFoundError("bankAccount", $"bank account not found"));
-                    return responseModel;
-                }
+
             }
             else
             {
@@ -221,11 +226,13 @@ namespace VirtualBank.Api.Services
                     var createdBankAccount = await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
                     await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(createdBankAccount, CreateBankAccountOwner(createdBankAccount)));
+                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(createdBankAccount));
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
 
@@ -308,7 +315,7 @@ namespace VirtualBank.Api.Services
                     decimal profit = 0;
                     double interestRate = 0.00;
 
-                    switch (bankAccount.Currency.Code)
+                    switch (bankAccount.AccountCurrency.Code)
                     {
                         case "TL":
                             try
@@ -378,8 +385,8 @@ namespace VirtualBank.Api.Services
 
                     }
 
-                    profit = deposit.Amount * (decimal)interestRate;
-                    bankAccount.Balance.Add(new Amount(deposit.Amount + profit));
+                    profit = deposit.DebitedFunds.Amount * (decimal)interestRate;
+                    bankAccount.Balance.Add(new Amount(deposit.DebitedFunds.Amount + profit));
                 }
             }
 
@@ -388,25 +395,28 @@ namespace VirtualBank.Api.Services
 
         #region private helper methods
 
-        private Core.Entities.BankAccount CreateBankAccount(CreateBankAccountRequest request)
-        {
-            return new()
-            {
-                AccountNo = Guid.NewGuid().ToString(),
-                IBAN = request.IBAN,
-                CustomerId = request.CustomerId,
-                BranchId = request.BranchId,
-                Balance = request.Balance,
-                AllowedBalanceToUse = request.Balance,
-                Debt = new Amount(0),
-                CurrencyId = request.CurrencyId,
-                Type = request.Type,
-                CreatedBy = request.CreationInfo.CreatedBy,
-                CreatedOn = request.CreationInfo.CreatedOn
-            };
-        }
+        private Core.Domain.Models.BankAccount CreateBankAccount(CreateBankAccountRequest request) =>
+         new(0,
+             request.AccountNo,
+             request.IBAN,
+             request.Type,
+             MapToBankAccountOwner(request.Owner.Id, request.Owner.FullName),
+             MapToBankAccountBranch(request.Branch.Id, request.Branch.Code, request.Branch.Name, request.Branch.Address.AddressCity.Name),
+             request.Balance,
+             request.AllowedBalanceToUse,
+             new Amount(1),
+             new Amount(0),
+             MapToBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol),
+             CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+             CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+             false);
 
-        private static string CreateBankAccountOwner(Core.Entities.BankAccount bankAccount) => bankAccount.Owner.FirstName + " " + bankAccount.Owner.LastName;
+
+        private Core.Domain.Models.BankAccount.AccountOwner MapToBankAccountOwner(int id, string fullName) => new(id, fullName);
+        private Core.Domain.Models.BankAccount.Branch MapToBankAccountBranch(int id, string code, string name, string city) => new(id, code, name, city);
+        private Core.Domain.Models.BankAccount.Currency MapToBankAccountCurrency(int id, string code, string symbol) => new(id, code, symbol);
+        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
+        private static ModificationInfo CreateModificationInfo(string modifiededBy, DateTime lastModifiedeOn) => new(modifiededBy, lastModifiedeOn);
 
         #endregion
     }

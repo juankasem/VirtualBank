@@ -1,6 +1,6 @@
 ﻿using System;
 using VirtualBank.Core.Models;
-using VirtualBank.Core.Models.Responses;
+using VirtualBank.Core.Domain.Models;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -27,8 +27,11 @@ namespace VirtualBank.Api.Mappers.Response
              CreateCreationInfo(branch.CreatedBy, branch.CreatedOn),
              CreateModificationInfo(branch.LastModifiedBy, branch.LastModifiedOn));
 
+
         private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
 
         private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
+
+
     }
 }

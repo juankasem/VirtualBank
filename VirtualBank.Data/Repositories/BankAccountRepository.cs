@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Data.Repositories
@@ -23,6 +23,7 @@ namespace VirtualBank.Data.Repositories
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
                                                 .Where(b => !b.Disabled)
+                                                .Select(b => b.ToDomainModel())
                                                 .AsNoTracking().ToListAsync();
         }
 
@@ -31,6 +32,7 @@ namespace VirtualBank.Data.Repositories
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
                                                 .Where(b => b.CustomerId.Equals(customerId) && !b.Disabled)
+                                                .Select(b => b.ToDomainModel())
                                                 .AsNoTracking().ToListAsync();
         }
 
@@ -38,29 +40,34 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .FirstOrDefaultAsync(b => b.Id.Equals(id) && !b.Disabled);
+                                                .Where(b => b.Id.Equals(id) && !b.Disabled)
+                                                .Select(b => b.ToDomainModel())
+                                                .FirstOrDefaultAsync();
+
         }
 
         public async Task<BankAccount> FindByAccountNoAsync(string accountNo)
-        { 
-        
+        {
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .FirstOrDefaultAsync(b => b.AccountNo.Equals(accountNo) && !b.Disabled);
+                                                .Where(b => b.AccountNo.Equals(accountNo) && !b.Disabled)
+                                                .Select(b => b.ToDomainModel())
+                                                .FirstOrDefaultAsync();
         }
 
         public async Task<BankAccount> FindByIBANAsync(string iban)
         {
             return await _dbContext.BankAccounts.Include(b => b.Owner)
                                                 .Include(b => b.Currency)
-                                                .FirstOrDefaultAsync(b => b.IBAN.Equals(iban) && !b.Disabled);
+                                                .Where(b => b.AccountNo.Equals(iban) && !b.Disabled)
+                                                .Select(b => b.ToDomainModel())
+                                                .FirstOrDefaultAsync();
         }
 
 
         public async Task<BankAccount> AddAsync(BankAccount bankAccount)
         {
-            await _dbContext.BankAccounts.AddAsync(bankAccount);
-            await SaveAsync();
+            await _dbContext.BankAccounts.AddAsync(bankAccount.ToEntity());
 
             return bankAccount;
         }
@@ -75,8 +82,7 @@ namespace VirtualBank.Data.Repositories
                 _dbContext.Entry(existingBankAccount).State = EntityState.Detached;
             }
 
-            _dbContext.Entry(bankAccount).State = EntityState.Modified;
-            await SaveAsync();
+            _dbContext.Entry(bankAccount.ToEntity()).State = EntityState.Modified;
 
             return bankAccount;
         }
@@ -90,18 +96,11 @@ namespace VirtualBank.Data.Repositories
             if (bankAccount != null)
             {
                 bankAccount.Disabled = true;
-                await SaveAsync();
 
                 isDeleted = true;
             }
 
             return isDeleted;
-        }
-
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.Models.Responses
+namespace VirtualBank.Core.Domain.Models
 {
     public class DebitedFunds
     {
         public Amount Amount { get; set; }
 
         public string Currency { get; set; }
+
 
         public DebitedFunds(Amount amount, string currency)
         {

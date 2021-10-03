@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 
 namespace VirtualBank.Data.Interfaces
 {

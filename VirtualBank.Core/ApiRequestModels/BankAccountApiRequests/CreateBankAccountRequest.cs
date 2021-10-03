@@ -1,4 +1,5 @@
 ﻿using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Models;
 
@@ -12,11 +13,11 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
 
         public AccountType Type { get; set; }
 
-        public int CustomerId { get; set; }
+        public Customer Owner { get; set; }
 
-        public int BranchId { get; set; }
+        public Branch Branch { get; set; }
 
-        public int CurrencyId { get; set; }
+        public Currency Currency { get; set; }
 
         public Amount Balance { get; set; }
 
@@ -28,15 +29,18 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
 
         public CreationInfo CreationInfo { get; set; }
 
-        public CreateBankAccountRequest(string accountNo, string iban, AccountType type, int customerId, int branchId,
-                                        int currencyId, Amount balance, Amount allowedBalanceToUse, CreationInfo creationInfo)
+
+        public CreateBankAccountRequest(string accountNo, string iban, AccountType type,
+                                        Customer owner, Branch branch, Currency currency,
+                                        Amount balance, Amount allowedBalanceToUse,
+                                        CreationInfo creationInfo)
         {
             AccountNo = Throw.ArgumentNullException.IfNull(accountNo, nameof(accountNo));
             IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
-            CustomerId = Throw.ArgumentNullException.IfNull(customerId, nameof(customerId));
-            BranchId = Throw.ArgumentNullException.IfNull(branchId, nameof(branchId));
-            CurrencyId = Throw.ArgumentNullException.IfNull(currencyId, nameof(currencyId));
+            Owner = Throw.ArgumentNullException.IfNull(owner, nameof(owner));
+            Branch = Throw.ArgumentNullException.IfNull(branch, nameof(branch));
+            Currency = Throw.ArgumentNullException.IfNull(currency, nameof(currency));
             Balance = balance;
             AllowedBalanceToUse = allowedBalanceToUse;
             MinimumAllowedBalance = new Amount(1);

@@ -415,22 +415,6 @@ namespace VirtualBank.Api.Services
             return null;
         }
 
-        private Address CreateAddress(CreateCustomerRequest request)
-        {
-            if (request != null)
-            {
-                return new Address()
-                {
-                    Street = request.Address?.Street,
-                    DistrictId = request.Address.DistrictId,
-                    CityId = request.Address.CityId,
-                    CountryId = request.Address.CountryId
-                };
-            }
-
-            return null;
-        }
-
         #endregion
     }
 }

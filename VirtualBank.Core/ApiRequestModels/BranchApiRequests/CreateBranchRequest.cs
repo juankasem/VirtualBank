@@ -16,16 +16,14 @@ namespace VirtualBank.Core.ApiRequestModels.BranchApiRequests
 
         public CreationInfo CreationInfo { get; set; }
 
-        public ModificationInfo ModificationInfo { get; set; }
 
-        public CreateBranchRequest(string name, string code, string phone, Address address, CreationInfo creationInfo, ModificationInfo modificationInfo)
+        public CreateBranchRequest(string name, string code, string phone, Address address, CreationInfo creationInfo)
         {
             Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
             Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
             Phone = Throw.ArgumentNullException.IfNull(phone, nameof(phone));
             Address = Throw.ArgumentNullException.IfNull(address, nameof(address));
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
-            ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
         }
     }
 }

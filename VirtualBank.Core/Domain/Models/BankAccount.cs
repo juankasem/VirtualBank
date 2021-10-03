@@ -1,8 +1,9 @@
 using System;
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.Models.Responses
+namespace VirtualBank.Core.Domain.Models
 {
     public class BankAccount
     {
@@ -14,13 +15,15 @@ namespace VirtualBank.Core.Models.Responses
 
         public AccountType Type { get; set; }
 
-        public string AccountOwner { get; set; }
+        public AccountOwner Owner { get; set; }
 
         public Branch AccountBranch { get; set; }
 
         public Amount Balance { get; set; }
 
         public Amount AllowedBalanceToUse { get; set; }
+
+        public Amount MinimumAllowedBalance { get; set; }
 
         public Amount Debt { get; set; }
 
@@ -30,42 +33,83 @@ namespace VirtualBank.Core.Models.Responses
 
         public ModificationInfo ModificationInfo { get; set; }
 
+        public bool Disabled { get; set; }
+
         public DateTime? LastTransactionDate { get; set; }
 
 
-        public BankAccount(int id, string accountNo, string iban, AccountType type, string accountOwner,
-                           Branch accountBranch, Amount balance, Amount allowedBalanceToUse,
+
+        public BankAccount(int id, string accountNo, string iban, AccountType type, AccountOwner owner,
+                           Branch accountBranch, Amount balance, Amount allowedBalanceToUse, Amount minimumAllowedBalance,
                            Amount debt, Currency accountCurrency, CreationInfo creationInfo, ModificationInfo modificationInfo,
-                           DateTime? lastTransactionDate)
+                           bool disabled, DateTime? lastTransactionDate = null)
         {
             Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             AccountNo = Throw.ArgumentNullException.IfNull(accountNo, nameof(accountNo));
             IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
-            AccountOwner = Throw.ArgumentNullException.IfNull(accountOwner, nameof(accountOwner));
+            Owner = Throw.ArgumentNullException.IfNull(owner, nameof(owner));
             AccountBranch = Throw.ArgumentNullException.IfNull(accountBranch, nameof(accountBranch));
             Balance = balance;
             AllowedBalanceToUse = allowedBalanceToUse;
+            MinimumAllowedBalance = minimumAllowedBalance;
             Debt = debt;
             AccountCurrency = Throw.ArgumentNullException.IfNull(accountCurrency, nameof(accountCurrency));
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
             ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
+            Disabled = disabled;
             LastTransactionDate = lastTransactionDate;
+        }
+
+        public Core.Entities.BankAccount ToEntity() =>
+            new Core.Entities.BankAccount(
+                                          AccountNo,
+                                          IBAN,
+                                          Type,
+                                          Owner.CustomerId,
+                                          AccountBranch.Id,
+                                          Balance.Value,
+                                          AllowedBalanceToUse.Value,
+                                          MinimumAllowedBalance.Value,
+                                          Debt.Value,
+                                          AccountCurrency.Id,
+                                          CreationInfo.CreatedBy,
+                                          CreationInfo.CreatedOn,
+                                          ModificationInfo.ModifiedBy,
+                                          ModificationInfo.LastModifiedOn,
+                                          Disabled);
+
+        public class AccountOwner
+        {
+            public int CustomerId { get; }
+
+            public string FullName { get; }
+
+
+            public AccountOwner(int customerId, string fullName)
+            {
+                CustomerId = Throw.ArgumentNullException.IfNull(customerId, nameof(customerId));
+                FullName = Throw.ArgumentNullException.IfNull(fullName, nameof(fullName));
+            }
         }
 
         public class Branch
         {
             public int Id { get; }
 
-            public string Name { get; }
-
             public string Code { get; }
 
-            public Branch(int id, string name, string code)
+            public string Name { get; }
+
+            public string City { get; }
+
+
+            public Branch(int id, string code, string name, string city)
             {
                 Id = id;
-                Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
                 Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
+                Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
+                City = Throw.ArgumentNullException.IfNull(city, nameof(city));
             }
         }
 

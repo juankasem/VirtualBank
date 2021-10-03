@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using VirtualBank.Core.ArgumentChecks;
 
 namespace VirtualBank.Core.ApiRequestModels.AuthApiRequests
 {
@@ -17,5 +16,12 @@ namespace VirtualBank.Core.ApiRequestModels.AuthApiRequests
         /// account password
         /// </summary>
         public string Password { get; set; }
+
+
+        public LoginRequest(string customerNo, string password)
+        {
+            CustomerNo = Throw.ArgumentNullException.IfNull(customerNo, nameof(customerNo));
+            Password = Throw.ArgumentNullException.IfNull(password, nameof(password));
+        }
     }
 }

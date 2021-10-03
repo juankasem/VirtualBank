@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.DistrictApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.DistrictApiResponses;
@@ -19,12 +20,17 @@ namespace VirtualBank.Api.Services
     public class DistrictsService : IDistrictsService
     {
         private readonly IUnitOfWork _unitOfWork;
+
+        private readonly IDistrictMapper _districtMapper;
+
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public DistrictsService(IUnitOfWork unitOfWork,
+                                IDistrictMapper districtMapper,
                                 IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
+            _districtMapper = districtMapper;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -53,11 +59,11 @@ namespace VirtualBank.Api.Services
                 return responseModel;
 
 
-            var districtList = districts.OrderBy(district => district.Name).Select(district => CreateDistrictResponse(district))
+            var districtList = districts.OrderBy(district => district.Name).Select(district => _districtMapper.MapToResponseModel(district))
                                                                            .ToImmutableList();
 
 
-            responseModel.Data = new DistrictListResponse(districtList, districtList.Count);
+            responseModel.Data = new(districtList, districtList.Count);
 
             return responseModel;
         }
@@ -81,7 +87,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            responseModel.Data = CreateDistrictResponse(district);
+            responseModel.Data = new(_districtMapper.MapToResponseModel(district));
 
             return responseModel;
         }
@@ -108,59 +114,57 @@ namespace VirtualBank.Api.Services
             {
                 var district = await _unitOfWork.Districts.FindByIdAsync(districtId);
 
-                try
+
+                if (district != null)
                 {
-                    if (district != null)
-                    {
-                        district.CityId = request.CityId;
-                        district.Name = request.Name;
-                        district.LastModifiedBy = _httpContextAccessor.HttpContext.User.Identity.Name;
-                        district.LastModifiedOn = DateTime.UtcNow;
+                    district.CityId = request.CityId;
+                    district.Name = request.Name;
+                    district.LastModifiedBy = request.ModificationInfo.ModifiedBy;
+                    district.LastModifiedOn = request.ModificationInfo.LastModifiedOn;
 
+                    try
+                    {
                         var updatedDistrict = await _unitOfWork.Districts.UpdateAsync(district);
-                        responseModel.Data = CreateDistrictResponse(updatedDistrict);
-
                         await _unitOfWork.SaveAsync();
+
+                        responseModel.Data = new(_districtMapper.MapToResponseModel(updatedDistrict));
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(district), $"district of Id: { districtId} not found"));
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
                         return responseModel;
                     }
                 }
-                catch (Exception ex)
-                {
-                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
-                }
+                else
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(district), $"district of Id: {districtId} not found"));
             }
             else
             {
                 try
                 {
                     var createdDistrict = await _unitOfWork.Districts.AddAsync(CreateDistrict(request));
-                    responseModel.Data = CreateDistrictResponse(createdDistrict);
-
                     await _unitOfWork.SaveAsync();
+
+                    responseModel.Data = new(_districtMapper.MapToResponseModel(createdDistrict));
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
 
             return responseModel;
         }
 
-
         /// <summary>
         /// Check if distirct exists
         /// </summary>
         /// <param name="cityId"></param>
         /// <returns></returns>
-        public async Task<bool> DistrictExists(int districtId)
-        {
-            return await _unitOfWork.Districts.DistrictExists(districtId);
-        }
+        public async Task<bool> DistrictExists(int districtId) => await _unitOfWork.Districts.DistrictExists(districtId);
 
 
         #region private helper methods
@@ -173,16 +177,6 @@ namespace VirtualBank.Api.Services
                     CityId = request.CityId,
                     Name = request.Name,
                 };
-            }
-
-            return null;
-        }
-
-        private static DistrictResponse CreateDistrictResponse(District district)
-        {
-            if (district != null)
-            {
-                return new DistrictResponse(district.Id, district.CityId, district.Name);
             }
 
             return null;

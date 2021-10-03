@@ -110,16 +110,13 @@ namespace VirtualBank.Api.Services
 
             if (result.Succeeded)
             {
-                apiResponse.Data = new LoginResponse()
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    Email = user.Email,
-                    Phone =user.PhoneNumber,
-                    AccessToken = _tokenService.GenerateAccessToken(await user.GetClaimsAsync(_userManager)),
-                    RefreshToken = _tokenService.GenerateRefreshToken()
-                };
-
+                apiResponse.Data = new(user.Id,
+                                       user.UserName,
+                                       user.Email,
+                                       user.PhoneNumber,
+                                       _tokenService.GenerateAccessToken(await user.GetClaimsAsync(_userManager)),
+                                        _tokenService.GenerateRefreshToken()
+                                       );
                 user.RefreshToken = apiResponse.Data.RefreshToken;
                 await _userManager.UpdateAsync(user);
             }

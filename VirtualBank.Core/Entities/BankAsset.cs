@@ -10,7 +10,6 @@ namespace VirtualBank.Core.Entities
         public BankAssetType Type { get; set; }
 
         public string Value { get; set; }
-
     }
 }
 
