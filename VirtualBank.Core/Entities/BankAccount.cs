@@ -93,7 +93,7 @@ namespace VirtualBank.Core.Entities
                                               new CreationInfo(CreatedBy, CreatedOn),
                                               new ModificationInfo(LastModifiedBy, LastModifiedOn),
                                               Disabled,
-                                              CashTransactions.LastOrDefault().CreatedOn);
+                                              CashTransactions.LastOrDefault()?.LastModifiedOn);
 
         private Domain.Models.BankAccount.AccountOwner CreateOwner(int customerId, string firstName, string lastName) =>
              new Domain.Models.BankAccount.AccountOwner(customerId, CreateOwnerName(firstName, lastName));
