@@ -51,7 +51,7 @@ namespace VirtualBank.Api.Services
 
             var bankAccountList = bankAccounts.OrderBy(b => b.CreationInfo.CreatedOn)
                                               .Select(bankAccount => _bankAccountMapper.MapToResponseModel(bankAccount,
-                                                                                       _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN)
+                                                                                       _unitOfWork.CashTransactions.GetLastByIBANAsync(bankAccount.IBAN)
                                                                                        .Result.CreationInfo.CreatedOn))
                                                                                        .ToImmutableList();
 
@@ -79,7 +79,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
+            var lastTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(bankAccount.IBAN);
 
             responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, lastTransaction.CreationInfo.CreatedOn));
 
@@ -106,7 +106,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
+            var lastTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(bankAccount.IBAN);
 
             responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, lastTransaction.CreationInfo.CreatedOn));
 
@@ -133,7 +133,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            var lastTransaction = await _unitOfWork.CashTransactions.GetLastAsync(bankAccount.IBAN);
+            var lastTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(bankAccount.IBAN);
 
             responseModel.Data = new(_bankAccountMapper.MapToResponseModel(bankAccount, lastTransaction.CreationInfo.CreatedOn));
 
@@ -407,7 +407,7 @@ namespace VirtualBank.Api.Services
              new Amount(1),
              new Amount(0),
              MapToBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol),
-             CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+             request.CreationInfo,
              CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
              false);
 

@@ -144,7 +144,7 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<LatestTransferListResponse>();
 
-            var latestTransfers = await _unitOfWork.CashTransactions.GetLastByIBANAsync(iban);
+            var latestTransfers = await _unitOfWork.CashTransactions.GetLatestByIBANAsync(iban);
 
             if (!latestTransfers.Any())
             {
@@ -219,13 +219,15 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Add transaction to db & save changes 
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, new Amount(0), toAccount.Balance));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, new Amount(0), toAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
 
                     var depositor = await GetCustomerName(request.To);
                     var initiatedBy = GetInitiatedBy(request.InitiatedBy);
+
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.To, initiatedBy, depositor));
 
@@ -301,13 +303,15 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.BankAccounts.UpdateAsync(fromAccount);
                     await _unitOfWork.SaveAsync();
 
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, new Amount(0)));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, new Amount(0)));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
 
                     var withdrawer = await GetCustomerName(request.From);
                     var initiatedBy = GetInitiatedBy(request.InitiatedBy);
+
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, withdrawer, initiatedBy));
 
@@ -372,13 +376,15 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
 
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
+
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, sender, recipient));
 
@@ -445,7 +451,7 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
@@ -453,6 +459,8 @@ namespace VirtualBank.Api.Services
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
                     var feesWithCurrency = new Money(request.Fees.Amount, currency);
+
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, sender, recipient, feesWithCurrency));
 

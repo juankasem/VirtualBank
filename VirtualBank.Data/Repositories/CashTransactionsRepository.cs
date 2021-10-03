@@ -38,7 +38,7 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<IEnumerable<CashTransaction>> GetLastByIBANAsync(string iban) =>
+        public async Task<IEnumerable<CashTransaction>> GetLatestByIBANAsync(string iban) =>
                await _dbContext.CashTransactions.Where(c => c.From == iban && !c.Disabled)
                                                 .Select(c => c.ToDomainModel())
                                                 .AsNoTracking()
@@ -53,7 +53,7 @@ namespace VirtualBank.Data.Repositories
                                                 .ToListAsync();
 
 
-        public async Task<CashTransaction> GetLastAsync(string iban) =>
+        public async Task<CashTransaction> GetLastByIBANAsync(string iban) =>
                await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban) && !c.Disabled)
                                                 .Select(c => c.ToDomainModel())
                                                 .OrderByDescending(c => c.ModificationInfo.LastModifiedOn)
@@ -75,16 +75,12 @@ namespace VirtualBank.Data.Repositories
 
 
 
-        public async Task<CashTransaction> AddAsync(CashTransaction transaction)
-        {
+        public async Task AddAsync(CashTransaction transaction) =>
             await _dbContext.CashTransactions.AddAsync(transaction.ToEntity(transaction.SenderRemainingBalance.Amount.Value,
                                                                             transaction.RecipientRemainingBalance.Amount.Value));
 
-            return transaction;
-        }
 
-
-        public async Task<CashTransaction> UpdateAsync(CashTransaction transaction)
+        public async Task UpdateAsync(CashTransaction transaction)
         {
             var existingCashTransaction = await _dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == transaction.Id && !c.Disabled);
 
@@ -98,7 +94,6 @@ namespace VirtualBank.Data.Repositories
 
             _dbContext.Entry(entity).State = EntityState.Modified;
 
-            return transaction;
         }
 
 
