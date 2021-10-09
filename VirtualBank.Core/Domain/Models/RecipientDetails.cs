@@ -15,21 +15,19 @@ namespace VirtualBank.Core.Domain.Models
 
         public string RecipientShortName { get; set; }
 
-        public Amount Amount { get; set; }
+        public Money AmountToTransfer { get; set; }
 
-        public string Currency { get; set; }
 
         public RecipientDetails(int bankAccountId, string iban, string bankName,
                                 string recipientFullName, string recipientShortName,
-                                Amount amount, string currency)
+                                Money amountToTransfer)
         {
             BankAccountId = bankAccountId;
             IBAN = Throw.ArgumentNullException.IfNull(IBAN, nameof(IBAN));
             BankName = Throw.ArgumentNullException.IfNull(bankName, nameof(bankName));
             RecipientFullName = Throw.ArgumentNullException.IfNull(recipientFullName, nameof(recipientFullName));
             RecipientShortName = Throw.ArgumentNullException.IfNull(recipientShortName, nameof(recipientShortName));
-            Amount = Throw.ArgumentNullException.IfNull(amount, nameof(amount));
-            Currency = Throw.ArgumentNullException.IfNull(currency, nameof(currency));
+            AmountToTransfer = Throw.ArgumentNullException.IfNull(amountToTransfer, nameof(amountToTransfer));
         }
     }
 }

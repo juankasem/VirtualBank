@@ -472,7 +472,7 @@ namespace VirtualBank.Api.Services
 
 
         #region private Helper methods
-        private Core.Domain.Models.CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, Amount senderBalance, Amount recipientBalance) =>
+        private CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, Amount senderBalance, Amount recipientBalance) =>
             new(Guid.NewGuid(),
                 GenerateReferenceNo(),
                 request.Type,

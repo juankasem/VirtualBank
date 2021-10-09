@@ -145,7 +145,7 @@ namespace VirtualBank.Api.Services
                 {
                     fastTransaction.RecipientDetails = CreateRecipientDetails(recipientBankAccount.Id, request.RecipientIBAN, recipientBankAccount.Branch.Name,
                                                                               request.RecipientFullName, request.RecipientShortName,
-                                                                              request.Amount, recipientBankAccount.Currency.Code);
+                                                                              CreateMoney(request.AmountToTransfer.Amount, request.AmountToTransfer.Currency));
                     fastTransaction.ModificationInfo = CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
 
                     try
@@ -221,19 +221,22 @@ namespace VirtualBank.Api.Services
                 request.IBAN,
                 CreateRecipientDetails(bankAccount.Id, request.RecipientIBAN, bankAccount.Branch.Name,
                                        request.RecipientFullName, request.RecipientShortName,
-                                       request.Amount, bankAccount.Currency.Code),
+                                       CreateMoney(request.AmountToTransfer.Amount, request.AmountToTransfer.Currency)),
                 CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
                 CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn));
 
 
-
         private RecipientDetails CreateRecipientDetails(int bankAccountId, string iban, string bankName,
-                                                        string recipientFullName, string recipientShortName,
-                                                        Amount amount, string currency) =>
+                                                        string recipientFullName, string recipientShortName, Money amountToTransfer) =>
 
-                new(bankAccountId, iban, bankName, recipientFullName, recipientShortName, amount, currency);
+                new(bankAccountId, iban, bankName, recipientFullName, recipientShortName, amountToTransfer);
+
+
+        private Core.Models.Money CreateMoney(decimal amount, string currency) =>
+             new Core.Models.Money(new Amount(amount), currency);
 
         private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
+
         private static ModificationInfo CreateModificationInfo(string modifiededBy, DateTime lastModifiedeOn) => new(modifiededBy, lastModifiedeOn);
 
         #endregion

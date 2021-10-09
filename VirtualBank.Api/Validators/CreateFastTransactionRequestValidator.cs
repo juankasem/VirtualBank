@@ -26,11 +26,17 @@ namespace VirtualBank.Api.Validators
                   .WithMessage("Recipient's full name is required");
 
 
-            RuleFor(x => x.Amount.Value)
+            RuleFor(x => x.AmountToTransfer.Amount.Value)
                   .NotNull()
                   .NotEmpty()
                   .GreaterThan(0)
                   .WithMessage("Amount is required");
+
+
+            RuleFor(x => x.AmountToTransfer.Currency)
+                  .NotNull()
+                  .NotEmpty()
+                  .WithMessage("Currency is required");
 
 
             RuleFor(x => x.CreationInfo.CreatedBy)

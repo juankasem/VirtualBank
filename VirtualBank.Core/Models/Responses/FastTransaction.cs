@@ -25,18 +25,5 @@ namespace VirtualBank.Core.Models.Responses
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
             ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
         }
-
-        public Core.Entities.FastTransaction ToEntity() =>
-          new Core.Entities.FastTransaction(Id,
-                                            IBAN,
-                                            RecipientDetails.BankAccountId,
-                                            RecipientDetails.RecipientFullName,
-                                            RecipientDetails.RecipientShortName,
-                                            RecipientDetails.Amount,
-                                            CreationInfo.CreatedBy,
-                                            CreationInfo.CreatedOn,
-                                            ModificationInfo.ModifiedBy,
-                                            ModificationInfo.LastModifiedOn
-                                             );
     }
 }

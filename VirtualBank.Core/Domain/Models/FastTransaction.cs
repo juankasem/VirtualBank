@@ -32,7 +32,7 @@ namespace VirtualBank.Core.Domain.Models
                                             RecipientDetails.BankAccountId,
                                             RecipientDetails.RecipientFullName,
                                             RecipientDetails.RecipientShortName,
-                                            RecipientDetails.Amount,
+                                            RecipientDetails.AmountToTransfer.Amount,
                                             CreationInfo.CreatedBy,
                                             CreationInfo.CreatedOn,
                                             ModificationInfo.ModifiedBy,
