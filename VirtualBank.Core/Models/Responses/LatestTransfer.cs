@@ -27,18 +27,15 @@ namespace VirtualBank.Core.Models.Responses
 
         public CreationInfo CreationInfo { get; set; }
 
-        public ModificationInfo ModificationInfo { get; set; }
 
-
-        public LatestTransfer(string to, string recipient, Amount amount, DateTime transactionDate,
-                             CreationInfo creationInfo, ModificationInfo modificationInfo)
+        public LatestTransfer(string to, string recipient, Amount amount,
+                              DateTime transactionDate, CreationInfo creationInfo)
         {
             To = Throw.ArgumentNullException.IfNull(to, nameof(to));
             Recipient = Throw.ArgumentNullException.IfNull(recipient, nameof(recipient));
             Amount = Throw.ArgumentNullException.IfNull(amount, nameof(amount));
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
-            ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
         }
     }
 }

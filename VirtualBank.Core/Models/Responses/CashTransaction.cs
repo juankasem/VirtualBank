@@ -9,7 +9,7 @@ namespace VirtualBank.Core.Models.Responses
         /// <summary>
         /// Id of the transaction
         /// </summary>
-        public int Id { get; }
+        public string Id { get; }
 
         /// <summary>
         /// reference of transaction
@@ -85,8 +85,6 @@ namespace VirtualBank.Core.Models.Responses
         /// creation info the transaction
         /// </summary>
 
-        public ModificationInfo ModificationInfo { get; }
-
         /// <summary>
         /// credit card number
         /// </summary>
@@ -100,10 +98,9 @@ namespace VirtualBank.Core.Models.Responses
         public string? DebitCardNo { get; set; }
 
 
-        public CashTransaction(int id, string referenceNo, BankAssetType initiatedBy, string from, string to,
-                               string sender, string recipient, Money debitedFunds, Money fees,
-                               PaymentType paymentType, string description, Money remainingBalance,
-                               DateTime transactionDate, CreationInfo creationInfo, ModificationInfo modificationInfo,
+        public CashTransaction(string id, string referenceNo, CashTransactionType Type, BankAssetType initiatedBy,
+                               string from, string to, string sender, string recipient, Money debitedFunds, Money fees,
+                               PaymentType paymentType, string description, Money remainingBalance, DateTime transactionDate, CreationInfo creationInfo,
                                string? creditCardNo, string? debitCardNo)
         {
             Id = id;
@@ -120,30 +117,8 @@ namespace VirtualBank.Core.Models.Responses
             RemainingBalance = Throw.ArgumentNullException.IfNull(remainingBalance, nameof(remainingBalance));
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
-            ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
             CreditCardNo = creditCardNo;
             DebitCardNo = debitCardNo;
         }
-
-        public Core.Entities.CashTransaction ToEntity(decimal senderRemainingBalance, decimal recipientRemainingBalance) =>
-         new Core.Entities.CashTransaction(ReferenceNo,
-                                           Type,
-                                           InitiatedBy,
-                                           From,
-                                           To,
-                                           DebitedFunds.Amount.Value,
-                                           DebitedFunds.Currency,
-                                           senderRemainingBalance,
-                                           recipientRemainingBalance,
-                                           Fees.Amount.Value,
-                                           Description,
-                                           PaymentType,
-                                           TransactionDate,
-                                           CreationInfo.CreatedBy,
-                                           CreationInfo.CreatedOn,
-                                           ModificationInfo.ModifiedBy,
-                                           ModificationInfo.LastModifiedOn,
-                                           CreditCardNo ?? null,
-                                           DebitCardNo ?? null);
     }
 }

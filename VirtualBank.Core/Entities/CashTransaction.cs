@@ -7,8 +7,13 @@ using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.Entities
 {
-    public class CashTransaction : BaseClass
+    public class CashTransaction
     {
+        /// <summary>
+        /// unique identifier
+        /// </summary> 
+        public Guid Id { get; set; }
+
         /// <summary>
         /// unique reference number
         /// </summary>
@@ -94,6 +99,18 @@ namespace VirtualBank.Core.Entities
         public DateTime TransactionDate { get; set; }
 
         /// <summary>
+        /// Created By transaction
+        /// </summary>
+        [Required]
+        public string CreatedBy { get; set; }
+
+        /// <summary>
+        /// CDate of creation transaction
+        /// </summary>
+        [Required]
+        public DateTime CreatedOn { get; set; }
+
+        /// <summary>
         /// debit card number
         /// </summary>
 #nullable enable
@@ -111,12 +128,12 @@ namespace VirtualBank.Core.Entities
             ReferenceNo = $"{Guid.NewGuid().ToString().Replace("-", "").Substring(1, 27)}";
         }
 
-        public CashTransaction(string referenceNo, CashTransactionType type, BankAssetType initiatedBy, string from, string to,
+        public CashTransaction(Guid id, string referenceNo, CashTransactionType type, BankAssetType initiatedBy, string from, string to,
                                decimal amount, string currency, decimal senderRemainingBalance, decimal recipientRemainingBalance,
                                decimal fees, string description, PaymentType paymentType, DateTime transactionDate,
-                               string createdBy, DateTime createdOn, string lastModifiedBy, DateTime lastModifiedOn,
-                               string? creditCardNo, string? debitCardNo)
+                               string createdBy, DateTime createdOn, string? creditCardNo, string? debitCardNo)
         {
+            Id = id;
             ReferenceNo = referenceNo;
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
             InitiatedBy = Throw.ArgumentNullException.IfNull(initiatedBy, nameof(initiatedBy));
@@ -132,8 +149,6 @@ namespace VirtualBank.Core.Entities
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));
             CreatedBy = Throw.ArgumentNullException.IfNull(createdBy, nameof(createdBy));
             CreatedOn = Throw.ArgumentNullException.IfNull(createdOn, nameof(createdOn));
-            LastModifiedBy = Throw.ArgumentNullException.IfNull(lastModifiedBy, nameof(lastModifiedBy));
-            LastModifiedOn = Throw.ArgumentNullException.IfNull(lastModifiedOn, nameof(lastModifiedOn));
             CreditCardNo = creditCardNo;
             DebitCardNo = debitCardNo;
         }
@@ -153,7 +168,6 @@ namespace VirtualBank.Core.Entities
                                                     new Money(new Amount(RecipientRemainingBalance), Currency),
                                                     TransactionDate,
                                                     new CreationInfo(CreatedBy, CreatedOn),
-                                                    new ModificationInfo(LastModifiedBy, LastModifiedOn),
                                                     CreditCardNo ?? null,
                                                     DebitCardNo ?? null);
     }

@@ -160,9 +160,10 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
+            var bankAccountOwner = await _unitOfWork.Customers.FindByIBANAsync(bankAccount.IBAN);
             var recipientName = request.RecipientName;
 
-            if (bankAccount.Owner.FullName != recipientName)
+            if (GetFullName(bankAccountOwner.FirstName, bankAccountOwner.LastName) != recipientName)
             {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientName), $"Recipient name: {recipientName} not found"));
                 return responseModel;
@@ -196,17 +197,16 @@ namespace VirtualBank.Api.Services
                     {
                         bankaccount.AccountNo = request.AccountNo;
                         bankaccount.IBAN = request.IBAN;
-                        bankaccount.Owner = MapToBankAccountOwner(request.Owner.Id, request.Owner.FullName);
-                        bankaccount.AccountBranch = MapToBankAccountBranch(request.Branch.Id, request.Branch.Code, request.Branch.Name, request.Branch.Address.AddressCity.Name);
-                        bankaccount.AccountCurrency = MapToBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol);
+                        bankaccount.Owner = request.Owner;
+                        bankaccount.Branch = request.Branch;
+                        bankaccount.Currency = request.Currency;
                         bankaccount.Balance = request.Balance;
                         bankaccount.Type = request.Type;
                         bankaccount.ModificationInfo = CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
 
-                        await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
+                        var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
                         await _unitOfWork.SaveAsync();
 
-                        var updatedBankAccount = await _unitOfWork.BankAccounts.GetLastByIBANAsync(request.IBAN);
                         responseModel.Data = new(_bankAccountMapper.MapToResponseModel(updatedBankAccount, updatedBankAccount.LastTransactionDate));
                     }
                     catch (Exception ex)
@@ -224,10 +224,9 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
+                    var createdBankAccount = await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
                     await _unitOfWork.SaveAsync();
 
-                    var createdBankAccount = await _unitOfWork.BankAccounts.GetLastByIBANAsync(request.IBAN);
                     responseModel.Data = new(_bankAccountMapper.MapToResponseModel(createdBankAccount));
                 }
                 catch (Exception ex)
@@ -317,7 +316,7 @@ namespace VirtualBank.Api.Services
                     decimal profit = 0;
                     double interestRate = 0.00;
 
-                    switch (bankAccount.AccountCurrency.Code)
+                    switch (bankAccount.Currency.Code)
                     {
                         case "TL":
                             try
@@ -402,21 +401,47 @@ namespace VirtualBank.Api.Services
              request.AccountNo,
              request.IBAN,
              request.Type,
-             MapToBankAccountOwner(request.Owner.Id, request.Owner.FullName),
-             MapToBankAccountBranch(request.Branch.Id, request.Branch.Code, request.Branch.Name, request.Branch.Address.AddressCity.Name),
+             request.Owner,
+             request.Branch,
              request.Balance,
              request.AllowedBalanceToUse,
              new Amount(1),
              new Amount(0),
-             MapToBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol),
+             request.Currency,
              request.CreationInfo,
              CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
              false);
 
 
-        private Core.Domain.Models.BankAccount.AccountOwner MapToBankAccountOwner(int id, string fullName) => new(id, fullName);
-        private Core.Domain.Models.BankAccount.Branch MapToBankAccountBranch(int id, string code, string name, string city) => new(id, code, name, city);
-        private Core.Domain.Models.BankAccount.Currency MapToBankAccountCurrency(int id, string code, string symbol) => new(id, code, symbol);
+        private async Task<Core.Domain.Models.BankAccountOwner> CreateBankAccountOwner(int customerId)
+        {
+            var customer = await _unitOfWork.Customers.FindByIdAsync(customerId);
+            if (customer == null)
+                return null;
+
+            return new Core.Domain.Models.BankAccountOwner(customerId, GetFullName(customer.FirstName, customer.LastName));
+        }
+
+        private async Task<Core.Domain.Models.BankAccountBranch> CreateBankAccountBranch(int branchId)
+        {
+            var branch = await _unitOfWork.Branches.FindByIdAsync(branchId);
+            if (branch == null)
+                return null;
+
+            return new Core.Domain.Models.BankAccountBranch(branchId, branch.Code, branch.Name, branch.Address?.City?.Name);
+        }
+
+        private async Task<Core.Domain.Models.BankAccountCurrency> CreateBankAccountCurrency(int currencyId)
+        {
+            var currency = await _unitOfWork.Currencies.FindByIdAsync(currencyId);
+            if (currency == null)
+                return null;
+
+            return new Core.Domain.Models.BankAccountCurrency(currencyId, currency.Code, currency.Symbol);
+        }
+
+        private string GetFullName(string firstName, string lastName) => firstName + " " + lastName;
+
         private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
         private static ModificationInfo CreateModificationInfo(string modifiededBy, DateTime lastModifiedeOn) => new(modifiededBy, lastModifiedeOn);
 

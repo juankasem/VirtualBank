@@ -13,11 +13,11 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
 
         public AccountType Type { get; set; }
 
-        public Customer Owner { get; set; }
+        public BankAccountOwner Owner { get; set; }
 
-        public Branch Branch { get; set; }
+        public BankAccountBranch Branch { get; set; }
 
-        public Currency Currency { get; set; }
+        public BankAccountCurrency Currency { get; set; }
 
         public Amount Balance { get; set; }
 
@@ -31,8 +31,8 @@ namespace VirtualBank.Core.ApiRequestModels.BankAccountApiRequests
 
 
         public CreateBankAccountRequest(string accountNo, string iban, AccountType type,
-                                        Customer owner, Branch branch, Currency currency,
-                                        Amount balance, Amount allowedBalanceToUse,
+                                        BankAccountOwner owner, BankAccountBranch branch,
+                                        BankAccountCurrency currency, Amount balance, Amount allowedBalanceToUse,
                                         CreationInfo creationInfo)
         {
             AccountNo = Throw.ArgumentNullException.IfNull(accountNo, nameof(accountNo));

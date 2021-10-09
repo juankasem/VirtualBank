@@ -7,7 +7,7 @@ namespace VirtualBank.Core.Domain.Models
 {
     public class CashTransaction
     {
-        public int Id { get; }
+        public Guid Id { get; }
 
         public string ReferenceNo { get; }
 
@@ -35,8 +35,6 @@ namespace VirtualBank.Core.Domain.Models
 
         public CreationInfo CreationInfo { get; }
 
-        public ModificationInfo ModificationInfo { get; }
-
 #nullable enable
         public string? CreditCardNo { get; set; }
 
@@ -44,11 +42,10 @@ namespace VirtualBank.Core.Domain.Models
         public string? DebitCardNo { get; set; }
 
 
-        public CashTransaction(int id, string referenceNo, CashTransactionType type, BankAssetType initiatedBy,
+        public CashTransaction(Guid id, string referenceNo, CashTransactionType type, BankAssetType initiatedBy,
                                string from, string to, Money debitedFunds, Money fees, PaymentType paymentType,
                                string description, Money senderRemainingBalance, Money recipientRemainingBalance,
-                               DateTime transactionDate, CreationInfo creationInfo, ModificationInfo modificationInfo,
-                               string? creditCardNo, string? debitCardNo)
+                               DateTime transactionDate, CreationInfo creationInfo, string? creditCardNo, string? debitCardNo)
         {
             Id = id;
             ReferenceNo = Throw.ArgumentNullException.IfNull(referenceNo, nameof(referenceNo));
@@ -64,31 +61,28 @@ namespace VirtualBank.Core.Domain.Models
             RecipientRemainingBalance = Throw.ArgumentNullException.IfNull(recipientRemainingBalance, nameof(recipientRemainingBalance));
             TransactionDate = Throw.ArgumentNullException.IfNull(transactionDate, nameof(transactionDate));
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
-            ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
             CreditCardNo = creditCardNo;
             DebitCardNo = debitCardNo;
         }
 
         public Core.Entities.CashTransaction ToEntity(decimal senderRemainingBalance, decimal recipientRemainingBalance) =>
-            new Core.Entities.CashTransaction(
-                                           ReferenceNo,
-                                           Type,
-                                           InitiatedBy,
-                                           From,
-                                           To,
-                                           DebitedFunds.Amount.Value,
-                                           DebitedFunds.Currency,
-                                           senderRemainingBalance,
-                                           recipientRemainingBalance,
-                                           Fees.Amount.Value,
-                                           Description,
-                                           PaymentType,
-                                           TransactionDate,
-                                           CreationInfo.CreatedBy,
-                                           CreationInfo.CreatedOn,
-                                           ModificationInfo.ModifiedBy,
-                                           ModificationInfo.LastModifiedOn,
-                                           CreditCardNo ?? null,
-                                           DebitCardNo ?? null);
+            new Core.Entities.CashTransaction(Id,
+                                            ReferenceNo,
+                                            Type,
+                                            InitiatedBy,
+                                            From,
+                                            To,
+                                            DebitedFunds.Amount.Value,
+                                            DebitedFunds.Currency,
+                                            senderRemainingBalance,
+                                            recipientRemainingBalance,
+                                            Fees.Amount.Value,
+                                            Description,
+                                            PaymentType,
+                                            TransactionDate,
+                                            CreationInfo.CreatedBy,
+                                            CreationInfo.CreatedOn,
+                                            CreditCardNo ?? null,
+                                            DebitCardNo ?? null);
     }
 }

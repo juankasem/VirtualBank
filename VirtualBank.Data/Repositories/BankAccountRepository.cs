@@ -69,21 +69,31 @@ namespace VirtualBank.Data.Repositories
                                             .FirstOrDefaultAsync();
 
 
-        public async Task AddAsync(BankAccount bankAccount) =>
-               await _dbContext.BankAccounts.AddAsync(bankAccount.ToEntity());
-
-
-
-        public async Task UpdateAsync(BankAccount bankAccount)
+        public async Task<BankAccount> AddAsync(BankAccount bankAccount)
         {
-            var existingBankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(b => b.Id == bankAccount.Id && !b.Disabled);
+            var entity = bankAccount.ToEntity();
+
+            await _dbContext.BankAccounts.AddAsync(entity);
+
+            return bankAccount;
+        }
+
+
+
+        public async Task<BankAccount> UpdateAsync(BankAccount bankAccount)
+        {
+            var existingBankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(c => c.Id == bankAccount.Id);
 
             if (existingBankAccount != null)
             {
                 _dbContext.Entry(existingBankAccount).State = EntityState.Detached;
             }
 
-            _dbContext.Entry(bankAccount.ToEntity()).State = EntityState.Modified;
+            var entity = bankAccount.ToEntity();
+
+            _dbContext.Entry(entity).State = EntityState.Modified;
+
+            return bankAccount;
         }
 
 

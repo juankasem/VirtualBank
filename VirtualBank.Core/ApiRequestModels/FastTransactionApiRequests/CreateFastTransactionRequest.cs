@@ -5,28 +5,28 @@ namespace VirtualBank.Core.ApiRequestModels.FastTransactionApiRequests
 {
     public class CreateFastTransactionRequest
     {
-        public int BankAccountId { get; set; }
+        public string IBAN { get; set; }
 
-        public int BranchId { get; set; }
+        public string RecipientFullName { get; set; }
 
-        public string RecipientName { get; set; }
+        public string RecipientShortName { get; set; }
 
         public string RecipientIBAN { get; set; }
 
+        public Amount Amount { get; set; }
+
         public CreationInfo CreationInfo { get; set; }
 
-        public ModificationInfo ModificationInfo { get; set; }
 
-
-        public CreateFastTransactionRequest(int bankAccountId, int branchId, string recipientName, string recipientIBAN,
-                                            CreationInfo creationInfo, ModificationInfo modificationInfo)
+        public CreateFastTransactionRequest(string iban, string recipientFullName, string recipientShortName,
+                                            string recipientIBAN, Amount amount, CreationInfo creationInfo)
         {
-            BankAccountId = Throw.ArgumentNullException.IfNull(bankAccountId, nameof(bankAccountId));
-            BranchId = Throw.ArgumentNullException.IfNull(branchId, nameof(branchId));
-            RecipientName = Throw.ArgumentNullException.IfNull(recipientName, nameof(recipientName));
+            IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
+            RecipientFullName = Throw.ArgumentNullException.IfNull(recipientFullName, nameof(recipientFullName));
+            RecipientShortName = Throw.ArgumentNullException.IfNull(recipientShortName, nameof(recipientShortName));
             RecipientIBAN = Throw.ArgumentNullException.IfNull(recipientIBAN, nameof(recipientIBAN));
+            Amount = Throw.ArgumentNullException.IfNull(amount, nameof(amount));
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
-            ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
         }
     }
 }

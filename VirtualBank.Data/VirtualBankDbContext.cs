@@ -19,6 +19,7 @@ namespace VirtualBank.Data
         public DbSet<City> Cities { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<CreditCard> CreditCards { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<DebitCard> DebitCards { get; set; }
         public DbSet<District> Districts { get; set; }

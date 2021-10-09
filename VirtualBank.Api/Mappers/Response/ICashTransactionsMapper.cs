@@ -15,10 +15,10 @@ namespace VirtualBank.Api.Mappers.Response
     public class CashTransactionsMapper : ICashTransactionsMapper
     {
         public CashTransaction MapToResponseModel(Core.Domain.Models.CashTransaction cashTransaction,
-                                                  string iban, string sender,
-                                                  string recipient, Money fees = null) =>
-            new(cashTransaction.Id,
+                                                  string iban, string sender, string recipient, Money fees = null) =>
+            new(cashTransaction.Id.ToString(),
                 cashTransaction.ReferenceNo,
+                cashTransaction.Type,
                 cashTransaction.InitiatedBy,
                 cashTransaction.From,
                 cashTransaction.To,
@@ -26,7 +26,7 @@ namespace VirtualBank.Api.Mappers.Response
                 recipient,
                 cashTransaction.From != iban
                     ? CreateDebitedFunds(cashTransaction.DebitedFunds.Amount, cashTransaction.DebitedFunds.Currency)
-                    : CreateDebitedFunds(new Amount(-cashTransaction.DebitedFunds.Amount), cashTransaction.DebitedFunds.Currency),
+                    : CreateDebitedFunds(new Amount(-cashTransaction.DebitedFunds.Amount.Value), cashTransaction.DebitedFunds.Currency),
                 fees ?? CreateMoney(new Amount(0), string.Empty),
                 cashTransaction.PaymentType,
                 cashTransaction.From != iban ? $"From: {sender}, Account No: {cashTransaction.From} "
@@ -39,7 +39,6 @@ namespace VirtualBank.Api.Mappers.Response
                     : cashTransaction.SenderRemainingBalance,
                 cashTransaction.TransactionDate,
                 cashTransaction.CreationInfo,
-                cashTransaction.ModificationInfo,
                 cashTransaction.CreditCardNo != null ? cashTransaction.CreditCardNo : null,
                 cashTransaction.DebitCardNo != null ? cashTransaction.DebitCardNo : null
                 );
@@ -50,8 +49,7 @@ namespace VirtualBank.Api.Mappers.Response
                 recipient,
                 new Amount(cashTransaction.DebitedFunds.Amount),
                 cashTransaction.TransactionDate,
-                cashTransaction.CreationInfo,
-                cashTransaction.ModificationInfo);
+                cashTransaction.CreationInfo);
 
         private static Money CreateDebitedFunds(Amount amount, string currency) => new(amount, currency);
 

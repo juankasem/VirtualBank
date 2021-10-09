@@ -41,6 +41,7 @@ namespace VirtualBank.Api.Validators
 
             RuleFor(x => x.Currency)
                     .NotNull()
+
                     .WithMessage("Currency is required");
 
 

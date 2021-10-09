@@ -8,30 +8,50 @@ namespace VirtualBank.Api.Validators
     {
         public CreateFastTransactionRequestValidator()
         {
-            RuleFor(x => x.BankAccountId)
+            RuleFor(x => x.IBAN)
                    .NotNull()
                    .NotEmpty()
-                   .GreaterThan(0)
-                   .WithMessage("Bank Account is required");
+                   .WithMessage("IBAN is required");
 
-
-            RuleFor(x => x.BranchId)
-              .NotNull()
-              .NotEmpty()
-              .GreaterThan(0)
-              .WithMessage("Branch is required");
-
-
-            RuleFor(x => x.RecipientName)
-              .NotNull()
-              .NotEmpty()
-              .WithMessage("Recipient name is required");
-              
 
             RuleFor(x => x.RecipientIBAN)
-            .NotNull()
-            .NotEmpty()
-            .WithMessage("Recipient IBAN is required");
+                  .NotNull()
+                  .NotEmpty()
+                  .WithMessage("Recipient iban is required");
+
+
+            RuleFor(x => x.RecipientFullName)
+                  .NotNull()
+                  .NotEmpty()
+                  .WithMessage("Recipient's full name is required");
+
+
+            RuleFor(x => x.Amount.Value)
+                  .NotNull()
+                  .NotEmpty()
+                  .GreaterThan(0)
+                  .WithMessage("Amount is required");
+
+
+            RuleFor(x => x.CreationInfo.CreatedBy)
+                  .NotNull()
+                  .NotEmpty()
+                  .WithMessage("created by name is required");
+
+
+            RuleFor(x => x.CreationInfo.CreatedOn)
+                  .NotNull()
+                  .NotEmpty()
+                  .WithMessage("fast transaction creation date is required")
+                  .Must(date => IsValidDate(date.ToString()))
+                  .WithMessage("Invalid date format");
+        }
+
+
+        private bool IsValidDate(string value)
+        {
+            DateTime date;
+            return DateTime.TryParse(value, out date);
         }
     }
 }

@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Data.Repositories
@@ -21,39 +20,43 @@ namespace VirtualBank.Data.Repositories
 
         public async Task<IEnumerable<FastTransaction>> GetAll()
         {
-            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
+            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => !f.Disabled)
+                                                    .Select(f => f.ToDomainModel())
                                                     .AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<FastTransaction>> GetByAccountId(int accountId)
         {
-            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
+            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
-                                                    .Where(f => f.BankAccountId == accountId && !f.Disabled)
+                                                    .Where(f => f.RecipientBankAccountId == accountId && !f.Disabled)
+                                                    .Select(f => f.ToDomainModel())
                                                     .AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<FastTransaction>> GetByIBAN(string iban)
         {
-            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
+            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
-                                                    .Where(f => f.BankAccount.IBAN == iban && !f.Disabled)
+                                                    .Where(f => f.RecipientBankAccount.IBAN == iban && !f.Disabled)
+                                                    .Select(f => f.ToDomainModel())
                                                     .AsNoTracking().ToListAsync();
         }
 
         public async Task<FastTransaction> FindByIdAsync(int id)
         {
-            return await _dbContext.FastTransactions.Include(f => f.BankAccount)
+            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => f.Id == id && !f.Disabled)
+                                                    .Select(f => f.ToDomainModel())
                                                     .FirstOrDefaultAsync();
         }
 
         public async Task<FastTransaction> AddAsync(FastTransaction transaction)
         {
-            await _dbContext.FastTransactions.AddAsync(transaction);
+            await _dbContext.FastTransactions.AddAsync(transaction.ToEntity());
 
             return transaction;
         }
@@ -67,7 +70,7 @@ namespace VirtualBank.Data.Repositories
                 _dbContext.Entry(existingFastTransaction).State = EntityState.Detached;
             }
 
-            _dbContext.Entry(fastTx).State = EntityState.Modified;
+            _dbContext.Entry(fastTx.ToEntity()).State = EntityState.Modified;
 
             return fastTx;
         }

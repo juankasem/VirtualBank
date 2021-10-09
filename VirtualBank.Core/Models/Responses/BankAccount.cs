@@ -1,5 +1,6 @@
 using System;
 using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Core.Enums;
 
 namespace VirtualBank.Core.Models.Responses
@@ -14,9 +15,9 @@ namespace VirtualBank.Core.Models.Responses
 
         public AccountType Type { get; set; }
 
-        public string AccountOwner { get; set; }
+        public BankAccountOwner Owner { get; set; }
 
-        public Branch AccountBranch { get; set; }
+        public BankAccountBranch Branch { get; set; }
 
         public Amount Balance { get; set; }
 
@@ -24,7 +25,7 @@ namespace VirtualBank.Core.Models.Responses
 
         public Amount Debt { get; set; }
 
-        public Currency AccountCurrency { get; set; }
+        public BankAccountCurrency Currency { get; set; }
 
         public CreationInfo CreationInfo { get; set; }
 
@@ -33,57 +34,24 @@ namespace VirtualBank.Core.Models.Responses
         public DateTime? LastTransactionDate { get; set; }
 
 
-        public BankAccount(int id, string accountNo, string iban, AccountType type, string accountOwner,
-                           Branch accountBranch, Amount balance, Amount allowedBalanceToUse,
-                           Amount debt, Currency accountCurrency, CreationInfo creationInfo, ModificationInfo modificationInfo,
+        public BankAccount(int id, string accountNo, string iban, AccountType type, BankAccountOwner owner,
+                           BankAccountBranch branch, Amount balance, Amount allowedBalanceToUse,
+                           Amount debt, BankAccountCurrency currency, CreationInfo creationInfo, ModificationInfo modificationInfo,
                            DateTime? lastTransactionDate)
         {
             Id = Throw.ArgumentNullException.IfNull(id, nameof(id));
             AccountNo = Throw.ArgumentNullException.IfNull(accountNo, nameof(accountNo));
             IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
-            AccountOwner = Throw.ArgumentNullException.IfNull(accountOwner, nameof(accountOwner));
-            AccountBranch = Throw.ArgumentNullException.IfNull(accountBranch, nameof(accountBranch));
+            Owner = Throw.ArgumentNullException.IfNull(owner, nameof(owner));
+            Branch = Throw.ArgumentNullException.IfNull(branch, nameof(branch));
             Balance = balance;
             AllowedBalanceToUse = allowedBalanceToUse;
             Debt = debt;
-            AccountCurrency = Throw.ArgumentNullException.IfNull(accountCurrency, nameof(accountCurrency));
+            Currency = Throw.ArgumentNullException.IfNull(currency, nameof(currency));
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
             ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
             LastTransactionDate = lastTransactionDate;
-        }
-
-        public class Branch
-        {
-            public int Id { get; }
-
-            public string Name { get; }
-
-            public string Code { get; }
-
-            public Branch(int id, string name, string code)
-            {
-                Id = id;
-                Name = Throw.ArgumentNullException.IfNull(name, nameof(name));
-                Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
-            }
-        }
-
-        public class Currency
-        {
-            public int Id { get; }
-
-            public string Code { get; }
-
-            public string Symbol { get; }
-
-
-            public Currency(int id, string code, string symbol)
-            {
-                Id = id;
-                Code = Throw.ArgumentNullException.IfNull(code, nameof(code));
-                Symbol = Throw.ArgumentNullException.IfNull(symbol, nameof(symbol));
-            }
         }
     }
 }

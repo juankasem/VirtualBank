@@ -219,15 +219,13 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Add transaction to db & save changes 
-                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, new Amount(0), toAccount.Balance));
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, new Amount(0), toAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
 
                     var depositor = await GetCustomerName(request.To);
                     var initiatedBy = GetInitiatedBy(request.InitiatedBy);
-
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.To, initiatedBy, depositor));
 
@@ -303,15 +301,13 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.BankAccounts.UpdateAsync(fromAccount);
                     await _unitOfWork.SaveAsync();
 
-                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, new Amount(0)));
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, new Amount(0)));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
 
                     var withdrawer = await GetCustomerName(request.From);
                     var initiatedBy = GetInitiatedBy(request.InitiatedBy);
-
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, withdrawer, initiatedBy));
 
@@ -376,7 +372,7 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
-                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
@@ -384,7 +380,7 @@ namespace VirtualBank.Api.Services
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
 
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
+                    await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, sender, recipient));
 
@@ -451,7 +447,7 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
-                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
+                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
@@ -459,8 +455,6 @@ namespace VirtualBank.Api.Services
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
                     var feesWithCurrency = new Money(request.Fees.Amount, currency);
-
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
 
                     responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, sender, recipient, feesWithCurrency));
 
@@ -478,9 +472,8 @@ namespace VirtualBank.Api.Services
 
 
         #region private Helper methods
-        private Core.Domain.Models.CashTransaction CreateCashTransaction(CreateCashTransactionRequest request,
-                                                                         Amount senderBalance, Amount recipientBalance) =>
-            new(0,
+        private Core.Domain.Models.CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, Amount senderBalance, Amount recipientBalance) =>
+            new(Guid.NewGuid(),
                 GenerateReferenceNo(),
                 request.Type,
                 request.InitiatedBy,
@@ -494,7 +487,6 @@ namespace VirtualBank.Api.Services
                 CreateMoney(recipientBalance, request.DebitedFunds.Currency),
                 request.TransactionDate,
                 request.CreationInfo,
-                new ModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
                 request.CreditCardNo != null ? request.CreditCardNo : null,
                 request.DebitCardNo != null ? request.DebitCardNo : null
                 );
@@ -525,7 +517,7 @@ namespace VirtualBank.Api.Services
                 return responseModel;
             }
 
-            if (currency != senderBankAccount.AccountCurrency.Code)
+            if (currency != senderBankAccount.Currency.Code)
             {
                 responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
                 return responseModel;

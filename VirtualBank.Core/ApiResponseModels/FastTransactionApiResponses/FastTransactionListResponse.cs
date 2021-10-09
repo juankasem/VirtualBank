@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Domain.Models;
+using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Core.ApiResponseModels.FastTransactionApiResponses
 {

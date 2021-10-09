@@ -23,6 +23,8 @@ namespace VirtualBank.Data.Repositories
 
         public ICountriesRepository Countries { get; private set; }
 
+        public ICurrencyRepository Currencies { get; private set; }
+
         public ICustomerRepository Customers { get; private set; }
 
         public ICreditCardsRepository CreditCards { get; private set; }

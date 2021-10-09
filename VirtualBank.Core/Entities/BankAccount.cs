@@ -83,7 +83,7 @@ namespace VirtualBank.Core.Entities
                                               AccountNo,
                                               IBAN,
                                               Type,
-                                              CreateOwner(CustomerId, Owner.FirstName, Owner.LastName),
+                                              CreateAccountOwner(CustomerId, Owner.FirstName, Owner.LastName),
                                               CreateAccountBranch(Branch),
                                               new Amount(Balance),
                                               new Amount(AllowedBalanceToUse),
@@ -93,20 +93,20 @@ namespace VirtualBank.Core.Entities
                                               new CreationInfo(CreatedBy, CreatedOn),
                                               new ModificationInfo(LastModifiedBy, LastModifiedOn),
                                               Disabled,
-                                              CashTransactions.LastOrDefault()?.LastModifiedOn);
+                                              CashTransactions.LastOrDefault()?.CreatedOn);
 
-        private Domain.Models.BankAccount.AccountOwner CreateOwner(int customerId, string firstName, string lastName) =>
-             new Domain.Models.BankAccount.AccountOwner(customerId, CreateOwnerName(firstName, lastName));
+        private Domain.Models.BankAccountOwner CreateAccountOwner(int customerId, string firstName, string lastName) =>
+             new Domain.Models.BankAccountOwner(customerId, CreateOwnerName(firstName, lastName));
 
 
         private string CreateOwnerName(string firstName, string lastName) =>
            firstName + " " + lastName;
 
-        private Domain.Models.BankAccount.Branch CreateAccountBranch(Branch branch) =>
-            new Domain.Models.BankAccount.Branch(branch.Id, branch.Code, branch.Name, branch.Address.City.Name);
+        private Domain.Models.BankAccountBranch CreateAccountBranch(Branch branch) =>
+            new Domain.Models.BankAccountBranch(branch.Id, branch.Code, branch.Name, branch.Address.City.Name);
 
-        private Domain.Models.BankAccount.Currency CreateAccountCurrency(Currency currency) =>
-            new Domain.Models.BankAccount.Currency(currency.Id, currency.Code, currency.Symbol);
+        private Domain.Models.BankAccountCurrency CreateAccountCurrency(Currency currency) =>
+            new Domain.Models.BankAccountCurrency(currency.Id, currency.Code, currency.Symbol);
     }
 }
 

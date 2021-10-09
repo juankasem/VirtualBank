@@ -18,6 +18,8 @@ namespace VirtualBank.Data.Interfaces
 
         ICountriesRepository Countries { get; }
 
+        ICurrencyRepository Currencies { get; }
+
         ICustomerRepository Customers { get; }
 
         ICreditCardsRepository CreditCards { get; }

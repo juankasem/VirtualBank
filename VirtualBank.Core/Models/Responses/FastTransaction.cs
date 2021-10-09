@@ -1,7 +1,7 @@
 using VirtualBank.Core.ArgumentChecks;
-using VirtualBank.Core.Models;
+using VirtualBank.Core.Domain.Models;
 
-namespace VirtualBank.Core.Domain.Models
+namespace VirtualBank.Core.Models.Responses
 {
     public class FastTransaction
     {
@@ -9,11 +9,11 @@ namespace VirtualBank.Core.Domain.Models
 
         public string IBAN { get; }
 
-        public RecipientDetails RecipientDetails { get; set; }
+        public RecipientDetails RecipientDetails { get; }
 
-        public CreationInfo CreationInfo { get; set; }
+        public CreationInfo CreationInfo { get; }
 
-        public ModificationInfo ModificationInfo { get; set; }
+        public ModificationInfo ModificationInfo { get; }
 
 
         public FastTransaction(int id, string iban, RecipientDetails recipientDetails,
@@ -36,6 +36,7 @@ namespace VirtualBank.Core.Domain.Models
                                             CreationInfo.CreatedBy,
                                             CreationInfo.CreatedOn,
                                             ModificationInfo.ModifiedBy,
-                                            ModificationInfo.LastModifiedOn);
+                                            ModificationInfo.LastModifiedOn
+                                             );
     }
 }

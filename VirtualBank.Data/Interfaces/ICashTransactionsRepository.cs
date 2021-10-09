@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using VirtualBank.Core.Domain.Models;
 
@@ -11,10 +12,9 @@ namespace VirtualBank.Data.Interfaces
         Task<IEnumerable<CashTransaction>> GetByIBANAsync(string iban, int lastDays);
         Task<IEnumerable<CashTransaction>> GetLatestByIBANAsync(string iban);
         Task<CashTransaction> GetLastByIBANAsync(string iban);
-        Task<CashTransaction> FindByIdAsync(int id);
+        Task<CashTransaction> FindByIdAsync(Guid id);
         Task<CashTransaction> FindByIBANAsync(string iban);
-        Task AddAsync(CashTransaction transaction);
-        Task UpdateAsync(CashTransaction transaction);
-        Task<bool> RemoveAsync(int id);
+        Task<CashTransaction> AddAsync(CashTransaction transaction);
+        Task<CashTransaction> UpdateAsync(CashTransaction transaction);
     }
 }

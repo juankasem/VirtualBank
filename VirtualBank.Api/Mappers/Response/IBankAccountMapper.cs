@@ -24,12 +24,12 @@ namespace VirtualBank.Api.Mappers.Response
                 bankAccount.AccountNo,
                 bankAccount.IBAN,
                 bankAccount.Type,
-                bankAccount.Owner.FullName,
-                new BankAccount.Branch(bankAccount.AccountBranch.Id, bankAccount.AccountBranch.Name, bankAccount.AccountBranch.Code),
+                bankAccount.Owner,
+                new Core.Domain.Models.BankAccountBranch(bankAccount.Id, bankAccount.Branch.Code, bankAccount.Branch.Code, bankAccount.Branch.City),
                 new Amount(bankAccount.Balance),
                 new Amount(bankAccount.AllowedBalanceToUse),
                 new Amount(bankAccount.Debt),
-                new BankAccount.Currency(bankAccount.AccountCurrency.Id, bankAccount.AccountCurrency.Code, bankAccount.AccountCurrency.Symbol),
+                new Core.Domain.Models.BankAccountCurrency(bankAccount.Currency.Id, bankAccount.Currency.Code, bankAccount.Currency.Symbol),
                 bankAccount.CreationInfo,
                 bankAccount.ModificationInfo,
                 lastTransactionDate ?? null
@@ -40,9 +40,9 @@ namespace VirtualBank.Api.Mappers.Response
                 bankAccount.IBAN,
                 bankAccount.Owner.FullName,
                 bankAccount.Type,
-                bankAccount.AccountBranch.Name,
-                bankAccount.AccountBranch.City,
-                bankAccount.AccountCurrency.Code,
+                bankAccount.Branch.Name,
+                bankAccount.Branch.City,
+                bankAccount.Currency.Code,
                 bankAccount.CreationInfo,
                 bankAccount.ModificationInfo);
 
