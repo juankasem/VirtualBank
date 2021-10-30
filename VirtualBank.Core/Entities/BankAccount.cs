@@ -83,7 +83,7 @@ namespace VirtualBank.Core.Entities
                                               AccountNo,
                                               IBAN,
                                               Type,
-                                              CreateAccountOwner(CustomerId, Owner.FirstName, Owner.LastName),
+                                              CreateAccountOwner(CustomerId, Owner.FirstName, Owner.LastName, Owner.Gender),
                                               CreateAccountBranch(Branch),
                                               new Amount(Balance),
                                               new Amount(AllowedBalanceToUse),
@@ -95,8 +95,8 @@ namespace VirtualBank.Core.Entities
                                               Disabled,
                                               CashTransactions.LastOrDefault()?.CreatedOn);
 
-        private Domain.Models.BankAccountOwner CreateAccountOwner(int customerId, string firstName, string lastName) =>
-             new Domain.Models.BankAccountOwner(customerId, CreateOwnerName(firstName, lastName));
+        private Domain.Models.BankAccountOwner CreateAccountOwner(int customerId, string firstName, string lastName, Gender gender) =>
+             new Domain.Models.BankAccountOwner(customerId, CreateOwnerName(firstName, lastName), gender);
 
 
         private string CreateOwnerName(string firstName, string lastName) =>

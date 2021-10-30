@@ -1,6 +1,7 @@
 ﻿using System;
 using VirtualBank.Core.ArgumentChecks;
 using VirtualBank.Core.Enums;
+using VirtualBank.Core.Models;
 
 namespace VirtualBank.Core.ApiRequestModels.LoanApiRequests
 {
@@ -8,22 +9,27 @@ namespace VirtualBank.Core.ApiRequestModels.LoanApiRequests
     {
         public int CustomerId { get; set; }
 
-        public int BankAccountId { get; set; }
+        public string CustomerName { get; set; }
+
+        public string IBAN { get; set; }
 
         public LoanType LoanType { get; set; }
 
-        public decimal Amount { get; set; }
+        public Money Amount { get; set; }
 
-        public decimal InterestRate { get; set; }
+        public Amount InterestRate { get; set; }
 
         public DateTime DueDate { get; set; }
 
+        public CreationInfo CreationInfo { get; set; }
 
-        public CreateLoanRequest(int customerId, int bankAccountId, LoanType loanType, decimal amount,
-                                 decimal interestRate, DateTime dueDate)
+
+        public CreateLoanRequest(int customerId, string customerName, string iban, LoanType loanType,
+                                 Money amount, Amount interestRate, DateTime dueDate)
         {
             CustomerId = Throw.ArgumentNullException.IfNull(customerId, nameof(customerId));
-            BankAccountId = Throw.ArgumentNullException.IfNull(bankAccountId, nameof(bankAccountId));
+            CustomerName = Throw.ArgumentNullException.IfNull(customerName, nameof(customerName));
+            IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
             LoanType = Throw.ArgumentNullException.IfNull(loanType, nameof(loanType));
             Amount = Throw.ArgumentNullException.IfNull(amount, nameof(amount));
             InterestRate = Throw.ArgumentNullException.IfNull(interestRate, nameof(interestRate));

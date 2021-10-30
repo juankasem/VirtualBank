@@ -1,6 +1,4 @@
-﻿using System;
-using VirtualBank.Core.Models;
-using VirtualBank.Core.Models.Responses;
+﻿using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Api.Mappers.Response
 {

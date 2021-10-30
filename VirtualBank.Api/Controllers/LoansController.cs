@@ -74,7 +74,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetLoanById([FromRoute] int loanId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetLoanById([FromRoute] Guid loanId, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -133,7 +133,7 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> AddOrEditLoanAsync([FromRoute] int loanId, [FromBody] CreateLoanRequest request,
+        public async Task<IActionResult> AddOrEditLoanAsync([FromRoute] Guid loanId, [FromBody] CreateLoanRequest request,
                                                             CancellationToken cancellationToken = default)
         {
             try

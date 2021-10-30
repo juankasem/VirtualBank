@@ -1,5 +1,5 @@
 ﻿<Properties GitUserInfo="UsingMD" StartupConfiguration="{E497C1BE-1055-4A1D-BDCE-C4A3ADC3C990}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="VirtualBank.Core/Entities/BaseClass.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="VirtualBank.Api/Services/CashTransactionsService.cs">
     <Files>
       <File FileName="VirtualBank.Data/Interfaces/IUnitOfWork.cs" Line="1" Column="1" IsPinned="True" />
       <File FileName="VirtualBank.Api/Services/CitiesService.cs" />
@@ -10,17 +10,17 @@
       <File FileName="VirtualBank.Api/Services/FastTransactionsService.cs" />
       <File FileName="VirtualBank.Data/Repositories/UnitOfWork.cs" />
       <File FileName="VirtualBank.Core/Models/Amount.cs" />
-      <File FileName="VirtualBank.Core/ApiResponseModels/CashTrasactionApiResponses/CashTransactionResponse.cs" Line="78" Column="81" />
-      <File FileName="VirtualBank.Api/Services/CashTransactionsService.cs" Line="547" Column="45" />
+      <File FileName="VirtualBank.Core/ApiResponseModels/CashTrasactionApiResponses/CashTransactionResponse.cs" Line="1" Column="1" />
+      <File FileName="VirtualBank.Api/Services/CashTransactionsService.cs" Line="382" Column="71" />
       <File FileName="VirtualBank.Core/Interfaces/ICountriesService.cs" />
-      <File FileName="VirtualBank.Api/Controllers/CashTransactionsController.cs" Line="231" Column="77" />
-      <File FileName="VirtualBank.Core/Models/DebitedFunds.cs" Line="5" Column="18" />
-      <File FileName="VirtualBank.Core/ApiRequestModels/CashTransactionApiRequests/CreateCashTransactionRequest.cs" Line="37" Column="1" />
-      <File FileName="VirtualBank.Core/Interfaces/ICashTransactionsService.cs" Line="29" Column="68" />
-      <File FileName="VirtualBank.Api/Services/BranchService.cs" Line="1" Column="1" />
-      <File FileName="VirtualBank.Core/Entities/Branch.cs" Line="8" Column="33" />
-      <File FileName="VirtualBank.Core/Entities/BaseClass.cs" Line="7" Column="18" />
-      <File FileName="VirtualBank.Data/Repositories/CountriesRepository.cs" Line="89" Column="10" NotebookId="1" />
+      <File FileName="VirtualBank.Api/Controllers/CashTransactionsController.cs" Line="231" Column="76" />
+      <File FileName="VirtualBank.Core/ApiRequestModels/CashTransactionApiRequests/CreateCashTransactionRequest.cs" />
+      <File FileName="VirtualBank.Core/Interfaces/ICashTransactionsService.cs" Line="28" Column="61" />
+      <File FileName="VirtualBank.Api/Services/BranchService.cs" />
+      <File FileName="VirtualBank.Core/Entities/Branch.cs" />
+      <File FileName="VirtualBank.Core/Entities/BaseClass.cs" Line="27" Column="19" />
+      <File FileName="VirtualBank.Core/ApiResponseModels/CashTrasactionApiResponses/LatestTransferListResponse.cs" Line="1" Column="1" />
+      <File FileName="VirtualBank.Data/Repositories/CountriesRepository.cs" Line="28" Column="1" NotebookId="1" />
       <File FileName="VirtualBank.Data/Interfaces/ICountriesRepository.cs" NotebookId="1" />
     </Files>
     <Pads>
@@ -31,34 +31,12 @@
               <Node name="ActionResults" expanded="True" />
               <Node name="Controllers" expanded="True" />
               <Node name="Filters" expanded="True" />
-              <Node name="Helpers" expanded="True">
-                <Node name="ErrorsHelper" expanded="True" />
+              <Node name="Services" expanded="True">
+                <Node name="CashTransactionsService.cs" selected="True" />
               </Node>
-              <Node name="Services" expanded="True" />
             </Node>
             <Node name="VirtualBank.Core" expanded="True">
-              <Node name="ApiRequestModels" expanded="True">
-                <Node name="BankAccountApiRequests" expanded="True" />
-                <Node name="BranchApiRequests" expanded="True" />
-                <Node name="CashTransactionApiRequests" expanded="True" />
-                <Node name="CityApiRequests" expanded="True" />
-                <Node name="UtilityPaymentApiRequests" expanded="True" />
-              </Node>
-              <Node name="ApiResponseModels" expanded="True">
-                <Node name="BankAccountApiResponses" expanded="True" />
-                <Node name="CashTrasactionApiResponses" expanded="True" />
-              </Node>
-              <Node name="ApiRoutes" expanded="True" />
-              <Node name="ArgumentChecks" expanded="True" />
-              <Node name="Entities" expanded="True">
-                <Node name="BaseClass.cs" selected="True" />
-              </Node>
               <Node name="Interfaces" expanded="True" />
-              <Node name="Models" expanded="True" />
-            </Node>
-            <Node name="VirtualBank.Data" expanded="True">
-              <Node name="Interfaces" expanded="True" />
-              <Node name="Repositories" expanded="True" />
             </Node>
           </Node>
         </State>

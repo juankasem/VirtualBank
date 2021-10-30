@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace VirtualBank.Core.ApiResponseModels
 {
@@ -11,7 +10,7 @@ namespace VirtualBank.Core.ApiResponseModels
 
         public void AddError(ErrorResponse error)
         {
-            if(Errors == null)
+            if (Errors == null)
                 Errors = new List<ErrorResponse>();
 
             Errors.Add(error);

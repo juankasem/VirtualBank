@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using VirtualBank.Core.ApiRequestModels.LoanApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -14,8 +15,8 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<LoanListResponse>> GetLoansByIBANAsync(string iban, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<LoanResponse>> GetLoanByIdsync(int id, CancellationToken cancellationToken = default);
+        Task<ApiResponse<LoanResponse>> GetLoanByIdsync(Guid loanId, CancellationToken cancellationToken = default);
 
-        Task<Response> AddOrEditLoanAsync(int loanId, CreateLoanRequest request,  CancellationToken cancellationToken = default);
+        Task<ApiResponse<LoanResponse>> AddOrEditLoanAsync(Guid loanId, CreateLoanRequest request, CancellationToken cancellationToken = default);
     }
 }

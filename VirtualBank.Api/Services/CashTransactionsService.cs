@@ -29,6 +29,7 @@ namespace VirtualBank.Api.Services
             _cashTransactionsMapper = cashTransactionsMapper;
         }
 
+        #region public service methods
         /// <summary>
         /// Retrieve all cash transactions occured
         /// </summary>
@@ -51,8 +52,8 @@ namespace VirtualBank.Api.Services
 
             var cashTransactions = allCashTransactions.Select(cashTransaction => _cashTransactionsMapper.MapToResponseModel(cashTransaction,
                                                                                                                             cashTransaction.From,
-                                                                                                                            GetCustomerName(cashTransaction.From).Result,
-                                                                                                                            GetCustomerName(cashTransaction.To).Result))
+                                                                                                                            GetCustomerName(cashTransaction.From).GetAwaiter().GetResult(),
+                                                                                                                            GetCustomerName(cashTransaction.To).GetAwaiter().GetResult()))
                                                       .OrderByDescending(c => c.CreationInfo.CreatedOn)
                                                       .Skip((pageNumber - 1) * pageSize)
                                                       .Take(pageSize)
@@ -119,6 +120,7 @@ namespace VirtualBank.Api.Services
                                                                                                cashTransaction.InitiatedBy),
                                                                                                accountHolderName));
                             break;
+
                         case CashTransactionType.Withdrawal:
                             cashTransactionList.Add(_cashTransactionsMapper.MapToResponseModel(cashTransaction,
                                                                                                iban, accountHolderName,
@@ -153,7 +155,7 @@ namespace VirtualBank.Api.Services
 
             var latestTransfersList = latestTransfers.OrderByDescending(c => c.CreationInfo.CreatedOn)
                                                      .Where(c => IsTransferTransaction(c)).Take(7)
-                                                     .Select(tx => _cashTransactionsMapper.MapToLatestTransferResponseModel(tx, GetCustomerName(tx.To).Result))
+                                                     .Select(tx => _cashTransactionsMapper.MapToLatestTransferResponseModel(tx, GetCustomerName(tx.To).GetAwaiter().GetResult()))
                                                      .ToImmutableList();
 
 
@@ -227,7 +229,7 @@ namespace VirtualBank.Api.Services
                     var depositor = await GetCustomerName(request.To);
                     var initiatedBy = GetInitiatedBy(request.InitiatedBy);
 
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.To, initiatedBy, depositor));
+                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.To, initiatedBy, depositor));
 
                     return responseModel;
                 }
@@ -309,7 +311,7 @@ namespace VirtualBank.Api.Services
                     var withdrawer = await GetCustomerName(request.From);
                     var initiatedBy = GetInitiatedBy(request.InitiatedBy);
 
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, withdrawer, initiatedBy));
+                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.From, withdrawer, initiatedBy));
 
                     return responseModel;
                 }
@@ -380,9 +382,7 @@ namespace VirtualBank.Api.Services
                     var sender = await GetCustomerName(request.From);
                     var recipient = await GetCustomerName(request.To);
 
-                    await _unitOfWork.CashTransactions.GetLastByIBANAsync(request.From);
-
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, sender, recipient));
+                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.From, sender, recipient));
 
                     return responseModel;
                 }
@@ -456,7 +456,7 @@ namespace VirtualBank.Api.Services
                     var recipient = await GetCustomerName(request.To);
                     var feesWithCurrency = new Money(request.Fees.Amount, currency);
 
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction, request.From, sender, recipient, feesWithCurrency));
+                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.From, sender, recipient, feesWithCurrency));
 
                     return responseModel;
                 }
@@ -469,7 +469,7 @@ namespace VirtualBank.Api.Services
                 }
             }
         }
-
+        #endregion
 
         #region private Helper methods
         private CashTransaction CreateCashTransaction(CreateCashTransactionRequest request, Amount senderBalance, Amount recipientBalance) =>
@@ -479,8 +479,8 @@ namespace VirtualBank.Api.Services
                 request.InitiatedBy,
                 request.From,
                 request.To,
-                request.DebitedFunds,
-                request.Fees,
+                CreateMoney(request.DebitedFunds.Amount, request.DebitedFunds.Currency),
+                CreateMoney(request.Fees.Amount, request.DebitedFunds.Currency),
                 request.PaymentType,
                 request.Description,
                 CreateMoney(senderBalance, request.DebitedFunds.Currency),
@@ -571,8 +571,8 @@ namespace VirtualBank.Api.Services
             return new Amount(amountToTransfer.Value * feesRate);
         }
 
-        private static Money CreateMoney(decimal amount, string currency) =>
-           new(new Amount(amount), currency);
+        private static Money CreateMoney(Amount amount, string currency) =>
+           new(amount, currency);
 
 
         private async Task<string> GetCustomerName(string iban)

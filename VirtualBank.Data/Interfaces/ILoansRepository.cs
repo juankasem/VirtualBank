@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 
 namespace VirtualBank.Data.Interfaces
 {
@@ -9,9 +10,9 @@ namespace VirtualBank.Data.Interfaces
         Task<IEnumerable<Loan>> GetAllAsync();
         Task<IEnumerable<Loan>> GetByCustomerIdAsync(int customerId);
         Task<IEnumerable<Loan>> GetByIBANdAsync(string iban);
-        Task<Loan> FindByIdAsync(int id);
-        Task<Loan> AddAsync(Loan loan);
-        Task<Loan> UpdateAsync(Loan loan);
+        Task<Loan> FindByIdAsync(Guid id);
+        Task<Core.Entities.Loan> AddAsync(Loan loan);
+        Task<Core.Entities.Loan> UpdateAsync(Loan loan);
         Task<bool> RemoveAsync(int id);
     }
 }

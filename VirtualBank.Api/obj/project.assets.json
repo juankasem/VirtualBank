@@ -10171,7 +10171,7 @@
         "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "/Users/juankasem/.nuget/NuGet/NuGet.Config"
+        "/Users/juankasem/.config/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net5.0"

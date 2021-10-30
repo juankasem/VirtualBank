@@ -30,8 +30,7 @@ namespace VirtualBank.Core.Entities
 
 
         public FastTransaction(int id, string iban, int recipientBankAccountId, string recipientFullName, string recipientShortName,
-                               decimal amount, string createdBy, DateTime createdOn,
-                               string modifiedBy, DateTime lastModifiedOn)
+                               decimal amount, string createdBy, DateTime createdOn, string modifiedBy, DateTime lastModifiedOn)
         {
             Id = id;
             IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
@@ -52,11 +51,18 @@ namespace VirtualBank.Core.Entities
                                                                                                    RecipientBankAccount.Branch.Name,
                                                                                                    RecipientFullName, RecipientShortName,
                                                                                                    CreateMoney(Amount, RecipientBankAccount.Currency.Code)),
-                                                 new CreationInfo(CreatedBy, CreatedOn),
-                                                 new ModificationInfo(LastModifiedBy, LastModifiedOn)
+                                                 CreateCreationInfo(CreatedBy, CreatedOn),
+                                                 CreateModificationInfo(LastModifiedBy, LastModifiedOn)
                                             );
 
         private Core.Models.Money CreateMoney(decimal amount, string currency) =>
              new Core.Models.Money(new Amount(amount), currency);
+
+
+        private CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) =>
+           new CreationInfo(createdBy, createdOn);
+
+        private ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) =>
+           new ModificationInfo(lastModifiedBy, lastModifiedOn);
     }
 }

@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Data.Repositories
@@ -15,54 +16,54 @@ namespace VirtualBank.Data.Repositories
         {
             _dbContext = dbContext;
         }
-      
-
-        public async Task<IEnumerable<Loan>> GetAllAsync()
-        {
-            return await _dbContext.Loans.Include(l => l.Customer)
-                                         .Include(l => l.BankAccount)
-                                         .Where(l => l.Disabled == false)
-                                         .AsNoTracking().ToListAsync();
-        }
 
 
-        public async Task<IEnumerable<Loan>> GetByCustomerIdAsync(int customerId)
-        {
-            return await _dbContext.Loans.Include(l => l.Customer)
-                                         .Include(l => l.BankAccount)
-                                         .Where(l => l.CustomerId == customerId && !l.Disabled)
-                                         .AsNoTracking().ToListAsync();
-        }
+        public async Task<IEnumerable<Loan>> GetAllAsync() =>
+             await _dbContext.Loans.Include(l => l.Customer)
+                                   .Include(l => l.BankAccount)
+                                   .Where(l => !l.Disabled)
+                                   .Select(loan => loan.ToDomainModel())
+                                   .AsNoTracking().ToListAsync();
 
 
-        public async Task<IEnumerable<Loan>> GetByIBANdAsync(string iban)
-        {
-            return await _dbContext.Loans.Include(l => l.Customer)
+
+        public async Task<IEnumerable<Loan>> GetByCustomerIdAsync(int customerId) =>
+                  await _dbContext.Loans.Include(l => l.Customer)
+                                        .Include(l => l.BankAccount)
+                                        .Where(l => l.CustomerId == customerId && !l.Disabled)
+                                        .Select(loan => loan.ToDomainModel())
+                                        .AsNoTracking().ToListAsync();
+
+
+
+        public async Task<IEnumerable<Loan>> GetByIBANdAsync(string iban) =>
+                  await _dbContext.Loans.Include(l => l.Customer)
                                          .Include(l => l.BankAccount)
                                          .Where(l => l.BankAccount.IBAN == iban && !l.Disabled)
+                                         .Select(loan => loan.ToDomainModel())
                                          .AsNoTracking().ToListAsync();
+
+
+        public async Task<Loan> FindByIdAsync(Guid id) =>
+                  await _dbContext.Loans.Include(l => l.Customer)
+                                        .Include(l => l.BankAccount)
+                                        .Where(loan => loan.Id == id && !loan.Disabled)
+                                        .Select(loan => loan.ToDomainModel())
+                                        .FirstOrDefaultAsync();
+
+
+        public async Task<Core.Entities.Loan> AddAsync(Loan loan)
+        {
+            var entity = loan.ToEntity();
+            await _dbContext.Loans.AddAsync(entity);
+
+            return entity;
         }
 
 
-        public async Task<Loan> FindByIdAsync(int id)
+        public async Task<Core.Entities.Loan> UpdateAsync(Loan loan)
         {
-            return await _dbContext.Loans.Include(l => l.Customer)
-                                         .Include(l => l.BankAccount)
-                                         .FirstOrDefaultAsync(l => l.Id == id && !l.Disabled);
-        }
-
-
-        public async Task<Loan> AddAsync(Loan loan)
-        {
-            await _dbContext.Loans.AddAsync(loan);
-            await SaveAsync();
-
-            return loan;
-        }
-
-
-        public async Task<Loan> UpdateAsync(Loan loan)
-        {
+            var entity = loan.ToEntity();
 
             var existingLoan = await _dbContext.Loans.FirstOrDefaultAsync(l => l.Id == loan.Id && !l.Disabled);
 
@@ -71,10 +72,9 @@ namespace VirtualBank.Data.Repositories
                 _dbContext.Entry(existingLoan).State = EntityState.Detached;
             }
 
-            _dbContext.Entry(loan).State = EntityState.Modified;
-            await SaveAsync();
+            _dbContext.Entry(entity).State = EntityState.Modified;
 
-            return loan;
+            return entity;
         }
 
 
@@ -86,18 +86,11 @@ namespace VirtualBank.Data.Repositories
             if (loan != null)
             {
                 loan.Disabled = true;
-                await SaveAsync();
 
                 isDeleted = true;
             }
 
             return isDeleted;
-        }
-
-
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

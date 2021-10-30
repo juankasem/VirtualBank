@@ -73,19 +73,19 @@ namespace VirtualBank.Data.Repositories
 
 
 
-        public async Task<CashTransaction> AddAsync(CashTransaction transaction)
+        public async Task<Core.Entities.CashTransaction> AddAsync(CashTransaction transaction)
         {
             var entity = transaction.ToEntity(transaction.SenderRemainingBalance.Amount.Value,
-                                                        transaction.RecipientRemainingBalance.Amount.Value);
+                                              transaction.RecipientRemainingBalance.Amount.Value);
 
             await _dbContext.CashTransactions.AddAsync(entity);
 
-            return entity.ToDomainModel();
+            return entity;
         }
 
 
 
-        public async Task<CashTransaction> UpdateAsync(CashTransaction transaction)
+        public async Task<Core.Entities.CashTransaction> UpdateAsync(CashTransaction transaction)
         {
             var existingCashTransaction = await _dbContext.CashTransactions.FirstOrDefaultAsync(c => c.Id == transaction.Id);
 
@@ -99,7 +99,7 @@ namespace VirtualBank.Data.Repositories
 
             _dbContext.Entry(entity).State = EntityState.Modified;
 
-            return entity.ToDomainModel();
+            return entity;
         }
     }
 }

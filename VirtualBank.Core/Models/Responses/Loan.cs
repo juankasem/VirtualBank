@@ -1,13 +1,13 @@
 using System;
 using VirtualBank.Core.ArgumentChecks;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Core.Enums;
-using VirtualBank.Core.Models;
 
-namespace VirtualBank.Core.Domain.Models
+namespace VirtualBank.Core.Models.Responses
 {
     public class Loan
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         public BankAccountCustomer BankAccountCustomer { get; set; }
 
@@ -24,7 +24,7 @@ namespace VirtualBank.Core.Domain.Models
         public ModificationInfo ModificationInfo { get; }
 
 
-        public Loan(Guid id, BankAccountCustomer bankAccountCustomer, LoanType loanType,
+        public Loan(string id, BankAccountCustomer bankAccountCustomer, LoanType loanType,
                     Money amount, Amount interestRate, DateTime dueDate,
                     CreationInfo creationInfo, ModificationInfo modificationInfo)
         {
@@ -37,18 +37,5 @@ namespace VirtualBank.Core.Domain.Models
             CreationInfo = Throw.ArgumentNullException.IfNull(creationInfo, nameof(creationInfo));
             ModificationInfo = Throw.ArgumentNullException.IfNull(modificationInfo, nameof(modificationInfo));
         }
-
-        public Core.Entities.Loan ToEntity() =>
-                new Core.Entities.Loan(Id,
-                                    BankAccountCustomer.CustomerId,
-                                    BankAccountCustomer.IBAN,
-                                    LoanType,
-                                    Amount.Amount.Value,
-                                    InterestRate.Value,
-                                    DueDate,
-                                    CreationInfo.CreatedBy,
-                                    CreationInfo.CreatedOn,
-                                    ModificationInfo.ModifiedBy,
-                                    ModificationInfo.LastModifiedOn);
     }
 }

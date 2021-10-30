@@ -9,6 +9,7 @@ using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.BankAccountApiResponses;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Interfaces;
 using VirtualBank.Core.Models;
@@ -31,7 +32,7 @@ namespace VirtualBank.Api.Services
             _bankAccountMapper = bankAccountMapper;
         }
 
-
+        #region public server methods
         /// <summary>
         /// Retrieve bank accounts for the specified customer
         /// </summary>
@@ -52,7 +53,7 @@ namespace VirtualBank.Api.Services
             var bankAccountList = bankAccounts.OrderBy(b => b.CreationInfo.CreatedOn)
                                               .Select(bankAccount => _bankAccountMapper.MapToResponseModel(bankAccount,
                                                                                        _unitOfWork.CashTransactions.GetLastByIBANAsync(bankAccount.IBAN)
-                                                                                       .Result.CreationInfo.CreatedOn))
+                                                                                       .GetAwaiter().GetResult().CreationInfo.CreatedOn))
                                                                                        .ToImmutableList();
 
             responseModel.Data = new(bankAccountList, bankAccountList.Count);
@@ -197,9 +198,9 @@ namespace VirtualBank.Api.Services
                     {
                         bankaccount.AccountNo = request.AccountNo;
                         bankaccount.IBAN = request.IBAN;
-                        bankaccount.Owner = request.Owner;
-                        bankaccount.Branch = request.Branch;
-                        bankaccount.Currency = request.Currency;
+                        bankaccount.Owner = CreateBankAccountOwner(request.Owner.CustomerId, request.Owner.FullName, request.Owner.Gender);
+                        bankaccount.Branch = CreateBankAccountBranch(request.Branch.Id, request.Branch.Code, request.Branch.Name, request.Branch.City);
+                        bankaccount.Currency = CreateBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol);
                         bankaccount.Balance = request.Balance;
                         bankaccount.Type = request.Type;
                         bankaccount.ModificationInfo = CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
@@ -207,7 +208,7 @@ namespace VirtualBank.Api.Services
                         var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
                         await _unitOfWork.SaveAsync();
 
-                        responseModel.Data = new(_bankAccountMapper.MapToResponseModel(updatedBankAccount, updatedBankAccount.LastTransactionDate));
+                        responseModel.Data = new(_bankAccountMapper.MapToResponseModel(updatedBankAccount.ToDomainModel(), updatedBankAccount.LastModifiedOn));
                     }
                     catch (Exception ex)
                     {
@@ -227,7 +228,7 @@ namespace VirtualBank.Api.Services
                     var createdBankAccount = await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
                     await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(createdBankAccount));
+                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(createdBankAccount.ToDomainModel()));
                 }
                 catch (Exception ex)
                 {
@@ -393,52 +394,34 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
+        #endregion
 
         #region private helper methods
-
         private Core.Domain.Models.BankAccount CreateBankAccount(CreateBankAccountRequest request) =>
-         new(0,
-             request.AccountNo,
-             request.IBAN,
-             request.Type,
-             request.Owner,
-             request.Branch,
-             request.Balance,
-             request.AllowedBalanceToUse,
-             new Amount(1),
-             new Amount(0),
-             request.Currency,
-             request.CreationInfo,
-             CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
-             false);
+            new(0,
+                request.AccountNo,
+                request.IBAN,
+                request.Type,
+                CreateBankAccountOwner(request.Owner.CustomerId, request.Owner.FullName, request.Owner.Gender),
+                CreateBankAccountBranch(request.Branch.Id, request.Branch.Code, request.Branch.Name, request.Branch.City),
+                request.Balance,
+                request.AllowedBalanceToUse,
+                new Amount(1),
+                new Amount(0),
+                CreateBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol),
+                CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+                CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+                false);
 
 
-        private async Task<Core.Domain.Models.BankAccountOwner> CreateBankAccountOwner(int customerId)
-        {
-            var customer = await _unitOfWork.Customers.FindByIdAsync(customerId);
-            if (customer == null)
-                return null;
+        private BankAccountOwner CreateBankAccountOwner(int customerId, string name, Gender gender) =>
+               new(customerId, name, gender);
 
-            return new Core.Domain.Models.BankAccountOwner(customerId, GetFullName(customer.FirstName, customer.LastName));
-        }
+        private BankAccountBranch CreateBankAccountBranch(int branchId, string code, string name, string city) =>
+               new(branchId, code, name, city);
 
-        private async Task<Core.Domain.Models.BankAccountBranch> CreateBankAccountBranch(int branchId)
-        {
-            var branch = await _unitOfWork.Branches.FindByIdAsync(branchId);
-            if (branch == null)
-                return null;
-
-            return new Core.Domain.Models.BankAccountBranch(branchId, branch.Code, branch.Name, branch.Address?.City?.Name);
-        }
-
-        private async Task<Core.Domain.Models.BankAccountCurrency> CreateBankAccountCurrency(int currencyId)
-        {
-            var currency = await _unitOfWork.Currencies.FindByIdAsync(currencyId);
-            if (currency == null)
-                return null;
-
-            return new Core.Domain.Models.BankAccountCurrency(currencyId, currency.Code, currency.Symbol);
-        }
+        private BankAccountCurrency CreateBankAccountCurrency(int currencyId, string code, string symbol) =>
+               new(currencyId, code, symbol);
 
         private string GetFullName(string firstName, string lastName) => firstName + " " + lastName;
 

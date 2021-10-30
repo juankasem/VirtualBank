@@ -27,6 +27,7 @@ namespace VirtualBank.Api.Services
             _fastTransactionsMapper = fastTransactionsMapper;
         }
 
+        #region public service methods
         /// <summary>
         /// Retrieve all fast transactions
         /// </summary>
@@ -101,6 +102,7 @@ namespace VirtualBank.Api.Services
             if (fastTransaction == null)
             {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(fastTransaction)));
+
                 return responseModel;
             }
 
@@ -153,7 +155,7 @@ namespace VirtualBank.Api.Services
                         var updatedFastTransaction = await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
                         await _unitOfWork.SaveAsync();
 
-                        responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(updatedFastTransaction));
+                        responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(updatedFastTransaction.ToDomainModel()));
                     }
                     catch (Exception ex)
                     {
@@ -172,7 +174,7 @@ namespace VirtualBank.Api.Services
                     var createdFastTransaction = await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request, recipientBankAccount));
                     await _unitOfWork.SaveAsync();
 
-                    responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(createdFastTransaction));
+                    responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(createdFastTransaction.ToDomainModel()));
                 }
                 catch (Exception ex)
                 {
@@ -212,10 +214,9 @@ namespace VirtualBank.Api.Services
 
             return responseModel;
         }
-
+        #endregion
 
         #region private helper methods
-
         private FastTransaction CreateFastTransaction(CreateFastTransactionRequest request, BankAccount bankAccount) =>
             new(0,
                 request.IBAN,
@@ -227,7 +228,8 @@ namespace VirtualBank.Api.Services
 
 
         private RecipientDetails CreateRecipientDetails(int bankAccountId, string iban, string bankName,
-                                                        string recipientFullName, string recipientShortName, Money amountToTransfer) =>
+                                                        string recipientFullName, string recipientShortName,
+                                                        Money amountToTransfer) =>
 
                 new(bankAccountId, iban, bankName, recipientFullName, recipientShortName, amountToTransfer);
 

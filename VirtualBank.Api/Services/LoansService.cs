@@ -1,29 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.LoanApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.LoanApiResponses;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Core.Interfaces;
+using VirtualBank.Core.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
 {
     public class LoansService : ILoansService
     {
-        private readonly ILoansRepository _loansRepo;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILoansMapper _loansMapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LoansService(ILoansRepository loansRepo,
+        public LoansService(IUnitOfWork unitOfWork,
+                            ILoansMapper loansMapper,
                             IHttpContextAccessor httpContextAccessor)
         {
-            _loansRepo = loansRepo;
+            _unitOfWork = unitOfWork;
+            _loansMapper = loansMapper;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -36,19 +40,20 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<LoanListResponse>();
 
-            var allLoans = await _loansRepo.GetAllAsync();
+            var allLoans = await _unitOfWork.Loans.GetAllAsync();
 
             if (!allLoans.Any())
             {
                 return responseModel;
             }
 
-            var loanList = allLoans.OrderByDescending(c => c.CreatedOn).Skip((pageNumber - 1) * pageSize)
-                                                                       .Take(pageSize)
-                                                                       .Select(x => CreateLoanResponse(x))
-                                                                       .ToImmutableList();
+            var loanList = allLoans.OrderByDescending(c => c.CreationInfo.CreatedOn)
+                                   .Skip((pageNumber - 1) * pageSize)
+                                   .Take(pageSize)
+                                   .Select(loan => _loansMapper.MapToResponseModel(loan))
+                                   .ToImmutableList();
 
-            responseModel.Data = new LoanListResponse(loanList, loanList.Count);
+            responseModel.Data = new(loanList, loanList.Count);
 
             return responseModel;
         }
@@ -64,25 +69,21 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<LoanListResponse>();
 
-            var loans = await _loansRepo.GetByCustomerIdAsync(customerId);
+            var loans = await _unitOfWork.Loans.GetByCustomerIdAsync(customerId);
 
             if (!loans.Any())
             {
                 return responseModel;
             }
 
-            var loanList = new List<LoanResponse>();
+            var loanList = loans.OrderByDescending(loan => loan.ModificationInfo.LastModifiedOn)
+                                .Select(loan => _loansMapper.MapToResponseModel(loan))
+                                .ToImmutableList();
 
-            foreach (var loan in loans)
-            {
-                loanList.Add(CreateLoanResponse(loan));
-            }
-
-            responseModel.Data = new LoanListResponse(loanList.ToImmutableList(), loanList.Count);
+            responseModel.Data = new(loanList, loanList.Count);
 
             return responseModel;
         }
-
 
 
         /// <summary>
@@ -95,46 +96,43 @@ namespace VirtualBank.Api.Services
         {
             var responseModel = new ApiResponse<LoanListResponse>();
 
-            var loans = await _loansRepo.GetByIBANdAsync(iban);
+            var loans = await _unitOfWork.Loans.GetByIBANdAsync(iban);
 
             if (!loans.Any())
             {
                 return responseModel;
             }
 
-            var loanList = new List<LoanResponse>();
+            var loanList = loans.OrderByDescending(loan => loan.ModificationInfo.LastModifiedOn)
+                                .Select(loan => _loansMapper.MapToResponseModel(loan))
+                                .ToImmutableList();
 
-            foreach (var loan in loans)
-            {
-                loanList.Add(CreateLoanResponse(loan));
-            }
-
-            responseModel.Data = new LoanListResponse(loanList.ToImmutableList(), loanList.Count);
+            responseModel.Data = new(loanList, loanList.Count);
 
             return responseModel;
         }
 
 
         /// <summary>
-        /// Retrieve loam by id
+        /// Retrieve loan by id
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<LoanResponse>> GetLoanByIdsync(int id, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<LoanResponse>> GetLoanByIdsync(Guid loanId, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<LoanResponse>();
 
-            var loan = await _loansRepo.FindByIdAsync(id);
-
+            var loan = await _unitOfWork.Loans.FindByIdAsync(loanId);
 
             if (loan == null)
             {
-                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(loan), $"loan Id: {id} not found"));
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(loan), $"loan id: {loanId} not found"));
+
                 return responseModel;
             }
 
-            responseModel.Data = CreateLoanResponse(loan);
+            responseModel.Data = new(_loansMapper.MapToResponseModel(loan));
 
             return responseModel;
         }
@@ -146,78 +144,87 @@ namespace VirtualBank.Api.Services
         /// <param name="loanId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Response> AddOrEditLoanAsync(int loanId, CreateLoanRequest request, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<LoanResponse>> AddOrEditLoanAsync(Guid loanId, CreateLoanRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new Response();
+            var responseModel = new ApiResponse<LoanResponse>();
 
 
-            if (loanId != 0)
+            if (loanId != null && Convert.ToInt32(loanId) != 0)
             {
-                var loan = await _loansRepo.FindByIdAsync(loanId);
+                var loan = await _unitOfWork.Loans.FindByIdAsync(loanId);
 
                 try
                 {
                     if (loan != null)
                     {
-                        loan.CustomerId = request.CustomerId;
-                        loan.BankAccountId = request.BankAccountId;
+                        loan.BankAccountCustomer = CreateBankAccountCustomer(request.CustomerId, request.CustomerName, request.IBAN);
                         loan.LoanType = request.LoanType;
                         loan.Amount = request.Amount;
                         loan.DueDate = request.DueDate;
 
-                        await _loansRepo.UpdateAsync(loan);
+                        var updatedloan = await _unitOfWork.Loans.UpdateAsync(loan);
+                        await _unitOfWork.SaveAsync();
+
+                        responseModel.Data = new(_loansMapper.MapToResponseModel(updatedloan.ToDomainModel()));
                     }
                     else
-                    {
+
                         responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(loan), $"loan of id: { loanId} not found"));
-                        return responseModel;
-                    }
+
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
 
+                    return responseModel;
                 }
             }
             else
             {
                 try
                 {
-                    await _loansRepo.AddAsync(CreateLoan(request));
+                    var createdLoan = await _unitOfWork.Loans.AddAsync(CreateLoan(request));
+                    await _unitOfWork.SaveAsync();
+
+                    responseModel.Data = new(_loansMapper.MapToResponseModel(createdLoan.ToDomainModel()));
+
                 }
                 catch (Exception ex)
                 {
                     responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
                 }
             }
 
             return responseModel;
         }
 
-        private Loan CreateLoan(CreateLoanRequest request)
-        {
-            return new Loan()
-            {
-                CustomerId = request.CustomerId,
-                BankAccountId = request.BankAccountId,
-                LoanType = request.LoanType,
-                Amount = request.Amount,
-                DueDate = request.DueDate
-            };
-        }
 
 
         #region private helper methods
-        private LoanResponse CreateLoanResponse(Loan loan)
-        {
+        private Loan CreateLoan(CreateLoanRequest request) =>
+            new(Guid.NewGuid(),
+                CreateBankAccountCustomer(request.CustomerId, request.CustomerName, request.IBAN),
+                request.LoanType,
+                request.Amount,
+                request.InterestRate,
+                request.DueDate,
+                CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+                CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn));
 
-            return new LoanResponse(loan.Id,
-                                    loan.Customer?.FirstName + " " + loan.Customer?.LastName,
-                                    loan.BankAccount?.IBAN,
-                                    loan.LoanType, loan.Amount,
-                                    loan.InterestRate, loan.DueDate);
 
-        }
+        private BankAccountCustomer CreateBankAccountCustomer(int customerId, string customerName, string iban) =>
+                new(customerId, customerName, iban);
+
+
+        private Core.Models.Money CreateMoney(decimal amount, string currency) =>
+             new Core.Models.Money(new Amount(amount), currency);
+
+        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
+
+        private static ModificationInfo CreateModificationInfo(string modifiededBy, DateTime lastModifiedeOn) => new(modifiededBy, lastModifiedeOn);
+
         #endregion
     }
 }

@@ -18,61 +18,59 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<IEnumerable<FastTransaction>> GetAll()
-        {
-            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
+        public async Task<IEnumerable<FastTransaction>> GetAll() =>
+                   await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => !f.Disabled)
                                                     .Select(f => f.ToDomainModel())
                                                     .AsNoTracking().ToListAsync();
-        }
 
-        public async Task<IEnumerable<FastTransaction>> GetByAccountId(int accountId)
-        {
-            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
+
+        public async Task<IEnumerable<FastTransaction>> GetByAccountId(int accountId) =>
+                   await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => f.RecipientBankAccountId == accountId && !f.Disabled)
                                                     .Select(f => f.ToDomainModel())
                                                     .AsNoTracking().ToListAsync();
-        }
 
-        public async Task<IEnumerable<FastTransaction>> GetByIBAN(string iban)
-        {
-            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
+
+        public async Task<IEnumerable<FastTransaction>> GetByIBAN(string iban) =>
+                   await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => f.RecipientBankAccount.IBAN == iban && !f.Disabled)
                                                     .Select(f => f.ToDomainModel())
                                                     .AsNoTracking().ToListAsync();
-        }
 
-        public async Task<FastTransaction> FindByIdAsync(int id)
-        {
-            return await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
+
+        public async Task<FastTransaction> FindByIdAsync(int id) =>
+                 await _dbContext.FastTransactions.Include(f => f.RecipientBankAccount)
                                                     .ThenInclude(f => f.Branch)
                                                     .Where(f => f.Id == id && !f.Disabled)
                                                     .Select(f => f.ToDomainModel())
                                                     .FirstOrDefaultAsync();
+
+
+        public async Task<Core.Entities.FastTransaction> AddAsync(FastTransaction transaction)
+        {
+            var entity = transaction.ToEntity();
+            await _dbContext.FastTransactions.AddAsync(entity);
+
+            return entity;
         }
 
-        public async Task<FastTransaction> AddAsync(FastTransaction transaction)
+        public async Task<Core.Entities.FastTransaction> UpdateAsync(FastTransaction fastTransaction)
         {
-            await _dbContext.FastTransactions.AddAsync(transaction.ToEntity());
-
-            return transaction;
-        }
-
-        public async Task<FastTransaction> UpdateAsync(FastTransaction fastTx)
-        {
-            var existingFastTransaction = await _dbContext.FastTransactions.FirstOrDefaultAsync(f => f.Id == fastTx.Id && !f.Disabled);
+            var entity = fastTransaction.ToEntity();
+            var existingFastTransaction = await _dbContext.FastTransactions.FirstOrDefaultAsync(f => f.Id == fastTransaction.Id && !f.Disabled);
 
             if (existingFastTransaction != null)
             {
                 _dbContext.Entry(existingFastTransaction).State = EntityState.Detached;
             }
 
-            _dbContext.Entry(fastTx.ToEntity()).State = EntityState.Modified;
+            _dbContext.Entry(entity).State = EntityState.Modified;
 
-            return fastTx;
+            return entity;
         }
 
         public async Task<bool> RemoveAsync(int id)
