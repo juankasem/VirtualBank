@@ -1,6 +1,5 @@
-using System;
-using VirtualBank.Core.Models;
 using VirtualBank.Core.Domain.Models;
+using VirtualBank.Api.Helpers.Methods;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -29,11 +28,7 @@ namespace VirtualBank.Api.Mappers.Response
                 _districtMapper.MapToAddressDistrict(address.District),
                 _cityMapper.MapToAddressCity(address.City),
                 _countryMapper.MapToAddressCountry(address.Country),
-                CreateCreationInfo(address.CreatedBy, address.CreatedOn),
-                CreateModificationInfo(address.LastModifiedBy, address.LastModifiedOn));
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
+                Utils.CreateCreationInfo(address.CreatedBy, address.CreatedOn),
+                Utils.CreateModificationInfo(address.LastModifiedBy, address.LastModifiedOn));
     }
 }

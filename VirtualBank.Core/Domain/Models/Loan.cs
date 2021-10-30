@@ -19,9 +19,9 @@ namespace VirtualBank.Core.Domain.Models
 
         public DateTime DueDate { get; set; }
 
-        public CreationInfo CreationInfo { get; }
+        public CreationInfo CreationInfo { get; set; }
 
-        public ModificationInfo ModificationInfo { get; }
+        public ModificationInfo ModificationInfo { get; set; }
 
 
         public Loan(Guid id, BankAccountCustomer bankAccountCustomer, LoanType loanType,

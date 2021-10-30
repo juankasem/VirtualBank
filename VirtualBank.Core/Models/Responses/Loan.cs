@@ -7,17 +7,17 @@ namespace VirtualBank.Core.Models.Responses
 {
     public class Loan
     {
-        public string Id { get; set; }
+        public string Id { get; }
 
-        public BankAccountCustomer BankAccountCustomer { get; set; }
+        public BankAccountCustomer BankAccountCustomer { get; }
 
-        public LoanType LoanType { get; set; }
+        public LoanType LoanType { get; }
 
-        public Money Amount { get; set; }
+        public Money Amount { get; }
 
-        public Amount InterestRate { get; set; }
+        public Amount InterestRate { get; }
 
-        public DateTime DueDate { get; set; }
+        public DateTime DueDate { get; }
 
         public CreationInfo CreationInfo { get; }
 

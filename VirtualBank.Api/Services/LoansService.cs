@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Helpers.Methods;
 using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.LoanApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -161,6 +162,7 @@ namespace VirtualBank.Api.Services
                         loan.LoanType = request.LoanType;
                         loan.Amount = request.Amount;
                         loan.DueDate = request.DueDate;
+                        loan.ModificationInfo = Utils.CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
 
                         var updatedloan = await _unitOfWork.Loans.UpdateAsync(loan);
                         await _unitOfWork.SaveAsync();
@@ -201,7 +203,6 @@ namespace VirtualBank.Api.Services
         }
 
 
-
         #region private helper methods
         private Loan CreateLoan(CreateLoanRequest request) =>
             new(Guid.NewGuid(),
@@ -210,20 +211,12 @@ namespace VirtualBank.Api.Services
                 request.Amount,
                 request.InterestRate,
                 request.DueDate,
-                CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
-                CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn));
+                Utils.CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+                Utils.CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn));
 
 
         private BankAccountCustomer CreateBankAccountCustomer(int customerId, string customerName, string iban) =>
                 new(customerId, customerName, iban);
-
-
-        private Core.Models.Money CreateMoney(decimal amount, string currency) =>
-             new Core.Models.Money(new Amount(amount), currency);
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string modifiededBy, DateTime lastModifiedeOn) => new(modifiededBy, lastModifiedeOn);
 
         #endregion
     }

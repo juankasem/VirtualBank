@@ -7,7 +7,7 @@ namespace VirtualBank.Core.Domain.Models
     {
         public int Id { get; }
 
-        public string IBAN { get; }
+        public string IBAN { get; set; }
 
         public RecipientDetails RecipientDetails { get; set; }
 

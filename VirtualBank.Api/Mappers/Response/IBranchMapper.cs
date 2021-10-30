@@ -1,6 +1,7 @@
 ﻿using System;
 using VirtualBank.Core.Models;
 using VirtualBank.Core.Domain.Models;
+using VirtualBank.Api.Helpers.Methods;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -24,14 +25,7 @@ namespace VirtualBank.Api.Mappers.Response
              branch.Name,
              branch.Phone,
              _addressMapper.MapToResponseModel(branch.Address),
-             CreateCreationInfo(branch.CreatedBy, branch.CreatedOn),
-             CreateModificationInfo(branch.LastModifiedBy, branch.LastModifiedOn));
-
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
-
-
+             Utils.CreateCreationInfo(branch.CreatedBy, branch.CreatedOn),
+             Utils.CreateModificationInfo(branch.LastModifiedBy, branch.LastModifiedOn));
     }
 }

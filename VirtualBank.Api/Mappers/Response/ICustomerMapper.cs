@@ -1,6 +1,7 @@
 using System;
 using VirtualBank.Core.Models;
 using VirtualBank.Core.Domain.Models;
+using VirtualBank.Api.Helpers.Methods;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -27,8 +28,8 @@ namespace VirtualBank.Api.Mappers.Response
               customer.BirthDate,
               customer.UserId,
               _addressMapper.MapToResponseModel(customer.Address),
-              CreateCreationInfo(customer.CreatedBy, customer.CreatedOn),
-              CreateModificationInfo(customer.LastModifiedBy, customer.LastModifiedOn)
+              Utils.CreateCreationInfo(customer.CreatedBy, customer.CreatedOn),
+              Utils.CreateModificationInfo(customer.LastModifiedBy, customer.LastModifiedOn)
             );
 
         public RecipientCustomer MapToRecipientCustomerResponseModel(Core.Entities.Customer customer)
@@ -40,8 +41,5 @@ namespace VirtualBank.Api.Mappers.Response
           !string.IsNullOrEmpty(middleName) ?
               firstName + ' ' + middleName + ' ' + lastName
                 : firstName + ' ' + lastName;
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
     }
 }

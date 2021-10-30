@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Helpers.Methods;
 using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.BankAccountApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -164,7 +165,7 @@ namespace VirtualBank.Api.Services
             var bankAccountOwner = await _unitOfWork.Customers.FindByIBANAsync(bankAccount.IBAN);
             var recipientName = request.RecipientName;
 
-            if (GetFullName(bankAccountOwner.FirstName, bankAccountOwner.LastName) != recipientName)
+            if (Utils.GetFullName(bankAccountOwner.FirstName, bankAccountOwner.LastName) != recipientName)
             {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientName), $"Recipient name: {recipientName} not found"));
                 return responseModel;
@@ -203,7 +204,7 @@ namespace VirtualBank.Api.Services
                         bankaccount.Currency = CreateBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol);
                         bankaccount.Balance = request.Balance;
                         bankaccount.Type = request.Type;
-                        bankaccount.ModificationInfo = CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
+                        bankaccount.ModificationInfo = Utils.CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
 
                         var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
                         await _unitOfWork.SaveAsync();
@@ -409,8 +410,8 @@ namespace VirtualBank.Api.Services
                 new Amount(1),
                 new Amount(0),
                 CreateBankAccountCurrency(request.Currency.Id, request.Currency.Code, request.Currency.Symbol),
-                CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
-                CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+                Utils.CreateCreationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
+                Utils.CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn),
                 false);
 
 
@@ -422,11 +423,6 @@ namespace VirtualBank.Api.Services
 
         private BankAccountCurrency CreateBankAccountCurrency(int currencyId, string code, string symbol) =>
                new(currencyId, code, symbol);
-
-        private string GetFullName(string firstName, string lastName) => firstName + " " + lastName;
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-        private static ModificationInfo CreateModificationInfo(string modifiededBy, DateTime lastModifiedeOn) => new(modifiededBy, lastModifiedeOn);
 
         #endregion
     }

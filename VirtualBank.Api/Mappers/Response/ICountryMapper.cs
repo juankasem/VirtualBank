@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System;
 using VirtualBank.Core.Models;
 using VirtualBank.Core.Domain.Models;
+using VirtualBank.Api.Helpers.Methods;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -19,8 +20,8 @@ namespace VirtualBank.Api.Mappers.Response
             country.Id,
             country.Name,
             country.Code,
-            CreateCreationInfo(country.CreatedBy, country.CreatedOn),
-            CreateModificationInfo(country.LastModifiedBy, country.LastModifiedOn),
+            Utils.CreateCreationInfo(country.CreatedBy, country.CreatedOn),
+            Utils.CreateModificationInfo(country.LastModifiedBy, country.LastModifiedOn),
             cities != null ? cities : ImmutableList<Country.City>.Empty
         );
 
@@ -30,9 +31,5 @@ namespace VirtualBank.Api.Mappers.Response
             country.Name,
             country.Code
         );
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
     }
 }

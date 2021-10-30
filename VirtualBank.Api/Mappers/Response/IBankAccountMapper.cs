@@ -1,4 +1,5 @@
 ﻿using System;
+using VirtualBank.Api.Helpers.Methods;
 using VirtualBank.Core.Models;
 using VirtualBank.Core.Models.Responses;
 
@@ -30,8 +31,8 @@ namespace VirtualBank.Api.Mappers.Response
                 new Amount(bankAccount.AllowedBalanceToUse.Value),
                 new Amount(bankAccount.Debt.Value),
                 new Core.Domain.Models.BankAccountCurrency(bankAccount.Currency.Id, bankAccount.Currency.Code, bankAccount.Currency.Symbol),
-                bankAccount.CreationInfo,
-                bankAccount.ModificationInfo,
+                Utils.CreateCreationInfo(bankAccount.CreationInfo.CreatedBy, bankAccount.CreationInfo.CreatedOn),
+                Utils.CreateModificationInfo(bankAccount.ModificationInfo.ModifiedBy, bankAccount.ModificationInfo.LastModifiedOn),
                 lastTransactionDate ?? null
                 );
 
@@ -45,9 +46,5 @@ namespace VirtualBank.Api.Mappers.Response
                 bankAccount.Currency.Code,
                 bankAccount.CreationInfo,
                 bankAccount.ModificationInfo);
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string modifiededBy, DateTime lastModifiedeOn) => new(modifiededBy, lastModifiedeOn);
     }
 }

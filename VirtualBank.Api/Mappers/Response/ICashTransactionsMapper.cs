@@ -1,4 +1,5 @@
 using System;
+using VirtualBank.Api.Helpers.Methods;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Models;
 using VirtualBank.Core.Models.Responses;
@@ -27,7 +28,7 @@ namespace VirtualBank.Api.Mappers.Response
                 cashTransaction.From != iban
                     ? CreateDebitedFunds(cashTransaction.DebitedFunds.Amount, cashTransaction.DebitedFunds.Currency)
                     : CreateDebitedFunds(new Amount(-cashTransaction.DebitedFunds.Amount.Value), cashTransaction.DebitedFunds.Currency),
-                fees ?? CreateMoney(new Amount(0), string.Empty),
+                fees ?? Utils.CreateMoney(new Amount(0), string.Empty),
                 cashTransaction.PaymentType,
                 cashTransaction.From != iban ? $"From: {sender}, Account No: {cashTransaction.From} "
                 : cashTransaction.InitiatedBy == BankAssetType.POS ? cashTransaction.DebitCardNo != null
@@ -38,7 +39,7 @@ namespace VirtualBank.Api.Mappers.Response
                     ? cashTransaction.RecipientRemainingBalance
                     : cashTransaction.SenderRemainingBalance,
                 cashTransaction.TransactionDate,
-                cashTransaction.CreationInfo,
+                Utils.CreateCreationInfo(cashTransaction.CreationInfo.CreatedBy, cashTransaction.CreationInfo.CreatedOn),
                 cashTransaction.CreditCardNo != null ? cashTransaction.CreditCardNo : null,
                 cashTransaction.DebitCardNo != null ? cashTransaction.DebitCardNo : null
                 );
@@ -52,12 +53,5 @@ namespace VirtualBank.Api.Mappers.Response
                 cashTransaction.CreationInfo);
 
         private static Money CreateDebitedFunds(Amount amount, string currency) => new(amount, currency);
-
-        private static Money CreateMoney(Amount amount, string currency) => new(amount, currency);
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string modifiedBy, DateTime modifiedOn) => new(modifiedBy, modifiedOn);
-
     }
 }

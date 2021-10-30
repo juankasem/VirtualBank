@@ -1,6 +1,5 @@
-using System;
-using VirtualBank.Core.Models;
 using VirtualBank.Core.Domain.Models;
+using VirtualBank.Api.Helpers.Methods;
 
 namespace VirtualBank.Api.Mappers.Response
 {
@@ -25,8 +24,8 @@ namespace VirtualBank.Api.Mappers.Response
             city.Id,
             city.Name,
             _countryMapper.MapToResponseModel(city.Country),
-            CreateCreationInfo(city.CreatedBy, city.CreatedOn),
-            CreateModificationInfo(city.LastModifiedBy, city.LastModifiedOn)
+            Utils.CreateCreationInfo(city.CreatedBy, city.CreatedOn),
+            Utils.CreateModificationInfo(city.LastModifiedBy, city.LastModifiedOn)
         );
 
         public Address.City MapToAddressCity(Core.Entities.City City) =>
@@ -35,9 +34,5 @@ namespace VirtualBank.Api.Mappers.Response
             City.Name,
             City.CountryId
         );
-
-        private static CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) => new(createdBy, createdOn);
-
-        private static ModificationInfo CreateModificationInfo(string lastModifiedBy, DateTime lastModifiedOn) => new(lastModifiedBy, lastModifiedOn);
     }
 }
