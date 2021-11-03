@@ -69,18 +69,16 @@ namespace VirtualBank.Data.Repositories
                                             .FirstOrDefaultAsync();
 
 
-        public async Task<Core.Entities.BankAccount> AddAsync(BankAccount bankAccount)
+        public async Task AddAsync(BankAccount bankAccount)
         {
             var entity = bankAccount.ToEntity();
 
             await _dbContext.BankAccounts.AddAsync(entity);
-
-            return entity;
         }
 
 
 
-        public async Task<Core.Entities.BankAccount> UpdateAsync(BankAccount bankAccount)
+        public async Task UpdateAsync(BankAccount bankAccount)
         {
             var existingBankAccount = await _dbContext.BankAccounts.FirstOrDefaultAsync(c => c.Id == bankAccount.Id);
 
@@ -92,8 +90,6 @@ namespace VirtualBank.Data.Repositories
             var entity = bankAccount.ToEntity();
 
             _dbContext.Entry(entity).State = EntityState.Modified;
-
-            return entity;
         }
 
 

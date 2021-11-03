@@ -14,7 +14,7 @@ namespace VirtualBank.Data.Interfaces
         Task<CashTransaction> GetLastByIBANAsync(string iban);
         Task<CashTransaction> FindByIdAsync(Guid id);
         Task<CashTransaction> FindByIBANAsync(string iban);
-        Task<Core.Entities.CashTransaction> AddAsync(CashTransaction transaction);
-        Task<Core.Entities.CashTransaction> UpdateAsync(CashTransaction transaction);
+        Task AddAsync(CashTransaction transaction);
+        Task UpdateAsync(CashTransaction transaction);
     }
 }

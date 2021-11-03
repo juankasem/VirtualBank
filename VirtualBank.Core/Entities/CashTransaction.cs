@@ -56,9 +56,9 @@ namespace VirtualBank.Core.Entities
         /// <summary>
         /// currency of credited funds
         /// </summary>
-        [Required]
-        [MaxLength(5)]
-        public string Currency { get; set; }
+        [ForeignKey("Currency")]
+        public int CurrencyId { get; set; }
+        public Currency Currency { get; set; }
 
         /// <summary>
         /// remaining balance of the sender account
@@ -116,10 +116,10 @@ namespace VirtualBank.Core.Entities
 #nullable enable
         public string? CreditCardNo { get; set; }
 
+#nullable enable
         /// <summary>
         /// debit card number
         /// </summary>
-#nullable enable
         public string? DebitCardNo { get; set; }
 
 
@@ -129,7 +129,7 @@ namespace VirtualBank.Core.Entities
         }
 
         public CashTransaction(Guid id, string referenceNo, CashTransactionType type, BankAssetType initiatedBy, string from, string to,
-                               decimal amount, string currency, decimal senderRemainingBalance, decimal recipientRemainingBalance,
+                               decimal amount, int currencyId, decimal senderRemainingBalance, decimal recipientRemainingBalance,
                                decimal fees, string description, PaymentType paymentType, DateTime transactionDate,
                                string createdBy, DateTime createdOn, string? creditCardNo, string? debitCardNo)
         {
@@ -140,7 +140,7 @@ namespace VirtualBank.Core.Entities
             From = Throw.ArgumentNullException.IfNull(from, nameof(from));
             To = Throw.ArgumentNullException.IfNull(to, nameof(to));
             Amount = Throw.ArgumentOutOfRangeException.IfLessThan(amount, 0, nameof(amount));
-            Currency = Throw.ArgumentNullException.IfNull(currency, nameof(currency));
+            CurrencyId = Throw.ArgumentNullException.IfNull(currencyId, nameof(currencyId));
             SenderRemainingBalance = Throw.ArgumentOutOfRangeException.IfLessThan(senderRemainingBalance, 0, nameof(senderRemainingBalance));
             RecipientRemainingBalance = Throw.ArgumentOutOfRangeException.IfLessThan(recipientRemainingBalance, 0, nameof(recipientRemainingBalance));
             Fees = Throw.ArgumentOutOfRangeException.IfLessThan(fees, 0, nameof(fees));
@@ -160,15 +160,19 @@ namespace VirtualBank.Core.Entities
                                                     InitiatedBy,
                                                     From,
                                                     To,
-                                                    new Money(new Amount(Amount), Currency),
-                                                    new Money(new Amount(Fees), Currency),
+                                                    CreateMoney(Amount, Currency),
+                                                    CreateMoney(Fees, Currency),
                                                     PaymentType,
                                                     Description,
-                                                    new Money(new Amount(SenderRemainingBalance), Currency),
-                                                    new Money(new Amount(RecipientRemainingBalance), Currency),
+                                                    CreateMoney(SenderRemainingBalance, Currency),
+                                                    CreateMoney(RecipientRemainingBalance, Currency),
                                                     TransactionDate,
                                                     new CreationInfo(CreatedBy, CreatedOn),
                                                     CreditCardNo ?? null,
                                                     DebitCardNo ?? null);
+
+
+        private Core.Models.Money CreateMoney(decimal amount, Currency currency) =>
+            new Core.Models.Money(new Amount(amount), new Domain.Models.MoneyCurrency(currency.Id, currency.Code, currency.Symbol));
     }
 }

@@ -206,10 +206,8 @@ namespace VirtualBank.Api.Services
                         bankaccount.Type = request.Type;
                         bankaccount.ModificationInfo = Utils.CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
 
-                        var updatedBankAccount = await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
+                        await _unitOfWork.BankAccounts.UpdateAsync(bankaccount);
                         await _unitOfWork.SaveAsync();
-
-                        responseModel.Data = new(_bankAccountMapper.MapToResponseModel(updatedBankAccount.ToDomainModel(), updatedBankAccount.LastModifiedOn));
                     }
                     catch (Exception ex)
                     {
@@ -226,10 +224,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var createdBankAccount = await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
+                    await _unitOfWork.BankAccounts.AddAsync(CreateBankAccount(request));
                     await _unitOfWork.SaveAsync();
-
-                    responseModel.Data = new(_bankAccountMapper.MapToResponseModel(createdBankAccount.ToDomainModel()));
                 }
                 catch (Exception ex)
                 {

@@ -17,6 +17,6 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<LoanResponse>> GetLoanByIdsync(Guid loanId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<LoanResponse>> AddOrEditLoanAsync(Guid loanId, CreateLoanRequest request, CancellationToken cancellationToken = default);
+        Task<Response> AddOrEditLoanAsync(Guid loanId, CreateLoanRequest request, CancellationToken cancellationToken = default);
     }
 }

@@ -1,22 +1,22 @@
 using System;
 using VirtualBank.Api.Helpers.Methods;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Core.Enums;
 using VirtualBank.Core.Models;
-using VirtualBank.Core.Models.Responses;
 
 namespace VirtualBank.Api.Mappers.Response
 {
     public interface ICashTransactionsMapper
     {
-        CashTransaction MapToResponseModel(Core.Domain.Models.CashTransaction cashTransaction, string iban, string sender, string recipient, Money fees = null);
+        Core.Models.Responses.CashTransaction MapToResponseModel(CashTransaction cashTransaction, string iban, string sender, string recipient, Money fees = null);
 
-        LatestTransfer MapToLatestTransferResponseModel(Core.Domain.Models.CashTransaction cashTransaction, string recipient);
+        Core.Models.Responses.LatestTransfer MapToLatestTransferResponseModel(CashTransaction cashTransaction, string recipient);
     }
 
     public class CashTransactionsMapper : ICashTransactionsMapper
     {
-        public CashTransaction MapToResponseModel(Core.Domain.Models.CashTransaction cashTransaction,
-                                                  string iban, string sender, string recipient, Money fees = null) =>
+        public Core.Models.Responses.CashTransaction MapToResponseModel(CashTransaction cashTransaction,
+                                                                        string iban, string sender, string recipient, Money fees = null) =>
             new(cashTransaction.Id.ToString(),
                 cashTransaction.ReferenceNo,
                 cashTransaction.Type,
@@ -28,7 +28,7 @@ namespace VirtualBank.Api.Mappers.Response
                 cashTransaction.From != iban
                     ? CreateDebitedFunds(cashTransaction.DebitedFunds.Amount, cashTransaction.DebitedFunds.Currency)
                     : CreateDebitedFunds(new Amount(-cashTransaction.DebitedFunds.Amount.Value), cashTransaction.DebitedFunds.Currency),
-                fees ?? Utils.CreateMoney(new Amount(0), string.Empty),
+                fees ?? Utils.CreateMoney(new Amount(0), cashTransaction.DebitedFunds.Currency),
                 cashTransaction.PaymentType,
                 cashTransaction.From != iban ? $"From: {sender}, Account No: {cashTransaction.From} "
                 : cashTransaction.InitiatedBy == BankAssetType.POS ? cashTransaction.DebitCardNo != null
@@ -45,13 +45,13 @@ namespace VirtualBank.Api.Mappers.Response
                 );
 
 
-        public LatestTransfer MapToLatestTransferResponseModel(Core.Domain.Models.CashTransaction cashTransaction, string recipient) =>
+        public Core.Models.Responses.LatestTransfer MapToLatestTransferResponseModel(Core.Domain.Models.CashTransaction cashTransaction, string recipient) =>
             new(cashTransaction.To,
                 recipient,
                 new Amount(cashTransaction.DebitedFunds.Amount),
                 cashTransaction.TransactionDate,
                 cashTransaction.CreationInfo);
 
-        private static Money CreateDebitedFunds(Amount amount, string currency) => new(amount, currency);
+        private static Money CreateDebitedFunds(Amount amount, MoneyCurrency currency) => new(amount, currency);
     }
 }

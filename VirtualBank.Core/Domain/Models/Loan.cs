@@ -44,6 +44,7 @@ namespace VirtualBank.Core.Domain.Models
                                     BankAccountCustomer.IBAN,
                                     LoanType,
                                     Amount.Amount.Value,
+                                    Amount.Currency.Id,
                                     InterestRate.Value,
                                     DueDate,
                                     CreationInfo.CreatedBy,

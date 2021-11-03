@@ -52,16 +52,14 @@ namespace VirtualBank.Data.Repositories
                                         .FirstOrDefaultAsync();
 
 
-        public async Task<Core.Entities.Loan> AddAsync(Loan loan)
+        public async Task AddAsync(Loan loan)
         {
             var entity = loan.ToEntity();
             await _dbContext.Loans.AddAsync(entity);
-
-            return entity;
         }
 
 
-        public async Task<Core.Entities.Loan> UpdateAsync(Loan loan)
+        public async Task UpdateAsync(Loan loan)
         {
             var entity = loan.ToEntity();
 
@@ -73,8 +71,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(entity).State = EntityState.Modified;
-
-            return entity;
         }
 
 

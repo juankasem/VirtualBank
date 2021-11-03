@@ -11,8 +11,8 @@ namespace VirtualBank.Data.Interfaces
         Task<IEnumerable<Loan>> GetByCustomerIdAsync(int customerId);
         Task<IEnumerable<Loan>> GetByIBANdAsync(string iban);
         Task<Loan> FindByIdAsync(Guid id);
-        Task<Core.Entities.Loan> AddAsync(Loan loan);
-        Task<Core.Entities.Loan> UpdateAsync(Loan loan);
+        Task AddAsync(Loan loan);
+        Task UpdateAsync(Loan loan);
         Task<bool> RemoveAsync(int id);
     }
 }

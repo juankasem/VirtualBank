@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using VirtualBank.Core.Entities;
+using VirtualBank.Core.Domain.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Data.Repositories
@@ -22,7 +22,9 @@ namespace VirtualBank.Data.Repositories
 
             return await _dbContext.UtilityPayments.Include(b => b.BankAccount)
                                                    .ThenInclude(c => c.Owner)
+                                                   .Include(c => c.Currency)
                                                    .Where(l => !l.Disabled)
+                                                   .Select(utilityPayment => utilityPayment.ToDomainModel())
                                                    .AsNoTracking().ToListAsync();
         }
 
@@ -30,25 +32,28 @@ namespace VirtualBank.Data.Repositories
         {
             return await _dbContext.UtilityPayments.Include(b => b.BankAccount)
                                                    .ThenInclude(c => c.Owner)
+                                                   .Include(c => c.Currency)
                                                    .Where(c => c.BankAccount.CustomerId == customerId && !c.Disabled)
+                                                   .Select(utilityPayment => utilityPayment.ToDomainModel())
                                                    .AsNoTracking().ToListAsync();
         }
 
-        public async Task<UtilityPayment> FindByIdAsync(int id)
+        public async Task<UtilityPayment> FindByIdAsync(Guid id)
         {
             return await _dbContext.UtilityPayments.Include(b => b.BankAccount)
                                                    .ThenInclude(c => c.Owner)
-                                                   .FirstOrDefaultAsync(c => c.Id == id && !c.Disabled);
+                                                   .Include(c => c.Currency)
+                                                   .Where(c => c.Id == id && !c.Disabled)
+                                                   .Select(utilityPayment => utilityPayment.ToDomainModel())
+                                                   .FirstOrDefaultAsync();
         }
 
-        public async Task<UtilityPayment> AddAsync(UtilityPayment utilityPayment)
-        {
-            await _dbContext.UtilityPayments.AddAsync(utilityPayment);
+        public async Task AddAsync(UtilityPayment utilityPayment) =>
 
-            return utilityPayment;
-        }
+           await _dbContext.UtilityPayments.AddAsync(utilityPayment.ToEntity());
 
-        public async Task<UtilityPayment> UpdateAsync(UtilityPayment utilityPayment)
+
+        public async Task UpdateAsync(UtilityPayment utilityPayment)
         {
             var existingUtilityPayment = await _dbContext.UtilityPayments.FirstOrDefaultAsync(u => u.Id == utilityPayment.Id && !u.Disabled);
 
@@ -58,8 +63,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(utilityPayment).State = EntityState.Modified;
-
-            return utilityPayment;
         }
 
         public async Task<bool> RemoveAsync(int id)

@@ -50,13 +50,13 @@ namespace VirtualBank.Core.Entities
                                                  new Domain.Models.RecipientDetails(RecipientBankAccountId, RecipientBankAccount.IBAN,
                                                                                                    RecipientBankAccount.Branch.Name,
                                                                                                    RecipientFullName, RecipientShortName,
-                                                                                                   CreateMoney(Amount, RecipientBankAccount.Currency.Code)),
+                                                                                                   CreateMoney(Amount, RecipientBankAccount.Currency)),
                                                  CreateCreationInfo(CreatedBy, CreatedOn),
                                                  CreateModificationInfo(LastModifiedBy, LastModifiedOn)
                                             );
 
-        private Core.Models.Money CreateMoney(decimal amount, string currency) =>
-             new Core.Models.Money(new Amount(amount), currency);
+        private Money CreateMoney(decimal amount, Currency currency) =>
+             new Money(new Amount(amount), new Domain.Models.MoneyCurrency(currency.Id, currency.Code, currency.Symbol));
 
 
         private CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) =>

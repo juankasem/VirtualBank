@@ -12,8 +12,8 @@ namespace VirtualBank.Data.Interfaces
         Task<BankAccount> FindByAccountNoAsync(string accountNo);
         Task<BankAccount> FindByIBANAsync(string iban);
         Task<BankAccount> GetLastByIBANAsync(string iban);
-        Task<Core.Entities.BankAccount> AddAsync(BankAccount bankAccount);
-        Task<Core.Entities.BankAccount> UpdateAsync(BankAccount bankAccount);
+        Task AddAsync(BankAccount bankAccount);
+        Task UpdateAsync(BankAccount bankAccount);
         Task<bool> RemoveAsync(int id);
     }
 }

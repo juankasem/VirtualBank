@@ -16,7 +16,7 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<FastTransactionResponse>> GetFastTransactionByIdAsync(int id, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<FastTransactionResponse>> AddOrEditFastTransactionAsync(int id, CreateFastTransactionRequest request, CancellationToken cancellationToken = default);
+        Task<Response> AddOrEditFastTransactionAsync(int id, CreateFastTransactionRequest request, CancellationToken cancellationToken = default);
 
         Task<Response> DeleteFastTransactionAsync(int id, CancellationToken cancellationToken = default);
     }

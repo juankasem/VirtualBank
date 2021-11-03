@@ -120,9 +120,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<FastTransactionResponse>> AddOrEditFastTransactionAsync(int id, CreateFastTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> AddOrEditFastTransactionAsync(int id, CreateFastTransactionRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<FastTransactionResponse>();
+            var responseModel = new Response();
 
             var recipientBankAccount = await _unitOfWork.BankAccounts.FindByIBANAsync(request.RecipientIBAN);
 
@@ -153,10 +153,8 @@ namespace VirtualBank.Api.Services
 
                     try
                     {
-                        var updatedFastTransaction = await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
+                        await _unitOfWork.FastTransactions.UpdateAsync(fastTransaction);
                         await _unitOfWork.SaveAsync();
-
-                        responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(updatedFastTransaction.ToDomainModel()));
                     }
                     catch (Exception ex)
                     {
@@ -172,10 +170,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var createdFastTransaction = await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request, recipientBankAccount));
+                    await _unitOfWork.FastTransactions.AddAsync(CreateFastTransaction(request, recipientBankAccount));
                     await _unitOfWork.SaveAsync();
-
-                    responseModel.Data = new(_fastTransactionsMapper.MapToResponseModel(createdFastTransaction.ToDomainModel()));
                 }
                 catch (Exception ex)
                 {

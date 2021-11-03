@@ -26,6 +26,10 @@ namespace VirtualBank.Core.Entities
         [Column(TypeName = "decimal(8,2)")]
         public decimal Amount { get; set; }
 
+        [ForeignKey("Currency")]
+        public int CurrencyId { get; set; }
+        public Currency Currency { get; set; }
+
         [Required]
         [Column(TypeName = "decimal(8,2)")]
         public decimal InterestRate { get; set; }
@@ -35,14 +39,15 @@ namespace VirtualBank.Core.Entities
 
 
         public Loan(Guid id, int customerId, string iban, LoanType loanType, decimal amount,
-                    decimal interestRate, DateTime dueDate, string createdBy, DateTime createdOn,
-                    string modifiedBy, DateTime lastModifiedOn)
+                    int currencyId, decimal interestRate, DateTime dueDate,
+                    string createdBy, DateTime createdOn, string modifiedBy, DateTime lastModifiedOn)
         {
             Id = id;
             CustomerId = customerId;
             IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
             LoanType = Throw.ArgumentNullException.IfNull(loanType, nameof(loanType));
-            Amount = Throw.ArgumentNullException.IfNull(amount, nameof(amount));
+            Amount = Throw.ArgumentOutOfRangeException.IfLessThan(interestRate, 0, nameof(interestRate));
+            CurrencyId = Throw.ArgumentNullException.IfNull(currencyId, nameof(currencyId));
             InterestRate = Throw.ArgumentOutOfRangeException.IfLessThan(interestRate, 0, nameof(interestRate));
             DueDate = Throw.ArgumentNullException.IfNull(dueDate, nameof(dueDate));
             CreatedBy = Throw.ArgumentNullException.IfNull(createdBy, nameof(createdBy));
@@ -55,7 +60,7 @@ namespace VirtualBank.Core.Entities
                  new Domain.Models.Loan(Id,
                                         CreateBankAccountCustomer(CustomerId, CreateCustomerName(Customer.FirstName, Customer.LastName), IBAN),
                                         LoanType,
-                                        CreateMoney(Amount, BankAccount.Currency.Code),
+                                        CreateMoney(Amount, BankAccount.Currency),
                                         new Amount(InterestRate),
                                         DueDate,
                                         CreateCreationInfo(CreatedBy, CreatedOn),
@@ -69,8 +74,15 @@ namespace VirtualBank.Core.Entities
         private string CreateCustomerName(string firstName, string lastName) =>
              firstName + " " + lastName;
 
-        private Money CreateMoney(decimal amount, string currency) =>
-            new Money(new Amount(amount), currency);
+        private Money CreateMoney(decimal amount, Currency currency)
+        {
+            if (currency != null)
+            {
+                return new Money(new Amount(amount), new Core.Domain.Models.MoneyCurrency(currency.Id, currency.Code, currency.Symbol));
+            }
+
+            return null;
+        }
 
         private CreationInfo CreateCreationInfo(string createdBy, DateTime createdOn) =>
            new CreationInfo(createdBy, createdOn);

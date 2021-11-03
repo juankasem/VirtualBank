@@ -50,15 +50,13 @@ namespace VirtualBank.Data.Repositories
                                                     .FirstOrDefaultAsync();
 
 
-        public async Task<Core.Entities.FastTransaction> AddAsync(FastTransaction transaction)
+        public async Task AddAsync(FastTransaction transaction)
         {
             var entity = transaction.ToEntity();
             await _dbContext.FastTransactions.AddAsync(entity);
-
-            return entity;
         }
 
-        public async Task<Core.Entities.FastTransaction> UpdateAsync(FastTransaction fastTransaction)
+        public async Task UpdateAsync(FastTransaction fastTransaction)
         {
             var entity = fastTransaction.ToEntity();
             var existingFastTransaction = await _dbContext.FastTransactions.FirstOrDefaultAsync(f => f.Id == fastTransaction.Id && !f.Disabled);
@@ -69,8 +67,6 @@ namespace VirtualBank.Data.Repositories
             }
 
             _dbContext.Entry(entity).State = EntityState.Modified;
-
-            return entity;
         }
 
         public async Task<bool> RemoveAsync(int id)

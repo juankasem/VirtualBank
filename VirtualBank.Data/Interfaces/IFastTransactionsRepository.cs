@@ -10,8 +10,8 @@ namespace VirtualBank.Data.Interfaces
         Task<IEnumerable<FastTransaction>> GetByAccountId(int accountId);
         Task<IEnumerable<FastTransaction>> GetByIBAN(string iban);
         Task<FastTransaction> FindByIdAsync(int id);
-        Task<Core.Entities.FastTransaction> AddAsync(FastTransaction transaction);
-        Task<Core.Entities.FastTransaction> UpdateAsync(FastTransaction transaction);
+        Task AddAsync(FastTransaction transaction);
+        Task UpdateAsync(FastTransaction transaction);
         Task<bool> RemoveAsync(int id);
     }
 }

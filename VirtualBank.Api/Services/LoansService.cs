@@ -12,7 +12,6 @@ using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.LoanApiResponses;
 using VirtualBank.Core.Domain.Models;
 using VirtualBank.Core.Interfaces;
-using VirtualBank.Core.Models;
 using VirtualBank.Data.Interfaces;
 
 namespace VirtualBank.Api.Services
@@ -138,16 +137,15 @@ namespace VirtualBank.Api.Services
             return responseModel;
         }
 
-
         /// <summary>
         /// Add or edit loan
         /// </summary>
         /// <param name="loanId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<LoanResponse>> AddOrEditLoanAsync(Guid loanId, CreateLoanRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> AddOrEditLoanAsync(Guid loanId, CreateLoanRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<LoanResponse>();
+            var responseModel = new Response();
 
 
             if (loanId != null && Convert.ToInt32(loanId) != 0)
@@ -164,10 +162,8 @@ namespace VirtualBank.Api.Services
                         loan.DueDate = request.DueDate;
                         loan.ModificationInfo = Utils.CreateModificationInfo(request.CreationInfo.CreatedBy, request.CreationInfo.CreatedOn);
 
-                        var updatedloan = await _unitOfWork.Loans.UpdateAsync(loan);
+                        await _unitOfWork.Loans.UpdateAsync(loan);
                         await _unitOfWork.SaveAsync();
-
-                        responseModel.Data = new(_loansMapper.MapToResponseModel(updatedloan.ToDomainModel()));
                     }
                     else
 
@@ -185,11 +181,8 @@ namespace VirtualBank.Api.Services
             {
                 try
                 {
-                    var createdLoan = await _unitOfWork.Loans.AddAsync(CreateLoan(request));
+                    await _unitOfWork.Loans.AddAsync(CreateLoan(request));
                     await _unitOfWork.SaveAsync();
-
-                    responseModel.Data = new(_loansMapper.MapToResponseModel(createdLoan.ToDomainModel()));
-
                 }
                 catch (Exception ex)
                 {

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using VirtualBank.Core.ApiRequestModels.UtilityPaymentApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -14,8 +15,8 @@ namespace VirtualBank.Core.Interfaces
 
         Task<ApiResponse<UtilityPaymentListResponse>> GetUtilityPaymentsByIBANAsync(string iban, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(int id, CancellationToken cancellationToken = default);
+        Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(Guid id, CancellationToken cancellationToken = default);
 
-        Task<Response> AddOrEditUtilityPaymentAsync(int UtilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default);
+        Task<Response> AddOrEditUtilityPaymentAsync(Guid UtilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default);
     }
 }

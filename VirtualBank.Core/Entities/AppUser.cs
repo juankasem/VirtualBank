@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using VirtualBank.Core.Enums;
 
@@ -15,6 +13,6 @@ namespace VirtualBank.Core.Entities
         /// current refresh token of the app user
         /// </summary>
         [MaxLength(50)]
-        public string  RefreshToken { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +28,7 @@ namespace VirtualBank.Api.Services
             throw new System.NotImplementedException();
         }
 
-        public Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(int id, CancellationToken cancellationToken = default)
+        public Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(Guid id, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
@@ -42,7 +43,7 @@ namespace VirtualBank.Api.Services
             throw new System.NotImplementedException();
         }
 
-        public Task<Response> AddOrEditUtilityPaymentAsync(int UtilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default)
+        public Task<Response> AddOrEditUtilityPaymentAsync(Guid UtilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }

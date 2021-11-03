@@ -228,7 +228,7 @@ namespace VirtualBank.Api.Controllers
                         break;
 
                     case CashTransactionType.EFT:
-                        apiResponse = await _cashTransactionsService.MakeEFTTransferAsync(request, cancellationToken);
+                        apiResponse = await _cashTransactionsService.MakeEFTAsync(request, cancellationToken);
                         break;
                 }
 
@@ -328,7 +328,7 @@ namespace VirtualBank.Api.Controllers
                         break;
 
                     case CashTransactionType.EFT:
-                        apiResponse = await _cashTransactionsService.MakeEFTTransferAsync(request, cancellationToken);
+                        apiResponse = await _cashTransactionsService.MakeEFTAsync(request, cancellationToken);
                         break;
                 }
 

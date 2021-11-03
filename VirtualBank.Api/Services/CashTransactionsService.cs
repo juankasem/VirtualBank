@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VirtualBank.Api.Helpers.ErrorsHelper;
+using VirtualBank.Api.Helpers.Methods;
 using VirtualBank.Api.Mappers.Response;
 using VirtualBank.Core.ApiRequestModels.CashTransactionApiRequests;
 using VirtualBank.Core.ApiResponseModels;
@@ -194,9 +195,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionResponse>> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeDepositAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<CashTransactionResponse>();
+            var responseModel = new Response();
             var amountToDeposit = request.DebitedFunds.Amount;
             var currency = request.DebitedFunds.Currency;
 
@@ -221,15 +222,10 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Add transaction to db & save changes 
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, new Amount(0), toAccount.Balance));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, new Amount(0), toAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
-
-                    var depositor = await GetCustomerName(request.To);
-                    var initiatedBy = GetInitiatedBy(request.InitiatedBy);
-
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.To, initiatedBy, depositor));
 
                     return responseModel;
                 }
@@ -249,7 +245,7 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionResponse>> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeWithdrawalAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionResponse>();
             var amountToWithdraw = request.DebitedFunds.Amount;
@@ -303,15 +299,10 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.BankAccounts.UpdateAsync(fromAccount);
                     await _unitOfWork.SaveAsync();
 
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, new Amount(0)));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, fromAccount.Balance, new Amount(0)));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
-
-                    var withdrawer = await GetCustomerName(request.From);
-                    var initiatedBy = GetInitiatedBy(request.InitiatedBy);
-
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.From, withdrawer, initiatedBy));
 
                     return responseModel;
                 }
@@ -331,9 +322,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionResponse>> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<CashTransactionResponse>();
+            var responseModel = new Response();
             var amountToTransfer = request.DebitedFunds.Amount;
             var currency = request.DebitedFunds.Currency;
             var recipientName = request.RecipientFirstName + ' ' + request.RecipientLastName;
@@ -343,6 +334,7 @@ namespace VirtualBank.Api.Services
             if (senderBankAccount == null)
             {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(senderBankAccount), "sender's bank account not found"));
+
                 return responseModel;
             }
 
@@ -351,6 +343,7 @@ namespace VirtualBank.Api.Services
             if (recipientBankAccount == null)
             {
                 responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(recipientBankAccount), "recipient's account not found"));
+
                 return responseModel;
             }
 
@@ -374,15 +367,10 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
-
-                    var sender = await GetCustomerName(request.From);
-                    var recipient = await GetCustomerName(request.To);
-
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.From, sender, recipient));
 
                     return responseModel;
                 }
@@ -402,9 +390,9 @@ namespace VirtualBank.Api.Services
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionResponse>> MakeEFTTransferAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> MakeEFTAsync(CreateCashTransactionRequest request, CancellationToken cancellationToken = default)
         {
-            var responseModel = new ApiResponse<CashTransactionResponse>();
+            var responseModel = new Response();
             var amountToTransfer = request.DebitedFunds.Amount;
             var currency = request.DebitedFunds.Currency;
             var recipientName = request.RecipientFirstName + ' ' + request.RecipientLastName;
@@ -447,16 +435,10 @@ namespace VirtualBank.Api.Services
                     await _unitOfWork.SaveAsync();
 
                     //Create & Save transaction into db
-                    var createdCashTransaction = await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
+                    await _unitOfWork.CashTransactions.AddAsync(CreateCashTransaction(request, senderBankAccount.Balance, recipientBankAccount.Balance));
                     await _unitOfWork.SaveAsync();
 
                     await dbContextTransaction.CommitAsync();
-
-                    var sender = await GetCustomerName(request.From);
-                    var recipient = await GetCustomerName(request.To);
-                    var feesWithCurrency = new Money(request.Fees.Amount, currency);
-
-                    responseModel.Data = new(_cashTransactionsMapper.MapToResponseModel(createdCashTransaction.ToDomainModel(), request.From, sender, recipient, feesWithCurrency));
 
                     return responseModel;
                 }
@@ -479,25 +461,24 @@ namespace VirtualBank.Api.Services
                 request.InitiatedBy,
                 request.From,
                 request.To,
-                CreateMoney(request.DebitedFunds.Amount, request.DebitedFunds.Currency),
-                CreateMoney(request.Fees.Amount, request.DebitedFunds.Currency),
+                Utils.CreateMoney(request.DebitedFunds.Amount, request.DebitedFunds.Currency),
+                Utils.CreateMoney(request.Fees.Amount, request.DebitedFunds.Currency),
                 request.PaymentType,
                 request.Description,
-                CreateMoney(senderBalance, request.DebitedFunds.Currency),
-                CreateMoney(recipientBalance, request.DebitedFunds.Currency),
+                Utils.CreateMoney(senderBalance, request.DebitedFunds.Currency),
+                Utils.CreateMoney(recipientBalance, request.DebitedFunds.Currency),
                 request.TransactionDate,
                 request.CreationInfo,
                 request.CreditCardNo != null ? request.CreditCardNo : null,
-                request.DebitCardNo != null ? request.DebitCardNo : null
-                );
+                request.DebitCardNo != null ? request.DebitCardNo : null);
 
 
-        private ApiResponse<CashTransactionResponse> ValidateTransfer(BankAccount senderBankAccount,
-                                                                      BankAccount recipientBankAccount,
-                                                                      string currency,
-                                                                      string recipientName)
+        private Response ValidateTransfer(BankAccount senderBankAccount,
+                                          BankAccount recipientBankAccount,
+                                          MoneyCurrency currency,
+                                          string recipientName)
         {
-            var responseModel = new ApiResponse<CashTransactionResponse>();
+            var responseModel = new Response();
 
             if (senderBankAccount.IBAN == recipientBankAccount.IBAN)
             {
@@ -513,11 +494,12 @@ namespace VirtualBank.Api.Services
 
             if (senderBankAccount.Type != AccountType.Current || senderBankAccount.Type != AccountType.Recurring)
             {
-                responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderBankAccount), $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderBankAccount.Type)} account type "));
+                responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(senderBankAccount),
+                                                                             $"transaction is not allowed, {Enum.GetName(typeof(AccountType), senderBankAccount.Type)} account type "));
                 return responseModel;
             }
 
-            if (currency != senderBankAccount.Currency.Code)
+            if (currency.Code != senderBankAccount.Currency.Code)
             {
                 responseModel.AddError(ExceptionCreator.CreateBadRequestError(nameof(currency), $"Funds currency should match the correny of the bank account"));
                 return responseModel;
@@ -570,9 +552,6 @@ namespace VirtualBank.Api.Services
             const decimal feesRate = (decimal)0.0015;
             return new Amount(amountToTransfer.Value * feesRate);
         }
-
-        private static Money CreateMoney(Amount amount, string currency) =>
-           new(amount, currency);
 
 
         private async Task<string> GetCustomerName(string iban)

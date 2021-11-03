@@ -73,7 +73,7 @@ namespace VirtualBank.Core.Domain.Models
                                             From,
                                             To,
                                             DebitedFunds.Amount.Value,
-                                            DebitedFunds.Currency,
+                                            DebitedFunds.Currency.Id,
                                             senderRemainingBalance,
                                             recipientRemainingBalance,
                                             Fees.Amount.Value,
