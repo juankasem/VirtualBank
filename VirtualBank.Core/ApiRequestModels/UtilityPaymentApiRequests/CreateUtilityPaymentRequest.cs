@@ -6,7 +6,7 @@ namespace VirtualBank.Core.ApiRequestModels.UtilityPaymentApiRequests
 {
     public class CreateUtilityPaymentRequest
     {
-        public string BankAccountNo { get; set; }
+        public string IBAN { get; set; }
 
         public UtilityType Type { get; set; }
 
@@ -21,10 +21,10 @@ namespace VirtualBank.Core.ApiRequestModels.UtilityPaymentApiRequests
         public DateTime PaymentDate { get; set; }
 
 
-        public CreateUtilityPaymentRequest(string bankAccountNo, UtilityType type, string subscriptionNo,
+        public CreateUtilityPaymentRequest(string iban, UtilityType type, string subscriptionNo,
                                            string invoiceNo, string companyName, decimal amount, DateTime paymentDate)
         {
-            BankAccountNo = Throw.ArgumentNullException.IfNull(bankAccountNo, nameof(bankAccountNo));
+            IBAN = Throw.ArgumentNullException.IfNull(iban, nameof(iban));
             Type = Throw.ArgumentNullException.IfNull(type, nameof(type));
             SubscriptionNo = Throw.ArgumentNullException.IfNull(subscriptionNo, nameof(subscriptionNo));
             InvoiceNo = Throw.ArgumentNullException.IfNull(invoiceNo, nameof(invoiceNo));

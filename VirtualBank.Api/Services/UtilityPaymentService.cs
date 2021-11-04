@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using VirtualBank.Api.Helpers.ErrorsHelper;
 using VirtualBank.Core.ApiRequestModels.UtilityPaymentApiRequests;
 using VirtualBank.Core.ApiResponseModels;
 using VirtualBank.Core.ApiResponseModels.UtilityPaymentApiResponses;
@@ -23,29 +26,113 @@ namespace VirtualBank.Api.Services
         }
 
 
-        public Task<ApiResponse<UtilityPaymentListResponse>> GetAllUtilityPaymentsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<UtilityPaymentListResponse>> GetAllUtilityPaymentsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var responseModel = new ApiResponse<UtilityPaymentListResponse>();
+
+            var allUtilityPayments = await _unitOfWork.UtilityPayments.ListAllAsync(pageNumber, pageSize);
+
+            if (!allUtilityPayments.Any())
+            {
+                return responseModel;
+            }
+
+            responseModel.Data = new(allUtilityPayments.ToImmutableList(), allUtilityPayments.Count());
+
+            return responseModel;
         }
 
-        public Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(Guid id, CancellationToken cancellationToken = default)
+
+        public async Task<ApiResponse<UtilityPaymentListResponse>> GetUtilityPaymentsByIBANAsync(string iban, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var responseModel = new ApiResponse<UtilityPaymentListResponse>();
+
+            var ibanUtilityPayments = await _unitOfWork.UtilityPayments.GetByIBANAsync(iban, pageNumber, pageSize);
+
+            if (!ibanUtilityPayments.Any())
+            {
+                return responseModel;
+            }
+
+            responseModel.Data = new(ibanUtilityPayments.ToImmutableList(), ibanUtilityPayments.Count());
+
+            return responseModel;
         }
 
-        public Task<ApiResponse<UtilityPaymentListResponse>> GetUtilityPaymentsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
+
+        public async Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(Guid utilityPaymentId, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var responseModel = new ApiResponse<UtilityPaymentResponse>();
+
+            var utilityPayment = await _unitOfWork.UtilityPayments.FindByIdAsync(utilityPaymentId);
+
+            if (utilityPayment == null)
+            {
+                responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(utilityPayment), $"utilityPayment of Id: {utilityPaymentId} not found"));
+
+                return responseModel;
+            }
+
+            responseModel.Data = new(utilityPayment);
+
+            return responseModel;
         }
 
-        public Task<ApiResponse<UtilityPaymentListResponse>> GetUtilityPaymentsByIBANAsync(string iban, CancellationToken cancellationToken = default)
-        {
-            throw new System.NotImplementedException();
-        }
 
-        public Task<Response> AddOrEditUtilityPaymentAsync(Guid UtilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default)
+        public async Task<Response> AddOrEditUtilityPaymentAsync(Guid utilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var responseModel = new Response();
+
+            if (utilityPaymentId != null)
+            {
+                var utilityPayment = await _unitOfWork.UtilityPayments.FindByIdAsync(utilityPaymentId);
+
+                if (utilityPayment != null)
+                {
+                    utilityPayment.IBAN = request.IBAN;
+                    utilityPayment.Code = request.Code;
+                    utilityPayment.Address = request.Address;
+                    utilityPayment.LastModifiedBy = request.CreationInfo.CreatedBy;
+                    utilityPayment.LastModifiedOn = request.CreationInfo.CreatedOn;
+
+                    try
+                    {
+                        await _unitOfWork.Branches.UpdateAsync(branch);
+                        await _unitOfWork.SaveAsync();
+
+                        responseModel.Data = new(_branchMapper.MapToResponseModel(updatedBranch));
+                    }
+                    catch (Exception ex)
+                    {
+                        responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                        return responseModel;
+                    }
+                }
+                else
+                {
+                    responseModel.AddError(ExceptionCreator.CreateNotFoundError(nameof(branch), $"branch of Id: {branchId} not found"));
+                }
+            }
+            else
+            {
+                try
+                {
+                    var createdBranch = await _unitOfWork.Branches.AddAsync(CreateBranch(request));
+
+                    responseModel.Data = new(_branchMapper.MapToResponseModel(createdBranch));
+
+                    await _unitOfWork.SaveAsync();
+                }
+                catch (Exception ex)
+                {
+                    responseModel.AddError(ExceptionCreator.CreateInternalServerError(ex.ToString()));
+
+                    return responseModel;
+                }
+            }
+
+            return responseModel;
         }
     }
 }

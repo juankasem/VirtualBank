@@ -58,13 +58,13 @@ namespace VirtualBank.Api.Controllers
         [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllCashTransactions([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
+        public async Task<IActionResult> ListAllCashTransactions([FromQuery] int pageNumber = PagingConstants.DefaultPageNumber,
                                                                 [FromQuery] int pageSize = PagingConstants.DefaultPageSize,
                                                                 CancellationToken cancellationToken = default)
         {
             try
             {
-                var apiResponse = await _cashTransactionsService.GetAllCashTransactionsAsync(pageNumber, pageSize, cancellationToken);
+                var apiResponse = await _cashTransactionsService.ListAllCashTransactionsAsync(pageNumber, pageSize, cancellationToken);
 
                 if (apiResponse.Success)
                 {

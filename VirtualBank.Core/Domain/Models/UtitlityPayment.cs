@@ -9,23 +9,23 @@ namespace VirtualBank.Core.Domain.Models
     {
         public Guid Id { get; }
 
-        public UtilityType Type { get; }
+        public UtilityType Type { get; set; }
 
-        public string IBAN { get; }
+        public string IBAN { get; set; }
 
-        public string SubscriptionNo { get; }
+        public string SubscriptionNo { get; set; }
 
-        public string InvoiceNo { get; }
+        public string InvoiceNo { get; set; }
 
-        public string CompanyName { get; }
+        public string CompanyName { get; set; }
 
-        public Money Amount { get; }
+        public Money Amount { get; set; }
 
-        public DateTime PaymentDate { get; }
+        public DateTime PaymentDate { get; set; }
 
-        public CreationInfo CreationInfo { get; }
+        public CreationInfo CreationInfo { get; set; }
 
-        public ModificationInfo ModificationInfo { get; }
+        public ModificationInfo ModificationInfo { get; set; }
 
 
         public UtilityPayment(Guid id, UtilityType type, string iban, string subscriptionNo, string invoiceNo,

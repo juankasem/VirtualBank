@@ -8,7 +8,7 @@ namespace VirtualBank.Core.Interfaces
 {
     public interface ICashTransactionsService
     {
-        Task<ApiResponse<CashTransactionListResponse>> GetAllCashTransactionsAsync(int pageNumber, int pageSize,
+        Task<ApiResponse<CashTransactionListResponse>> ListAllCashTransactionsAsync(int pageNumber, int pageSize,
                                                                                    CancellationToken cancellationToken = default);
 
         Task<ApiResponse<CashTransactionListResponse>> GetBankAccountCashTransactionsAsync(string iban, int lastDays,

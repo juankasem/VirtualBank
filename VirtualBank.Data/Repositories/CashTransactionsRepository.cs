@@ -18,18 +18,24 @@ namespace VirtualBank.Data.Repositories
         }
 
 
-        public async Task<IEnumerable<CashTransaction>> GetAllAsync()
+        public async Task<IEnumerable<CashTransaction>> GetAllAsync(int pageNumber, int pageSize)
         {
-            return await _dbContext.CashTransactions.Select(c => c.ToDomainModel())
+            return await _dbContext.CashTransactions.OrderByDescending(c => c.CreatedOn)
+                                                    .Skip((pageNumber - 1) * pageSize)
+                                                    .Take(pageSize)
+                                                    .Select(c => c.ToDomainModel())
                                                     .AsNoTracking()
                                                     .ToListAsync();
         }
 
 
-        public async Task<IEnumerable<CashTransaction>> GetByIBANAsync(string iban, int lastDays)
+        public async Task<IEnumerable<CashTransaction>> GetByIBANAsync(string iban, int lastDays, int pageNumber, int pageSize)
         {
             return await _dbContext.CashTransactions.Where(c => (c.From == iban || c.To == iban)
                                                                 && DateTime.UtcNow.Subtract(c.TransactionDate).TotalDays <= lastDays)
+                                                    .OrderByDescending(c => c.CreatedOn)
+                                                    .Skip((pageNumber - 1) * pageSize)
+                                                    .Take(pageSize)
                                                     .Select(c => c.ToDomainModel())
                                                     .AsNoTracking()
                                                     .ToListAsync();

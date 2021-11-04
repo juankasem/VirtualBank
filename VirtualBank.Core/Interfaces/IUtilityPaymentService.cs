@@ -11,12 +11,10 @@ namespace VirtualBank.Core.Interfaces
     {
         Task<ApiResponse<UtilityPaymentListResponse>> GetAllUtilityPaymentsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<UtilityPaymentListResponse>> GetUtilityPaymentsByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default);
+        Task<ApiResponse<UtilityPaymentListResponse>> GetUtilityPaymentsByIBANAsync(string iban, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<UtilityPaymentListResponse>> GetUtilityPaymentsByIBANAsync(string iban, CancellationToken cancellationToken = default);
+        Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(Guid utilityPaymentId, CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<UtilityPaymentResponse>> GetUtilityPaymentByIdsync(Guid id, CancellationToken cancellationToken = default);
-
-        Task<Response> AddOrEditUtilityPaymentAsync(Guid UtilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default);
+        Task<Response> AddOrEditUtilityPaymentAsync(Guid utilityPaymentId, CreateUtilityPaymentRequest request, CancellationToken cancellationToken = default);
     }
 }

@@ -39,12 +39,12 @@ namespace VirtualBank.Api.Services
         /// <param name="pageSize"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApiResponse<CashTransactionListResponse>> GetAllCashTransactionsAsync(int pageNumber, int pageSize,
+        public async Task<ApiResponse<CashTransactionListResponse>> ListAllCashTransactionsAsync(int pageNumber, int pageSize,
                                                                                                 CancellationToken cancellationToken = default)
         {
             var responseModel = new ApiResponse<CashTransactionListResponse>();
 
-            var allCashTransactions = await _unitOfWork.CashTransactions.GetAllAsync();
+            var allCashTransactions = await _unitOfWork.CashTransactions.GetAllAsync(pageNumber, pageSize);
 
             if (!allCashTransactions.Any())
             {
@@ -52,13 +52,10 @@ namespace VirtualBank.Api.Services
             }
 
             var cashTransactions = allCashTransactions.Select(cashTransaction => _cashTransactionsMapper.MapToResponseModel(cashTransaction,
-                                                                                                                            cashTransaction.From,
-                                                                                                                            GetCustomerName(cashTransaction.From).GetAwaiter().GetResult(),
-                                                                                                                            GetCustomerName(cashTransaction.To).GetAwaiter().GetResult()))
-                                                      .OrderByDescending(c => c.CreationInfo.CreatedOn)
-                                                      .Skip((pageNumber - 1) * pageSize)
-                                                      .Take(pageSize)
-                                                      .ToImmutableList();
+                                                                                                                        cashTransaction.From,
+                                                                                                                        GetCustomerName(cashTransaction.From).GetAwaiter().GetResult(),
+                                                                                                                        GetCustomerName(cashTransaction.To).GetAwaiter().GetResult()))
+                                                       .ToImmutableList();
 
             responseModel.Data = new(cashTransactions, cashTransactions.Count);
 
@@ -83,20 +80,16 @@ namespace VirtualBank.Api.Services
             var accountHolderName = accountHolder.FirstName + " " + accountHolder.LastName;
 
 
-            var accountCashTransactions = await _unitOfWork.CashTransactions.GetByIBANAsync(iban, lastDays);
+            var accountCashTransactions = await _unitOfWork.CashTransactions.GetByIBANAsync(iban, lastDays, pageNumber, pageSize);
 
             if (!accountCashTransactions.Any())
             {
                 return responseModel;
             }
 
-            var cashTransactions = accountCashTransactions.OrderByDescending(c => c.CreationInfo.CreatedOn)
-                                                          .Skip((pageNumber - 1) * pageSize)
-                                                          .Take(pageSize);
-
             var cashTransactionList = new List<Core.Models.Responses.CashTransaction>();
 
-            foreach (var cashTransaction in cashTransactions)
+            foreach (var cashTransaction in accountCashTransactions)
             {
                 if (cashTransaction.From != iban && IsTransferTransaction(cashTransaction))
                 {

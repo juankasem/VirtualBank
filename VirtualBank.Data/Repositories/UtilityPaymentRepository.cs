@@ -17,33 +17,39 @@ namespace VirtualBank.Data.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<UtilityPayment>> ListAllAsync()
+        public async Task<IEnumerable<UtilityPayment>> ListAllAsync(int pageNumber, int pageSize)
         {
 
             return await _dbContext.UtilityPayments.Include(b => b.BankAccount)
                                                    .ThenInclude(c => c.Owner)
                                                    .Include(c => c.Currency)
                                                    .Where(l => !l.Disabled)
+                                                   .OrderByDescending(c => c.CreatedOn)
+                                                   .Skip((pageNumber - 1) * pageSize)
+                                                   .Take(pageSize)
                                                    .Select(utilityPayment => utilityPayment.ToDomainModel())
                                                    .AsNoTracking().ToListAsync();
         }
 
-        public async Task<IEnumerable<UtilityPayment>> GetByCustomerIdAsync(int customerId)
+        public async Task<IEnumerable<UtilityPayment>> GetByIBANAsync(string iban, int pageNumber, int pageSize)
         {
-            return await _dbContext.UtilityPayments.Include(b => b.BankAccount)
+            return await _dbContext.UtilityPayments.Where(c => c.IBAN == iban && !c.Disabled)
+                                                   .Include(b => b.BankAccount)
                                                    .ThenInclude(c => c.Owner)
                                                    .Include(c => c.Currency)
-                                                   .Where(c => c.BankAccount.CustomerId == customerId && !c.Disabled)
+                                                   .OrderByDescending(c => c.CreatedOn)
+                                                   .Skip((pageNumber - 1) * pageSize)
+                                                   .Take(pageSize)
                                                    .Select(utilityPayment => utilityPayment.ToDomainModel())
                                                    .AsNoTracking().ToListAsync();
         }
 
         public async Task<UtilityPayment> FindByIdAsync(Guid id)
         {
-            return await _dbContext.UtilityPayments.Include(b => b.BankAccount)
+            return await _dbContext.UtilityPayments.Where(c => c.Id == id && !c.Disabled)
+                                                   .Include(b => b.BankAccount)
                                                    .ThenInclude(c => c.Owner)
                                                    .Include(c => c.Currency)
-                                                   .Where(c => c.Id == id && !c.Disabled)
                                                    .Select(utilityPayment => utilityPayment.ToDomainModel())
                                                    .FirstOrDefaultAsync();
         }
